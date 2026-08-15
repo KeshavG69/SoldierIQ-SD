@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { useDocumentStore } from "@/lib/stores/documentStore";
-import { useDocuments, useKnowledgeBases } from "@/lib/hooks/useDocuments";
+import { useDocuments, useKnowledgeBases, documentKeys } from "@/lib/hooks/useDocuments";
 import { useUploadDocument } from "@/lib/hooks/useUploadDocument";
 import { useDeleteDocument, useDeleteKnowledgeBase } from "@/lib/hooks/useDeleteDocument";
 import SidebarHeader from "./sidebar/SidebarHeader";
@@ -13,6 +14,7 @@ import DriveImportBanner from "./sidebar/DriveImportBanner";
 
 export default function Sidebar() {
   const user = useAuthStore((s) => s.user);
+  const queryClient = useQueryClient();
 
   // Server state via React Query (cached, deduped)
   const { data: documents = [], isLoading } = useDocuments(user?.organization_id);
@@ -75,6 +77,19 @@ export default function Sidebar() {
     setShowUploadModal(false);
   }, []);
 
+  // uploadDocuments/uploadYouTubeVideo live in the Zustand store and update
+  // ITS OWN state, but the sidebar actually renders from React Query
+  // (useDocuments/useKnowledgeBases above). Without this invalidation the
+  // new folder/doc only exists in Zustand's shadow copy — the visible list
+  // never learns about it until something else (e.g. a full reload)
+  // happens to remount the query. Invalidating here is what makes the
+  // upload show up on its own, and it also seeds useDocuments' cache with a
+  // "processing" doc so its 5s poll picks up and shows live status changes.
+  const invalidateDocumentQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: documentKeys.list(user?.organization_id) });
+    queryClient.invalidateQueries({ queryKey: documentKeys.knowledgeBases(user?.organization_id) });
+  }, [queryClient, user?.organization_id]);
+
   const handleUpload = useCallback(
     async (files: File[], folderName: string) => {
       setExpandedFolders((prev) => {
@@ -82,9 +97,13 @@ export default function Sidebar() {
         next.add(folderName);
         return next;
       });
-      await uploadDocuments(files, folderName);
+      try {
+        await uploadDocuments(files, folderName);
+      } finally {
+        invalidateDocumentQueries();
+      }
     },
-    [uploadDocuments]
+    [uploadDocuments, invalidateDocumentQueries]
   );
 
   const handleYouTubeUpload = useCallback(
@@ -94,9 +113,13 @@ export default function Sidebar() {
         next.add(folderName);
         return next;
       });
-      await uploadYouTubeVideo(url, folderName);
+      try {
+        await uploadYouTubeVideo(url, folderName);
+      } finally {
+        invalidateDocumentQueries();
+      }
     },
-    [uploadYouTubeVideo]
+    [uploadYouTubeVideo, invalidateDocumentQueries]
   );
 
   const handleToggleFolder = useCallback((folderName: string) => {
