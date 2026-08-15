@@ -9,6 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     build-essential \
+    git \
     libxcb1 \
     libxcb-render0 \
     libxcb-shape0 \
