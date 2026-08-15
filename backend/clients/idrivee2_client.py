@@ -1,0 +1,345 @@
+"""
+iDrive E2 Storage Client
+S3-compatible cloud storage using aioboto3 for async operations
+"""
+
+import aioboto3
+import boto3
+from typing import Optional, BinaryIO
+from botocore.exceptions import ClientError
+from app.settings import settings
+from app.logger import logger
+
+
+class IDriveE2Client:
+    """Client for iDrive E2 cloud storage operations"""
+
+    def __init__(self):
+        """Initialize iDrive E2 client with aioboto3 and boto3"""
+        self.endpoint_url = settings.IDRIVEE2_ENDPOINT_URL
+        self.access_key = settings.IDRIVEE2_ACCESS_KEY_ID
+        self.secret_key = settings.IDRIVEE2_SECRET_ACCESS_KEY
+        self.bucket_name = settings.IDRIVEE2_BUCKET_NAME
+
+        # Configure for iDrive E2 compatibility (disable checksums)
+        from botocore.config import Config
+        self.config = Config(
+            signature_version='s3v4',
+            s3={
+                'payload_signing_enabled': False,
+                'addressing_style': 'path'
+            }
+        )
+
+        # Initialize aioboto3 session (async)
+        self.session = aioboto3.Session(
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            region_name='us-east-1'
+        )
+
+        # Initialize boto3 client (sync) with disabled threading for Celery compatibility
+        from botocore.config import Config as BotoConfig
+        sync_config = BotoConfig(
+            signature_version='s3v4',
+            s3={
+                'payload_signing_enabled': False,
+                'addressing_style': 'path'
+            },
+            max_pool_connections=1,  # Minimize connection pool
+            use_dualstack_endpoint=False
+        )
+
+        self.sync_client = boto3.client(
+            's3',
+            endpoint_url=self.endpoint_url,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            region_name='us-east-1',
+            config=sync_config
+        )
+
+        logger.info(f"✅ iDrive E2 client initialized for bucket: {self.bucket_name}")
+
+    def cleanup(self):
+        """Clean up boto3 client resources and thread pools"""
+        try:
+            if hasattr(self, 'sync_client') and self.sync_client:
+                # Close the boto3 client's connection pool
+                self.sync_client.close()
+                logger.info("✅ Closed boto3 sync client")
+        except Exception as e:
+            logger.warning(f"Error cleaning up IDriveE2 client: {str(e)}")
+
+    async def upload_file(
+        self,
+        file_obj: BinaryIO,
+        object_name: str,
+        content_type: Optional[str] = None
+    ) -> str:
+        """
+        Upload a file to iDrive E2 storage (async)
+
+        Args:
+            file_obj: File object to upload
+            object_name: S3 object name (key) in the bucket
+            content_type: MIME type of the file
+
+        Returns:
+            str: Object key (not URL since bucket is private)
+
+        Raises:
+            Exception: If upload fails
+        """
+        try:
+            extra_args = {}
+            if content_type:
+                extra_args['ContentType'] = content_type
+
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                # Upload without checksum validation (iDrive E2 compatibility)
+                await client.upload_fileobj(
+                    file_obj,
+                    self.bucket_name,
+                    object_name,
+                    ExtraArgs=extra_args
+                )
+
+            logger.info(f"✅ File uploaded successfully: {object_name}")
+            return object_name
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to upload file {object_name}: {str(e)}")
+            raise Exception(f"Failed to upload file: {str(e)}")
+
+    def upload_file_sync(
+        self,
+        file_obj: BinaryIO,
+        object_name: str,
+        content_type: Optional[str] = None
+    ) -> str:
+        """
+        Upload a file to iDrive E2 storage (sync) without threading
+
+        Args:
+            file_obj: File object to upload
+            object_name: S3 object name (key) in the bucket
+            content_type: MIME type of the file
+
+        Returns:
+            str: Object key (not URL since bucket is private)
+
+        Raises:
+            Exception: If upload fails
+        """
+        try:
+            # Read file content into memory
+            file_content = file_obj.read()
+
+            # Use put_object instead of upload_fileobj to avoid TransferManager threading
+            put_args = {'Body': file_content}
+            if content_type:
+                put_args['ContentType'] = content_type
+
+            self.sync_client.put_object(
+                Bucket=self.bucket_name,
+                Key=object_name,
+                **put_args
+            )
+
+            logger.info(f"✅ File uploaded successfully (sync): {object_name}")
+            return object_name
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to upload file {object_name}: {str(e)}")
+            raise Exception(f"Failed to upload file: {str(e)}")
+
+    async def download_file(self, object_name: str) -> bytes:
+        """
+        Download a file from iDrive E2 storage (async)
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+
+        Returns:
+            bytes: File content as bytes
+
+        Raises:
+            Exception: If download fails
+        """
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                response = await client.get_object(
+                    Bucket=self.bucket_name,
+                    Key=object_name
+                )
+                file_content = await response['Body'].read()
+
+            logger.info(f"✅ File downloaded successfully: {object_name}")
+            return file_content
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to download file {object_name}: {str(e)}")
+            raise Exception(f"Failed to download file: {str(e)}")
+
+    async def delete_file(self, object_name: str) -> bool:
+        """
+        Delete a file from iDrive E2 storage (async)
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+
+        Returns:
+            bool: True if deletion was successful
+
+        Raises:
+            Exception: If deletion fails
+        """
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                await client.delete_object(
+                    Bucket=self.bucket_name,
+                    Key=object_name
+                )
+
+            logger.info(f"✅ File deleted successfully: {object_name}")
+            return True
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to delete file {object_name}: {str(e)}")
+            raise Exception(f"Failed to delete file: {str(e)}")
+
+    def list_files(self, prefix: Optional[str] = None) -> list:
+        """
+        List files in the bucket
+
+        Args:
+            prefix: Optional prefix to filter objects
+
+        Returns:
+            list: List of object keys
+
+        Raises:
+            Exception: If listing fails
+        """
+        try:
+            kwargs = {'Bucket': self.bucket_name}
+            if prefix:
+                kwargs['Prefix'] = prefix
+
+            response = self.client.list_objects_v2(**kwargs)
+
+            if 'Contents' not in response:
+                return []
+
+            files = [obj['Key'] for obj in response['Contents']]
+            logger.info(f"✅ Listed {len(files)} files")
+            return files
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to list files: {str(e)}")
+            raise Exception(f"Failed to list files: {str(e)}")
+
+    def file_exists(self, object_name: str) -> bool:
+        """
+        Check if a file exists in the bucket
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+
+        Returns:
+            bool: True if file exists, False otherwise
+        """
+        try:
+            self.client.head_object(
+                Bucket=self.bucket_name,
+                Key=object_name
+            )
+            return True
+        except ClientError:
+            return False
+
+    def get_file_url(self, object_name: str) -> str:
+        """
+        Get the URL for a file in the bucket
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+
+        Returns:
+            str: Public URL of the file
+        """
+        return f"{self.endpoint_url}/{self.bucket_name}/{object_name}"
+
+    async def generate_presigned_url(
+        self,
+        object_name: str,
+        expiration: int = 3600
+    ) -> str:
+        """
+        Generate a presigned URL for temporary file access (async)
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+            expiration: URL expiration time in seconds (default: 1 hour)
+
+        Returns:
+            str: Presigned URL
+
+        Raises:
+            Exception: If URL generation fails
+        """
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                url = await client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': self.bucket_name,
+                        'Key': object_name
+                    },
+                    ExpiresIn=expiration
+                )
+
+            # DEBUG, not INFO: this is generated for EVERY document on EVERY
+            # document-list fetch (and the sidebar polls every 5s while anything
+            # is processing), so at INFO it floods the console. It's cheap local
+            # signing, not a network call — just noisy.
+            logger.debug(f"Presigned URL generated for: {object_name}")
+            return url
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to generate presigned URL: {str(e)}")
+            raise Exception(f"Failed to generate presigned URL: {str(e)}")
+
+
+# Singleton instance
+_idrivee2_client: Optional[IDriveE2Client] = None
+
+
+def get_idrivee2_client() -> IDriveE2Client:
+    """
+    Get or create IDriveE2Client singleton instance
+
+    Returns:
+        IDriveE2Client: Singleton client instance
+    """
+    global _idrivee2_client
+    if _idrivee2_client is None:
+        _idrivee2_client = IDriveE2Client()
+    return _idrivee2_client

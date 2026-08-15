@@ -1,0 +1,106 @@
+[
+  {
+    "name": "search_knowledge_base",
+    "description": "Search the knowledge base using semantic search. Use this tool to find information from uploaded documents, PDFs, videos, and images. Returns relevant documents with similarity scores.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Search query to find relevant documents"
+        },
+        "num_documents": {
+          "type": "integer",
+          "description": "Maximum number of results to return",
+          "default": 10
+        }
+      },
+      "required": [
+        "query"
+      ]
+    }
+  },
+  {
+    "name": "place_tak_marker",
+    "description": "Place a marker on the TAK network at specified coordinates. Use this when the user wants to mark a location, place a point of interest, or share coordinates with the team on TAK/ATAK.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "description": "Latitude coordinate (-90 to 90)"
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude coordinate (-180 to 180)"
+        },
+        "callsign": {
+          "type": "string",
+          "description": "Display name/label for the marker"
+        },
+        "message": {
+          "type": "string",
+          "description": "Optional message or remarks to attach to marker"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "callsign"
+      ]
+    }
+  },
+  {
+    "name": "send_tak_message",
+    "description": "Send a chat message to the TAK network (broadcast to all users). Use this when the user wants to broadcast a message or alert to all TAK users on the network.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Message text to send"
+        }
+      },
+      "required": [
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "create_tak_route",
+    "description": "Create a route on the TAK network with multiple waypoints. Use this when the user wants to plan a route, show a path, or define a movement corridor with multiple points.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "waypoints": {
+          "type": "array",
+          "description": "List of waypoint dicts with 'lat' and 'lon' keys",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lon": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "lat",
+              "lon"
+            ]
+          },
+          "minItems": 2
+        },
+        "route_name": {
+          "type": "string",
+          "description": "Display name for the route"
+        }
+      },
+      "required": [
+        "waypoints",
+        "route_name"
+      ]
+    }
+  }
+]
