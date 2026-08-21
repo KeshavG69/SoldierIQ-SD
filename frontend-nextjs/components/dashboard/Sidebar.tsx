@@ -42,6 +42,13 @@ export default function Sidebar() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
+  // In-app delete confirmation (replaces window.confirm, which browsers can
+  // silently suppress — the cause of "delete does nothing").
+  const [pendingDelete, setPendingDelete] = useState<
+    { kind: "doc" | "folder"; id: string; label: string } | null
+  >(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const totalDocs = Array.isArray(documents) ? documents.length : 0;
 
@@ -145,46 +152,49 @@ export default function Sidebar() {
     [selectDocs, deselectDocs]
   );
 
+  // Delete buttons just open the confirmation; the actual work happens in
+  // confirmDelete once the user confirms in-app.
   const handleDeleteDoc = useCallback(
-    async (docId: string) => {
-      if (confirm("Delete this document?")) {
-        try {
-          setDeletingDocId(docId);
-          await deleteMutation.mutateAsync({ docId, organizationId: user?.organization_id || "" });
-        } catch {
-          // error handled by mutation
-        } finally {
-          setDeletingDocId(null);
-        }
-      }
+    (docId: string) => {
+      const doc = documents.find((d) => d.id === docId);
+      setDeleteError(null);
+      setPendingDelete({ kind: "doc", id: docId, label: doc?.file_name || "this document" });
     },
-    [deleteMutation]
+    [documents]
   );
 
-  const handleDeleteFolder = useCallback(
-    async (folderName: string) => {
-      if (
-        confirm(
-          `Delete knowledge base "${folderName}"? This will delete all documents in it.`
-        )
-      ) {
-        try {
-          await deleteKBMutation.mutateAsync({ folderName, organizationId: user?.organization_id || "" });
-          // The Drive pickers derive their "added" state from the live document
-          // list, so deleting the KB folder automatically frees those items to
-          // be re-selected — no extra bookkeeping needed here.
-          setExpandedFolders((prev) => {
-            const next = new Set(prev);
-            next.delete(folderName);
-            return next;
-          });
-        } catch {
-          // error handled by mutation
-        }
+  const handleDeleteFolder = useCallback((folderName: string) => {
+    setDeleteError(null);
+    setPendingDelete({ kind: "folder", id: folderName, label: folderName });
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDelete) return;
+    const orgId = user?.organization_id || "";
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      if (pendingDelete.kind === "doc") {
+        setDeletingDocId(pendingDelete.id);
+        await deleteMutation.mutateAsync({ docId: pendingDelete.id, organizationId: orgId });
+      } else {
+        await deleteKBMutation.mutateAsync({ folderName: pendingDelete.id, organizationId: orgId });
+        setExpandedFolders((prev) => {
+          const next = new Set(prev);
+          next.delete(pendingDelete.id);
+          return next;
+        });
       }
-    },
-    [deleteKBMutation]
-  );
+      setPendingDelete(null);
+    } catch (e: any) {
+      setDeleteError(
+        e?.response?.data?.detail || e?.message || "Delete failed. Please try again."
+      );
+    } finally {
+      setDeletingDocId(null);
+      setDeleteBusy(false);
+    }
+  }, [pendingDelete, deleteMutation, deleteKBMutation, user?.organization_id]);
 
   return (
     <div className="flex-1 bg-surface-2 border-r border-border flex flex-col relative">
@@ -225,6 +235,55 @@ export default function Sidebar() {
         onYouTubeUpload={handleYouTubeUpload}
         uploadStatus={uploadStatus}
       />
+
+      {/* Delete confirmation (in-app, not window.confirm) */}
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center px-4">
+          <div className="w-full max-w-sm rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-border">
+              <h3 className="text-base font-semibold text-foreground">
+                {pendingDelete.kind === "doc" ? "Delete document" : "Delete knowledge base"}
+              </h3>
+            </div>
+            <div className="px-6 py-4">
+              <p className="text-sm text-muted-foreground">
+                {pendingDelete.kind === "doc" ? (
+                  <>
+                    Delete <span className="font-medium text-foreground">{pendingDelete.label}</span>? This can’t be undone.
+                  </>
+                ) : (
+                  <>
+                    Delete <span className="font-medium text-foreground">{pendingDelete.label}</span> and all documents in it? This can’t be undone.
+                  </>
+                )}
+              </p>
+              {deleteError && <p className="text-xs text-red-500 mt-2">{deleteError}</p>}
+            </div>
+            <div className="px-6 py-4 border-t border-border flex justify-end gap-2 bg-surface-2 dark:bg-card/40">
+              <button
+                onClick={() => {
+                  setPendingDelete(null);
+                  setDeleteError(null);
+                }}
+                disabled={deleteBusy}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary dark:hover:bg-accent transition-colors disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteBusy}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60 inline-flex items-center gap-2"
+              >
+                {deleteBusy && (
+                  <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                )}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

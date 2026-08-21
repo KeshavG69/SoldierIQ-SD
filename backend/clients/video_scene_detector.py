@@ -78,17 +78,21 @@ class VideoSceneDetector:
                 f"(threshold={threshold}, downscale={downscale}x)"
             )
 
-            from scenedetect.video_manager import VideoManager
-            from scenedetect.scene_manager import SceneManager
+            # Modern PySceneDetect API (0.6+). The old VideoManager class was
+            # deprecated in 0.6 and REMOVED in 0.6.4 — importing it crashes on
+            # newer installs ("No module named 'scenedetect.video_manager'").
+            # open_video + SceneManager works on every 0.6.x, so this stays
+            # compatible whether prod or local is a step ahead on the version.
+            from scenedetect import open_video, SceneManager
 
-            video_manager = VideoManager([video_path])
+            video = open_video(video_path)
             scene_manager = SceneManager()
             scene_manager.add_detector(ContentDetector(threshold=threshold))
-            video_manager.set_downscale_factor(downscale)
-            video_manager.start()
-            scene_manager.detect_scenes(video_manager, show_progress=False)
+            if downscale and downscale > 1:
+                scene_manager.auto_downscale = False
+                scene_manager.downscale = downscale
+            scene_manager.detect_scenes(video, show_progress=False)
             scene_list = scene_manager.get_scene_list()
-            video_manager.release()
 
             logger.info(f"✅ PySceneDetect found {len(scene_list)} scenes")
 
