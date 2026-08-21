@@ -4,9 +4,7 @@ import React, { useCallback, useState } from "react";
 import { motion } from "framer-motion";
 import { Document } from "@/types";
 import { documentsApi } from "@/lib/api/documents";
-import { useAuthStore } from "@/lib/stores/authStore";
 import IngestionPipeline from "./IngestionPipeline";
-import DocumentAccessModal from "./DocumentAccessModal";
 
 interface DocumentItemProps {
   document: Document;
@@ -27,9 +25,6 @@ const DocumentItem = React.memo(function DocumentItem({
 }: DocumentItemProps) {
   const isFailed = doc.status === "failed";
   const [opening, setOpening] = useState(false);
-  const [accessOpen, setAccessOpen] = useState(false);
-  // Only admins manage per-document access; the control is hidden for members.
-  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
 
   // A downloadable file exists when the doc finished and has a file_key. We do
   // NOT have a URL yet — fetch a fresh presigned one only on click, so the list
@@ -139,23 +134,6 @@ const DocumentItem = React.memo(function DocumentItem({
             </div>
           )}
         </div>
-        {/* Admin-only: manage which members can see this document */}
-        {isAdmin && !isDeleting && doc.status === "completed" && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setAccessOpen(true);
-            }}
-            className="text-muted-foreground hover:text-brand transition-all p-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100"
-            title="Manage who can see this document"
-          >
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-            </svg>
-          </button>
-        )}
         {!isDeleting && (
           <button
             onClick={() => onDelete(doc.id)}
@@ -171,9 +149,6 @@ const DocumentItem = React.memo(function DocumentItem({
         )}
       </div>
     </motion.div>
-    {accessOpen && (
-      <DocumentAccessModal document={doc} onClose={() => setAccessOpen(false)} />
-    )}
     </>
   );
 });

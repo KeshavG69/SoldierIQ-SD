@@ -59,8 +59,8 @@ const SidebarHeader = React.memo(function SidebarHeader({
     );
   };
 
-  // Only org admins can ingest data.
-  const isAdmin = useAuthStore((s) => s.user?.role === "admin");
+  // Admins and System Owners can ingest data; plain Users are read-only.
+  const canUpload = useAuthStore((s) => s.user?.role === "admin" || s.user?.role === "system_owner");
 
   return (
     <>
@@ -75,7 +75,7 @@ const SidebarHeader = React.memo(function SidebarHeader({
           </span>
         </div>
 
-        {isAdmin && (
+        {canUpload && (
           <button
             onClick={onUploadClick}
             disabled={uploadStatus !== null}

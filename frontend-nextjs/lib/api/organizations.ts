@@ -18,7 +18,7 @@ export const organizationsApi = {
   removeMember: async (userId: string): Promise<void> => {
     await apiClient.delete(`/organizations/members/${userId}`);
   },
-  changeMemberRole: async (userId: string, role: 'admin' | 'user'): Promise<void> => {
+  changeMemberRole: async (userId: string, role: 'admin' | 'system_owner' | 'user'): Promise<void> => {
     await apiClient.post(`/organizations/members/${userId}/role`, { role });
   },
 };

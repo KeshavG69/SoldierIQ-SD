@@ -5,7 +5,7 @@ S3-compatible cloud storage using aioboto3 for async operations
 
 import aioboto3
 import boto3
-from typing import Optional, BinaryIO
+from typing import Optional, BinaryIO, List, Dict, Any
 from botocore.exceptions import ClientError
 from app.settings import settings
 from app.logger import logger
@@ -158,9 +158,25 @@ class IDriveE2Client:
             logger.error(f"❌ Failed to upload file {object_name}: {str(e)}")
             raise Exception(f"Failed to upload file: {str(e)}")
 
+    # Download one file in 16MB byte-range chunks, each retried
+    # independently. A single streaming GET of a large object was failing
+    # mid-stream ("Not enough data to satisfy content length header") and
+    # stalling — same fragility as a single-PUT upload. Ranged download means
+    # a dropped connection only costs re-fetching that one chunk, and every
+    # chunk is size-verified so a short read is caught and retried instead of
+    # silently returning a truncated file to the ingestion pipeline.
+    _DOWNLOAD_CHUNK_BYTES = 8 * 1024 * 1024
+    _DOWNLOAD_MAX_RETRIES = 5
+    _DOWNLOAD_CONCURRENCY = 6
+
     async def download_file(self, object_name: str) -> bytes:
         """
-        Download a file from iDrive E2 storage (async)
+        Download a file from iDrive E2 storage (async), as multiple retried
+        byte-range chunks fetched IN PARALLEL. This is both more robust (a
+        dropped connection only costs re-fetching that one chunk, and each
+        chunk is size-verified against a truncated read) and faster (iDrive
+        appears to throttle per-connection, so concurrent ranges raise
+        aggregate throughput).
 
         Args:
             object_name: S3 object name (key) in the bucket
@@ -169,22 +185,73 @@ class IDriveE2Client:
             bytes: File content as bytes
 
         Raises:
-            Exception: If download fails
+            Exception: If the download can't complete after retries
         """
+        import asyncio
+        from botocore.config import Config
+
+        # CRITICAL: give each chunk request an explicit connect/read timeout.
+        # Without one, a stalled read hangs forever instead of erroring — so
+        # the per-chunk retry below never gets a chance to fire.
+        download_config = Config(
+            signature_version='s3v4',
+            s3={'payload_signing_enabled': False, 'addressing_style': 'path'},
+            connect_timeout=15,
+            read_timeout=90,
+            max_pool_connections=self._DOWNLOAD_CONCURRENCY + 2,
+            retries={'max_attempts': 1},  # we do our own ranged retries below
+        )
+
         try:
             async with self.session.client(
                 's3',
                 endpoint_url=self.endpoint_url,
-                config=self.config
+                config=download_config
             ) as client:
-                response = await client.get_object(
-                    Bucket=self.bucket_name,
-                    Key=object_name
-                )
-                file_content = await response['Body'].read()
+                head = await client.head_object(Bucket=self.bucket_name, Key=object_name)
+                total = head['ContentLength']
 
-            logger.info(f"✅ File downloaded successfully: {object_name}")
-            return file_content
+                buf = bytearray(total)
+                sem = asyncio.Semaphore(self._DOWNLOAD_CONCURRENCY)
+
+                ranges = [
+                    (off, min(off + self._DOWNLOAD_CHUNK_BYTES, total) - 1)
+                    for off in range(0, max(total, 1), self._DOWNLOAD_CHUNK_BYTES)
+                ]
+
+                async def fetch_range(start: int, end: int) -> None:
+                    expected = end - start + 1
+                    last_err = None
+                    async with sem:
+                        for attempt in range(1, self._DOWNLOAD_MAX_RETRIES + 1):
+                            try:
+                                resp = await client.get_object(
+                                    Bucket=self.bucket_name,
+                                    Key=object_name,
+                                    Range=f"bytes={start}-{end}",
+                                )
+                                data = await resp['Body'].read()
+                                if len(data) != expected:
+                                    raise IOError(
+                                        f"short read: got {len(data)} of {expected} bytes "
+                                        f"for range {start}-{end}"
+                                    )
+                                buf[start:start + expected] = data
+                                return
+                            except Exception as e:  # noqa: BLE001 — retry any transient failure
+                                last_err = e
+                                if attempt < self._DOWNLOAD_MAX_RETRIES:
+                                    await asyncio.sleep(min(2 ** attempt, 8))
+                    raise Exception(
+                        f"range {start}-{end} failed after "
+                        f"{self._DOWNLOAD_MAX_RETRIES} attempts: {last_err}"
+                    )
+
+                if total > 0:
+                    await asyncio.gather(*(fetch_range(s, e) for s, e in ranges))
+
+            logger.info(f"✅ File downloaded successfully: {object_name} ({total} bytes)")
+            return bytes(buf)
 
         except ClientError as e:
             logger.error(f"❌ Failed to download file {object_name}: {str(e)}")
@@ -326,6 +393,161 @@ class IDriveE2Client:
         except ClientError as e:
             logger.error(f"❌ Failed to generate presigned URL: {str(e)}")
             raise Exception(f"Failed to generate presigned URL: {str(e)}")
+
+    async def generate_presigned_put_url(
+        self,
+        object_name: str,
+        expiration: int = 3600
+    ) -> str:
+        """
+        Generate a presigned URL the BROWSER can PUT raw file bytes to
+        directly, bypassing the backend entirely. No Content-Type is signed
+        into the URL, so the caller can send any Content-Type header.
+
+        Args:
+            object_name: S3 object name (key) in the bucket
+            expiration: URL expiration time in seconds (default: 1 hour)
+
+        Returns:
+            str: Presigned PUT URL
+
+        Raises:
+            Exception: If URL generation fails
+        """
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                url = await client.generate_presigned_url(
+                    'put_object',
+                    Params={
+                        'Bucket': self.bucket_name,
+                        'Key': object_name
+                    },
+                    ExpiresIn=expiration
+                )
+
+            logger.info(f"Presigned PUT URL generated for: {object_name}")
+            return url
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to generate presigned PUT URL: {str(e)}")
+            raise Exception(f"Failed to generate presigned PUT URL: {str(e)}")
+
+    # ---------------------------------------------------------------- multipart
+    # For large files (videos), a single unresumable PUT is fragile — any
+    # network hiccup mid-transfer loses the whole thing with no way to
+    # resume. Multipart upload splits the file into parts the BROWSER
+    # uploads directly (still bypassing the backend), each with its own
+    # presigned URL and its own retry — a failed part only costs that part,
+    # not the whole file.
+
+    async def create_multipart_upload(
+        self,
+        object_name: str,
+        content_type: Optional[str] = None
+    ) -> str:
+        """Start a multipart upload session; returns the upload_id."""
+        try:
+            extra_args = {}
+            if content_type:
+                extra_args['ContentType'] = content_type
+
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                resp = await client.create_multipart_upload(
+                    Bucket=self.bucket_name,
+                    Key=object_name,
+                    **extra_args
+                )
+
+            logger.info(f"Multipart upload created for: {object_name}")
+            return resp['UploadId']
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to create multipart upload for {object_name}: {str(e)}")
+            raise Exception(f"Failed to create multipart upload: {str(e)}")
+
+    async def generate_presigned_part_url(
+        self,
+        object_name: str,
+        upload_id: str,
+        part_number: int,
+        expiration: int = 3600
+    ) -> str:
+        """Presigned URL for uploading ONE part of a multipart upload."""
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                url = await client.generate_presigned_url(
+                    'upload_part',
+                    Params={
+                        'Bucket': self.bucket_name,
+                        'Key': object_name,
+                        'UploadId': upload_id,
+                        'PartNumber': part_number,
+                    },
+                    ExpiresIn=expiration
+                )
+            return url
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to generate presigned part URL: {str(e)}")
+            raise Exception(f"Failed to generate presigned part URL: {str(e)}")
+
+    async def complete_multipart_upload(
+        self,
+        object_name: str,
+        upload_id: str,
+        parts: List[Dict[str, Any]]
+    ) -> None:
+        """Finalize a multipart upload. `parts` = [{'PartNumber': int, 'ETag': str}, ...]."""
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                await client.complete_multipart_upload(
+                    Bucket=self.bucket_name,
+                    Key=object_name,
+                    UploadId=upload_id,
+                    MultipartUpload={'Parts': sorted(parts, key=lambda p: p['PartNumber'])}
+                )
+
+            logger.info(f"✅ Multipart upload completed: {object_name} ({len(parts)} parts)")
+
+        except ClientError as e:
+            logger.error(f"❌ Failed to complete multipart upload for {object_name}: {str(e)}")
+            raise Exception(f"Failed to complete multipart upload: {str(e)}")
+
+    async def abort_multipart_upload(self, object_name: str, upload_id: str) -> None:
+        """Cancel a multipart upload and release its parts. Best-effort —
+        callers use this for cleanup, so a failure here shouldn't crash the
+        caller's own error handling."""
+        try:
+            async with self.session.client(
+                's3',
+                endpoint_url=self.endpoint_url,
+                config=self.config
+            ) as client:
+                await client.abort_multipart_upload(
+                    Bucket=self.bucket_name,
+                    Key=object_name,
+                    UploadId=upload_id
+                )
+            logger.info(f"🗑️ Multipart upload aborted: {object_name}")
+
+        except ClientError as e:
+            logger.warning(f"⚠️ Failed to abort multipart upload for {object_name}: {str(e)}")
 
 
 # Singleton instance

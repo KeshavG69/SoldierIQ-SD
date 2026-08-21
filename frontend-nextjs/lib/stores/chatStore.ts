@@ -47,6 +47,7 @@ interface ChatState {
     sources?: DocumentSource[],
     graph?: KnowledgeGraph
   ) => void;
+  endStreaming: () => void;
   setLoading: (loading: boolean) => void;
   setLoadingSession: (loading: boolean) => void;
   clearChat: () => void;
@@ -84,6 +85,18 @@ export const useChatStore = create<ChatState>()(
           content,
           ...(sources && { sources }),
           ...(graph && { graph }),
+        };
+      }
+      return { messages };
+    }),
+
+  endStreaming: () =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        messages[messages.length - 1] = {
+          ...messages[messages.length - 1],
+          isStreaming: false,
         };
       }
       return { messages };

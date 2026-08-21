@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 
 from app.logger import logger
 from auth.keycloak_auth import get_current_user_keycloak
-from orgs.dependencies import require_org_admin  # ingestion = admin only
+from orgs.dependencies import require_uploader  # ingestion = admin/system_owner
 from clients.sharepoint_client import SharePointClient, SharePointError, get_sharepoint_client
 from tasks.ingestion_tasks import discover_sharepoint_files_task
 
@@ -61,7 +61,7 @@ class ConnectRequest(BaseModel):
 @router.post("/connect")
 async def connect(
     body: ConnectRequest,
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     client = _client(current_user)
     try:
@@ -87,7 +87,7 @@ async def connect(
 
 @router.get("/status")
 async def status_endpoint(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     client = _client(current_user)
     try:
@@ -103,7 +103,7 @@ async def status_endpoint(
 
 @router.get("/libraries")
 async def list_libraries(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     client = _client(current_user)
     status = await asyncio.to_thread(client.connection_status)
@@ -132,7 +132,7 @@ class IngestLibrariesRequest(BaseModel):
 @router.post("/ingest-libraries")
 async def ingest_libraries(
     body: IngestLibrariesRequest,
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Queue discovery for each selected library. Each library's files
     (recursively) land in a KB folder named after the library. Files already
@@ -170,7 +170,7 @@ async def ingest_libraries(
 
 @router.delete("/disconnect")
 async def disconnect(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     client = _client(current_user)
     try:

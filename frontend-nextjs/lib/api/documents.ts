@@ -53,7 +53,116 @@ export const documentsApi = {
     return response.data.data; // Extract data from wrapper
   },
 
-  // Upload documents (documents are created immediately with status="processing")
+  // Step 1 of direct-to-iDrive upload: create the doc record and get a
+  // presigned URL. The browser PUTs the file straight to iDrive next —
+  // the backend never sees the bytes, which is what avoids the timeout
+  // that large videos hit going through the old base64-through-Celery path.
+  presignUpload: async (
+    filename: string,
+    folderName: string,
+    contentType?: string
+  ): Promise<{ document_id: string; file_key: string; upload_url: string; folder_name: string }> => {
+    const response = await apiClient.post<ApiResponse<{
+      document_id: string;
+      file_key: string;
+      upload_url: string;
+      folder_name: string;
+    }>>('/upload/presign', {
+      filename,
+      folder_name: folderName,
+      content_type: contentType,
+    });
+    return response.data.data;
+  },
+
+  // Step 2: tell the backend the direct upload to iDrive finished, so it can
+  // dispatch ingestion. No file bytes in this request either.
+  confirmUpload: async (params: {
+    document_id: string;
+    file_key: string;
+    filename: string;
+    folder_name: string;
+    content_type?: string;
+    file_size_mb?: number;
+  }): Promise<{ document_id: string; task_id: string; status: string }> => {
+    const response = await apiClient.post<ApiResponse<{
+      document_id: string;
+      task_id: string;
+      status: string;
+    }>>('/upload/confirm', params);
+    return response.data.data;
+  },
+
+  // --- Multipart upload (used for all files — a single-PUT is fragile for
+  // large videos: any interruption loses the whole transfer with nothing to
+  // resume. Splitting into parts means a failed part only costs re-sending
+  // that part.) ---
+
+  // Step 1: create the doc record, start an S3 multipart session, get one
+  // presigned PUT URL per part.
+  presignMultipartUpload: async (
+    filename: string,
+    folderName: string,
+    contentType: string | undefined,
+    fileSizeBytes: number
+  ): Promise<{
+    document_id: string;
+    file_key: string;
+    upload_id: string;
+    part_size_bytes: number;
+    total_parts: number;
+    part_urls: { part_number: number; url: string }[];
+    folder_name: string;
+  }> => {
+    const response = await apiClient.post<ApiResponse<{
+      document_id: string;
+      file_key: string;
+      upload_id: string;
+      part_size_bytes: number;
+      total_parts: number;
+      part_urls: { part_number: number; url: string }[];
+      folder_name: string;
+    }>>('/upload/presign-multipart', {
+      filename,
+      folder_name: folderName,
+      content_type: contentType,
+      file_size_bytes: fileSizeBytes,
+    });
+    return response.data.data;
+  },
+
+  // Step 2: every part uploaded — finalize the S3 object and dispatch ingestion.
+  completeMultipartUpload: async (params: {
+    document_id: string;
+    file_key: string;
+    upload_id: string;
+    filename: string;
+    folder_name: string;
+    content_type?: string;
+    file_size_mb?: number;
+    parts: { part_number: number; etag: string }[];
+  }): Promise<{ document_id: string; task_id: string; status: string }> => {
+    const response = await apiClient.post<ApiResponse<{
+      document_id: string;
+      task_id: string;
+      status: string;
+    }>>('/upload/complete-multipart', params);
+    return response.data.data;
+  },
+
+  // Cleanup: a part failed past all retries — release the S3 session and
+  // mark the doc failed instead of leaving it stuck on "processing".
+  abortMultipartUpload: async (params: {
+    document_id: string;
+    file_key: string;
+    upload_id: string;
+  }): Promise<void> => {
+    await apiClient.post('/upload/abort-multipart', params);
+  },
+
+  // Legacy path: file bytes go through the backend (base64 into Celery).
+  // Kept for now in case anything else still calls it; the sidebar upload
+  // flow uses presignUpload + confirmUpload instead.
   uploadDocuments: async (files: File[], folderName: string): Promise<{ task_id: string; status: string; total_files: number }> => {
     if (!folderName || !folderName.trim()) {
       throw new Error('Folder name is required');

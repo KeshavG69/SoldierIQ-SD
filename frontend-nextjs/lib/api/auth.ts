@@ -11,7 +11,7 @@ export interface User {
   roles: string[];
   organization_id?: string;
   organization_name?: string;
-  role?: 'admin' | 'user' | string;  // role in the active organization
+  role?: 'admin' | 'system_owner' | 'user' | string;  // role in the active organization
 }
 
 export interface LoginCredentials {

@@ -24,7 +24,7 @@ export interface AcceptInvitationPayload {
 
 export const invitationsApi = {
   // --- admin ---
-  send: async (email: string, role: 'admin' | 'user') => {
+  send: async (email: string, role: 'admin' | 'system_owner' | 'user') => {
     const res = await apiClient.post('/invitations', { email, role });
     return res.data as { invitation_id: string; accept_url: string; email: string; role: string; emailed: boolean };
   },

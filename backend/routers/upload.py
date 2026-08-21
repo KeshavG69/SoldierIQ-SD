@@ -3,27 +3,328 @@ Upload Router - Document ingestion endpoints
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status
 from pydantic import BaseModel
 import base64
+import math
 import uuid
 from services.ingestion_service import get_ingestion_service
 from clients.youtube_downloader import get_youtube_downloader
-from tasks.ingestion_tasks import process_document_ids_task, process_youtube_document_task
+from clients.idrivee2_client import get_idrivee2_client
+from tasks.ingestion_tasks import process_document_ids_task, process_youtube_document_task, process_uploaded_file_task
 from app.logger import logger
 from auth.keycloak_auth import get_current_user_keycloak
-from orgs.dependencies import get_current_context, require_org_admin  # ingestion=admin, reads=member
-from clients.kg.rbac import RBACManager  # per-document access filtering
+from orgs.dependencies import get_current_context, require_uploader  # ingestion=admin/system_owner, reads=everyone
 from utils.file_utils import sanitize_filename, get_file_size_mb,get_file_extension
 
 router = APIRouter(prefix="/upload", tags=["upload"])
+
+
+class PresignUploadRequest(BaseModel):
+    """Request a presigned iDrive PUT URL for one file, before any bytes move."""
+    filename: str
+    folder_name: str
+    content_type: Optional[str] = None
+
+
+@router.post("/presign")
+async def presign_upload(
+    payload: PresignUploadRequest,
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
+):
+    """
+    Step 1 of the direct-to-iDrive upload flow: create the document record
+    (status="processing") and hand back a presigned URL the BROWSER uploads
+    to directly — the backend never touches the file bytes. This is what
+    fixes large-video upload timeouts: the old path read the whole file into
+    backend memory, base64-encoded it, and pushed that blob through Celery/
+    Redis, all before the HTTP response could return.
+    """
+    user_id = current_user.get("id")
+    organization_id = current_user.get("organization_id")
+
+    if not payload.filename or not payload.filename.strip():
+        raise HTTPException(status_code=400, detail="Filename is required")
+    if not payload.folder_name or not payload.folder_name.strip():
+        raise HTTPException(status_code=400, detail="Folder name is required")
+    if not organization_id:
+        raise HTTPException(status_code=400, detail="User must belong to an organization")
+
+    folder_name = payload.folder_name.strip()
+    document_id = str(uuid.uuid4())
+    extension = get_file_extension(payload.filename)
+    file_key = f"{organization_id}/{folder_name}/{document_id}{extension}"
+
+    ingestion_service = get_ingestion_service()
+    await ingestion_service._create_document_with_status(
+        file_name=payload.filename,
+        folder_name=folder_name,
+        file_key=file_key,
+        file_size_mb=0,  # unknown until the direct upload finishes
+        user_id=user_id,
+        organization_id=organization_id,
+        additional_metadata={"id": document_id},
+    )
+
+    upload_url = await get_idrivee2_client().generate_presigned_put_url(file_key)
+
+    logger.info(f"🔑 Presigned upload for {payload.filename} -> {file_key}")
+
+    return {
+        "success": True,
+        "data": {
+            "document_id": document_id,
+            "file_key": file_key,
+            "upload_url": upload_url,
+            "folder_name": folder_name,
+        },
+    }
+
+
+class ConfirmUploadRequest(BaseModel):
+    """Sent once the browser's direct PUT to iDrive finishes."""
+    document_id: str
+    file_key: str
+    filename: str
+    folder_name: str
+    content_type: Optional[str] = None
+    file_size_mb: Optional[float] = None
+
+
+@router.post("/confirm")
+async def confirm_upload(
+    payload: ConfirmUploadRequest,
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
+):
+    """
+    Step 2 of the direct-to-iDrive upload flow: the browser already PUT the
+    bytes to iDrive itself, so this just dispatches the Celery task to
+    download-and-ingest — no file content passes through this request.
+    """
+    user_id = current_user.get("id")
+    organization_id = current_user.get("organization_id")
+
+    if not organization_id:
+        raise HTTPException(status_code=400, detail="User must belong to an organization")
+
+    task = process_uploaded_file_task.delay(
+        document_id=payload.document_id,
+        file_key=payload.file_key,
+        filename=payload.filename,
+        content_type=payload.content_type or "application/octet-stream",
+        folder_name=payload.folder_name,
+        user_id=user_id,
+        organization_id=organization_id,
+    )
+
+    logger.info(f"✅ Upload confirmed, dispatched Celery task {task.id} for {payload.filename}")
+
+    return {
+        "success": True,
+        "data": {
+            "document_id": payload.document_id,
+            "task_id": task.id,
+            "status": "processing",
+        },
+    }
+
+
+# Each part costs ~20MB to re-send on failure instead of the whole file —
+# big enough to keep part counts sane for multi-GB videos, small enough that
+# a single flaky part doesn't waste much on retry.
+MULTIPART_PART_SIZE_BYTES = 20 * 1024 * 1024
+
+
+class PresignMultipartRequest(BaseModel):
+    """Request a multipart upload session for one (large) file."""
+    filename: str
+    folder_name: str
+    content_type: Optional[str] = None
+    file_size_bytes: int
+
+
+@router.post("/presign-multipart")
+async def presign_multipart_upload(
+    payload: PresignMultipartRequest,
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
+):
+    """
+    Step 1 of the multipart direct-to-iDrive flow: create the document
+    record, start an S3 multipart upload session, and hand back one
+    presigned PUT URL per part. The browser uploads each part directly to
+    iDrive with its own retry — a single failed part only costs re-sending
+    that part, not the whole file (unlike the single-PUT flow, which loses
+    everything on any interruption for a large video).
+    """
+    user_id = current_user.get("id")
+    organization_id = current_user.get("organization_id")
+
+    if not payload.filename or not payload.filename.strip():
+        raise HTTPException(status_code=400, detail="Filename is required")
+    if not payload.folder_name or not payload.folder_name.strip():
+        raise HTTPException(status_code=400, detail="Folder name is required")
+    if not organization_id:
+        raise HTTPException(status_code=400, detail="User must belong to an organization")
+    if payload.file_size_bytes <= 0:
+        raise HTTPException(status_code=400, detail="file_size_bytes must be positive")
+
+    folder_name = payload.folder_name.strip()
+    document_id = str(uuid.uuid4())
+    extension = get_file_extension(payload.filename)
+    file_key = f"{organization_id}/{folder_name}/{document_id}{extension}"
+
+    ingestion_service = get_ingestion_service()
+    await ingestion_service._create_document_with_status(
+        file_name=payload.filename,
+        folder_name=folder_name,
+        file_key=file_key,
+        file_size_mb=payload.file_size_bytes / (1024 * 1024),
+        user_id=user_id,
+        organization_id=organization_id,
+        additional_metadata={"id": document_id},
+    )
+
+    idrive = get_idrivee2_client()
+    upload_id = await idrive.create_multipart_upload(file_key, content_type=payload.content_type)
+
+    total_parts = max(1, math.ceil(payload.file_size_bytes / MULTIPART_PART_SIZE_BYTES))
+    part_urls = [
+        {
+            "part_number": part_number,
+            "url": await idrive.generate_presigned_part_url(file_key, upload_id, part_number),
+        }
+        for part_number in range(1, total_parts + 1)
+    ]
+
+    logger.info(
+        f"🔑 Multipart presign for {payload.filename} -> {file_key} "
+        f"({total_parts} parts, upload_id={upload_id[:12]}…)"
+    )
+
+    return {
+        "success": True,
+        "data": {
+            "document_id": document_id,
+            "file_key": file_key,
+            "upload_id": upload_id,
+            "part_size_bytes": MULTIPART_PART_SIZE_BYTES,
+            "total_parts": total_parts,
+            "part_urls": part_urls,
+            "folder_name": folder_name,
+        },
+    }
+
+
+class MultipartPart(BaseModel):
+    part_number: int
+    etag: str
+
+
+class CompleteMultipartRequest(BaseModel):
+    """Sent once every part has uploaded successfully."""
+    document_id: str
+    file_key: str
+    upload_id: str
+    filename: str
+    folder_name: str
+    content_type: Optional[str] = None
+    file_size_mb: Optional[float] = None
+    parts: List[MultipartPart]
+
+
+@router.post("/complete-multipart")
+async def complete_multipart_upload_endpoint(
+    payload: CompleteMultipartRequest,
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
+):
+    """
+    Step 2: finalize the S3 multipart upload (stitches the parts together
+    into one object) and dispatch ingestion — same as the single-PUT confirm
+    endpoint from here on.
+    """
+    user_id = current_user.get("id")
+    organization_id = current_user.get("organization_id")
+
+    if not organization_id:
+        raise HTTPException(status_code=400, detail="User must belong to an organization")
+    if not payload.parts:
+        raise HTTPException(status_code=400, detail="No parts provided")
+
+    idrive = get_idrivee2_client()
+    try:
+        await idrive.complete_multipart_upload(
+            payload.file_key,
+            payload.upload_id,
+            [{"PartNumber": p.part_number, "ETag": p.etag} for p in payload.parts],
+        )
+    except Exception as e:
+        logger.error(f"❌ Failed to complete multipart upload for {payload.filename}: {e}")
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"Could not finalize upload: {e}")
+
+    task = process_uploaded_file_task.delay(
+        document_id=payload.document_id,
+        file_key=payload.file_key,
+        filename=payload.filename,
+        content_type=payload.content_type or "application/octet-stream",
+        folder_name=payload.folder_name,
+        user_id=user_id,
+        organization_id=organization_id,
+    )
+
+    logger.info(f"✅ Multipart upload completed, dispatched Celery task {task.id} for {payload.filename}")
+
+    return {
+        "success": True,
+        "data": {
+            "document_id": payload.document_id,
+            "task_id": task.id,
+            "status": "processing",
+        },
+    }
+
+
+class AbortMultipartRequest(BaseModel):
+    """Sent if a part fails past all retries — cleans up the orphaned S3
+    session and marks the document failed instead of leaving it stuck on
+    'processing' forever."""
+    document_id: str
+    file_key: str
+    upload_id: str
+
+
+@router.post("/abort-multipart")
+async def abort_multipart_upload_endpoint(
+    payload: AbortMultipartRequest,
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
+):
+    idrive = get_idrivee2_client()
+    try:
+        await idrive.abort_multipart_upload(payload.file_key, payload.upload_id)
+    except Exception as e:
+        logger.warning(f"⚠️ Abort multipart cleanup warning: {e}")
+
+    ingestion_service = get_ingestion_service()
+    try:
+        await ingestion_service._update_document_status(
+            document_id=payload.document_id,
+            status="failed",
+            stage="failed",
+            stage_description="Upload failed after retries — please try again",
+            error="Multipart upload aborted by client after part upload failures",
+            organization_id=current_user.get("organization_id"),
+            user_id=current_user.get("id"),
+        )
+    except Exception as e:
+        logger.warning(f"⚠️ Could not mark document failed after abort: {e}")
+
+    return {"success": True, "message": "Upload aborted"}
 
 
 @router.post("/documents")
 async def upload_documents(
     files: List[UploadFile] = File(..., description="Multiple files to upload"),
     folder_name: str = Form(..., description="Folder name for organization"),
-    current_user: dict = Depends(require_org_admin)  # ingestion = admin only
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
 ):
     """
     Upload multiple documents for ingestion (Celery background processing)
@@ -150,7 +451,7 @@ class YouTubeIngestionRequest(BaseModel):
 @router.post("/youtube")
 async def ingest_youtube_video(
     request: YouTubeIngestionRequest,
-    current_user: dict = Depends(require_org_admin)  # ingestion = admin only
+    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner
 ):
     """
     Ingest YouTube video by URL (Celery background processing)
@@ -331,15 +632,8 @@ async def list_documents(
             skip=skip
         )
 
-        # Per-document RBAC: members see only documents granted to them; admins
-        # (who manage the org) see all documents in the org.
-        if current_user.get("role") != "admin":
-            allowed = set(
-                await RBACManager(current_user["organization_id"]).accessible_document_ids(
-                    current_user.get("email") or ""
-                )
-            )
-            documents = [d for d in documents if str(d.get("id")) in allowed]
+        # Every org member (Admin, System Owner, or User) sees every document
+        # in the org — no per-document access filtering.
 
         return {
             "success": True,
@@ -356,7 +650,7 @@ async def list_documents(
 async def delete_document(
     document_id: str,
     delete_from_storage: bool = True,
-    current_user: dict = Depends(require_org_admin)  # write = admin only
+    current_user: dict = Depends(require_uploader)  # write = admin/system_owner
 ):
     """
     Delete document and its chunks from all systems (PostgreSQL, pgvector, Apache AGE, iDrive E2)
@@ -440,7 +734,7 @@ async def delete_folder(
     user_id: Optional[str] = None,
     organization_id: Optional[str] = None,
     delete_from_storage: bool = True,
-    current_user: dict = Depends(require_org_admin)  # write = admin only
+    current_user: dict = Depends(require_uploader)  # write = admin/system_owner
 ):
     """
     Delete entire folder and all its documents from all systems
@@ -481,7 +775,7 @@ async def rename_folder(
     new_folder_name: str = Form(..., description="New folder name"),
     user_id: Optional[str] = Form(None, description="Optional user ID"),
     organization_id: Optional[str] = Form(None, description="Optional organization ID"),
-    current_user: dict = Depends(require_org_admin)  # write = admin only
+    current_user: dict = Depends(require_uploader)  # write = admin/system_owner
 ):
     """
     Rename folder in PostgreSQL

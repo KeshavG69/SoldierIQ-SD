@@ -40,6 +40,14 @@ ADMIN_ORG_ROLES = [
 ]
 ADMIN_ROLE_SIGNAL = "manage-organization"
 
+# Custom org role marking a "System Owner": can upload/ingest documents and
+# sees everything in the org (like an admin), but holds none of the
+# manage-* org-management roles above (can't remove members, change roles,
+# or manage the org itself). Created per-org on first use (see
+# ensure_org_role) since keycloak-orgs custom roles must exist before being
+# granted.
+SYSTEM_OWNER_ROLE = "system-owner"
+
 
 class KeycloakOrgsError(Exception):
     """Raised when the keycloak-orgs API returns an error status."""
@@ -208,6 +216,15 @@ class KeycloakOrgsClient:
     async def get_user_org_roles(self, user_id: str, org_id: str) -> List[dict]:
         return (await self._admin("GET", f"/users/{user_id}/orgs/{org_id}/roles")).json()
 
+    async def ensure_org_role(self, org_id: str, name: str, description: str = "") -> None:
+        """Create a custom org role if it doesn't already exist (idempotent).
+        keycloak-orgs custom roles must exist before they can be granted."""
+        try:
+            await self._admin("POST", f"/orgs/{org_id}/roles", json={"name": name, "description": description})
+        except KeycloakOrgsError as e:
+            if e.status_code != 409:  # 409 = already exists, which is fine
+                raise
+
     async def make_admin(self, org_id: str, user_id: str) -> None:
         """Grant the full manage-* role set (best-effort per role)."""
         for role in ADMIN_ORG_ROLES:
@@ -216,14 +233,38 @@ class KeycloakOrgsClient:
             except KeycloakOrgsError as e:
                 # Some role names can vary by version; don't fail the whole op.
                 logger.warning(f"[orgs] grant {role} on {org_id} -> {e.status_code}")
+        try:
+            await self.revoke_org_role(org_id, SYSTEM_OWNER_ROLE, user_id)
+        except KeycloakOrgsError:
+            pass  # wasn't a System Owner; nothing to revoke
+
+    async def make_system_owner(self, org_id: str, user_id: str) -> None:
+        """Grant System Owner: can upload + sees everything, no org management."""
+        await self.ensure_org_role(
+            org_id, SYSTEM_OWNER_ROLE, "Can upload documents and see all organization documents"
+        )
+        try:
+            await self.grant_org_role(org_id, SYSTEM_OWNER_ROLE, user_id)
+        except KeycloakOrgsError as e:
+            logger.warning(f"[orgs] grant {SYSTEM_OWNER_ROLE} on {org_id} -> {e.status_code}")
+        # In case they were previously an admin, drop the manage-* roles.
+        for role in [r for r in ADMIN_ORG_ROLES if r.startswith("manage-")]:
+            try:
+                await self.revoke_org_role(org_id, role, user_id)
+            except KeycloakOrgsError:
+                pass
 
     async def make_member(self, org_id: str, user_id: str) -> None:
-        """Demote to plain member: revoke the manage-* roles (keeps view-*)."""
+        """Demote to plain member ('user'): revoke manage-* roles AND System Owner."""
         for role in [r for r in ADMIN_ORG_ROLES if r.startswith("manage-")]:
             try:
                 await self.revoke_org_role(org_id, role, user_id)
             except KeycloakOrgsError as e:
                 logger.warning(f"[orgs] revoke {role} on {org_id} -> {e.status_code}")
+        try:
+            await self.revoke_org_role(org_id, SYSTEM_OWNER_ROLE, user_id)
+        except KeycloakOrgsError:
+            pass
 
     # ---------------------------------------------------------- invitations
     async def create_invitation(

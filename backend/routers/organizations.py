@@ -9,15 +9,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from typing import Dict, List
 
-from orgs.dependencies import get_current_context, require_org_admin
-from orgs.keycloak_orgs import get_orgs_client, KeycloakOrgsError, ADMIN_ROLE_SIGNAL
+from orgs.dependencies import get_current_context, require_org_admin, _resolve_role
+from orgs.keycloak_orgs import get_orgs_client, KeycloakOrgsError, ADMIN_ROLE_SIGNAL, SYSTEM_OWNER_ROLE
 from app.logger import logger
 
 router = APIRouter(prefix="/organizations", tags=["organizations"])
 
 
 class RoleChange(BaseModel):
-    role: str  # "admin" | "user"
+    role: str  # "admin" | "system_owner" | "user"
 
 
 @router.get("/me")
@@ -52,7 +52,7 @@ async def list_members(context: dict = Depends(get_current_context)):
         role = "user"
         try:
             names = [r.get("name") for r in await orgs.get_user_org_roles(uid, org_id)]
-            role = "admin" if ADMIN_ROLE_SIGNAL in names else "user"
+            role = _resolve_role(names)
         except KeycloakOrgsError:
             pass
         result.append({
@@ -81,8 +81,8 @@ async def remove_member(user_id: str, context: dict = Depends(require_org_admin)
 
 @router.post("/members/{user_id}/role")
 async def change_member_role(user_id: str, payload: RoleChange, context: dict = Depends(require_org_admin)):
-    if payload.role not in ("admin", "user"):
-        raise HTTPException(status_code=400, detail="role must be 'admin' or 'user'")
+    if payload.role not in ("admin", "system_owner", "user"):
+        raise HTTPException(status_code=400, detail="role must be 'admin', 'system_owner', or 'user'")
     if user_id == context["id"]:
         raise HTTPException(status_code=400, detail="You cannot change your own role")
     orgs = get_orgs_client()
@@ -90,6 +90,8 @@ async def change_member_role(user_id: str, payload: RoleChange, context: dict = 
     try:
         if payload.role == "admin":
             await orgs.make_admin(org_id, user_id)
+        elif payload.role == "system_owner":
+            await orgs.make_system_owner(org_id, user_id)
         else:
             await orgs.make_member(org_id, user_id)
     except KeycloakOrgsError as e:

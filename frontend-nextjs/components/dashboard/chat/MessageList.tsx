@@ -9,12 +9,7 @@ import MessageBubble from "./MessageBubble";
 interface MessageListProps {
   messages: ChatMessage[];
   sourceUrls: Map<string, string>;
-  onCitationHover: (
-    index: number,
-    messageId: string,
-    x: number,
-    y: number
-  ) => void;
+  onCitationHover: (index: number, messageId: string, x: number, y: number) => void;
   onCitationLeave: () => void;
   onCitationClick: (source: DocumentSource, url: string | undefined) => void;
   onOpenGraph?: (message: ChatMessage) => void;

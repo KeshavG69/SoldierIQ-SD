@@ -60,7 +60,9 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
         user_id = current_user.get("id")
         organization_id = current_user.get("organization_id")
         user_email = current_user.get("email")
-        is_admin = current_user.get("role") == "admin"
+        # Every org role (Admin, System Owner, User) can query every document
+        # in the org now — no per-document RBAC pre-filter on search.
+        is_admin = True
 
         # Validate input
         if not request.message or request.message.strip() == "":

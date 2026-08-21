@@ -319,10 +319,14 @@ class PostgresClient:
                 params.append(value)
             param_index += 1
 
-        # Add updated_at
-        set_clauses.append(f"updated_at = ${param_index}")
-        params.append(datetime.utcnow())
-        param_index += 1
+        # Always stamp updated_at — but only if the caller didn't already
+        # include it in `updates` (several callers do). Appending it
+        # unconditionally would produce "multiple assignments to same column
+        # updated_at" and fail the whole UPDATE.
+        if "updated_at" not in updates:
+            set_clauses.append(f"updated_at = ${param_index}")
+            params.append(datetime.utcnow())
+            param_index += 1
 
         # Add WHERE conditions
         params.extend([

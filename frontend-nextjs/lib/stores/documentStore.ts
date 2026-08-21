@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Document, KnowledgeBase } from '@/types';
 import { documentsApi } from '../api/documents';
+import { compressVideoForUpload } from '../video/compressVideo';
+import { uploadFileMultipart } from '../upload/uploadFileMultipart';
 
 // LocalStorage helpers
 const STORAGE_KEY_SELECTED_KB = 'soldieriq_selected_kb';
@@ -270,26 +272,37 @@ export const useDocumentStore = create<DocumentState>()(
         updated_at: new Date().toISOString(),
         status: 'processing' as const,
         processing_stage: 'uploading',
-        processing_stage_description: 'Uploading file to server...',
+        processing_stage_description: 'Uploading file...',
       }));
 
       // Add placeholders to existing documents (don't replace)
       set({ documents: [...placeholderDocs, ...existingDocs] });
 
-      // Upload files - backend creates real documents and starts ingestion
-      await documentsApi.uploadDocuments(files, folderName);
+      // Direct-to-iDrive multipart upload, one file at a time: split into
+      // ~20MB parts, each uploaded straight to iDrive with its own retry —
+      // a single flaky part only costs re-sending that part, not the whole
+      // file (a single unresumable PUT was silently stalling forever on
+      // any interruption for large videos).
+      const uploadedDocIds: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        set({ uploadProgress: { current: i, total: files.length } });
 
-      // Fetch documents to get the real IDs from backend
+        // Videos get downscaled to 480p client-side first (WebCodecs, via
+        // mediabunny) — the ingestion pipeline only needs clear audio +
+        // rough frames, not source resolution, and a smaller file uploads
+        // faster and processes faster. Falls back to the original file
+        // untouched if compression isn't supported or fails.
+        const file = await compressVideoForUpload(files[i]);
+
+        const { document_id } = await uploadFileMultipart(file, folderName);
+        uploadedDocIds.push(document_id);
+      }
+
+      set({ uploadProgress: { current: files.length, total: files.length } });
+
+      // Fetch documents to replace the temp placeholders with real rows
       await get().fetchDocuments();
       await get().fetchKnowledgeBases();
-
-      // Get the real document IDs for the files we just uploaded
-      const uploadedDocs = get().documents.filter(
-        d => d.folder_name === folderName &&
-             d.status === 'processing' &&
-             !d.id.startsWith('temp_') // Real IDs from backend
-      );
-      const uploadedDocIds = uploadedDocs.map(d => d.id);
 
       if (uploadedDocIds.length === 0) {
         // No processing documents found, might already be completed

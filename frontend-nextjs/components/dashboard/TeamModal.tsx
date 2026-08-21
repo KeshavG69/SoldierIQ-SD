@@ -9,15 +9,22 @@ import { Z_INDEX } from "@/lib/constants/zIndex";
 const inputCls =
   "px-3 py-2 rounded-lg bg-surface-2 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all";
 
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Admin",
+  system_owner: "System Owner",
+  user: "User",
+};
+
 function RoleBadge({ role }: { role: string }) {
-  const admin = role === "admin";
+  const cls =
+    role === "admin"
+      ? "bg-brand/15 text-brand"
+      : role === "system_owner"
+        ? "bg-blue-500/15 text-blue-500"
+        : "bg-secondary text-muted-foreground";
   return (
-    <span
-      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${
-        admin ? "bg-brand/15 text-brand" : "bg-secondary text-muted-foreground"
-      }`}
-    >
-      {role}
+    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide ${cls}`}>
+      {ROLE_LABEL[role] || role}
     </span>
   );
 }
@@ -25,6 +32,12 @@ function RoleBadge({ role }: { role: string }) {
 export default function TeamModal({ onClose }: { onClose: () => void }) {
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "admin";
+  const isSystemOwner = user?.role === "system_owner";
+  // Admin invites anyone; System Owner may only invite plain Users.
+  const canInvite = isAdmin || isSystemOwner;
+  const invitableRoles: Array<"admin" | "system_owner" | "user"> = isAdmin
+    ? ["user", "system_owner", "admin"]
+    : ["user"];
 
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [invites, setInvites] = useState<OrgInvitation[]>([]);
@@ -33,7 +46,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"admin" | "user">("user");
+  const [inviteRole, setInviteRole] = useState<"admin" | "system_owner" | "user">("user");
   const [sending, setSending] = useState(false);
   const [lastLink, setLastLink] = useState<string | null>(null);
   const [lastEmailed, setLastEmailed] = useState(false);
@@ -100,7 +113,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleRole = async (m: OrgMember, role: "admin" | "user") => {
+  const handleRole = async (m: OrgMember, role: "admin" | "system_owner" | "user") => {
     setBusy(m.user_id);
     try {
       await organizationsApi.changeMemberRole(m.user_id, role);
@@ -148,8 +161,8 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
           <div className="overflow-y-auto p-6 space-y-6">
             {error && <p className="text-xs text-red-500">{error}</p>}
 
-            {/* Invite (admin only) */}
-            {isAdmin && (
+            {/* Invite (Admin or System Owner; System Owner may only invite Users) */}
+            {canInvite && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Invite a teammate</h3>
                 <form onSubmit={handleInvite} className="flex gap-2">
@@ -163,10 +176,13 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
                   <select
                     className={inputCls}
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as "admin" | "user")}
+                    onChange={(e) => setInviteRole(e.target.value as "admin" | "system_owner" | "user")}
                   >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
+                    {invitableRoles.map((r) => (
+                      <option key={r} value={r}>
+                        {ROLE_LABEL[r]}
+                      </option>
+                    ))}
                   </select>
                   <button
                     type="submit"
@@ -232,13 +248,16 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
                       <RoleBadge role={m.role} />
                       {isAdmin && !m.is_self && (
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleRole(m, m.role === "admin" ? "user" : "admin")}
+                          <select
+                            value={m.role}
                             disabled={busy === m.user_id}
-                            className="text-[11px] font-medium text-muted-foreground hover:text-brand px-1.5 py-1 rounded transition-colors"
+                            onChange={(e) => handleRole(m, e.target.value as "admin" | "system_owner" | "user")}
+                            className="text-[11px] font-medium bg-transparent border border-border rounded px-1.5 py-1 text-muted-foreground hover:text-foreground focus:outline-none focus:border-brand/60 transition-colors disabled:opacity-60"
                           >
-                            {m.role === "admin" ? "Make user" : "Make admin"}
-                          </button>
+                            <option value="user">User</option>
+                            <option value="system_owner">System Owner</option>
+                            <option value="admin">Admin</option>
+                          </select>
                           <button
                             onClick={() => handleRemove(m)}
                             disabled={busy === m.user_id}

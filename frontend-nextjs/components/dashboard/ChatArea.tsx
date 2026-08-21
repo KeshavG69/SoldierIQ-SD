@@ -28,6 +28,7 @@ export default function ChatArea() {
     setInputMessage,
     addMessage,
     updateLastMessage,
+    endStreaming,
     setLoading,
     setTAKCredentials,
     setTAKEnabled,
@@ -238,6 +239,7 @@ export default function ChatArea() {
         role: "assistant",
         content: "",
         timestamp: new Date().toISOString(),
+        isStreaming: true,
       });
 
       setLoading(true);
@@ -426,6 +428,7 @@ export default function ChatArea() {
           `Sorry, an error occurred: ${error.message || "Please try again."}`
         );
       } finally {
+        endStreaming();
         setLoading(false);
       }
     },
@@ -442,6 +445,7 @@ export default function ChatArea() {
       takEnabled,
       takCredentials,
       updateLastMessage,
+      endStreaming,
     ]
   );
 

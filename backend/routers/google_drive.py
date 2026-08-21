@@ -32,7 +32,7 @@ from pydantic import BaseModel, Field
 from app.logger import logger
 from app.settings import settings
 from auth.keycloak_auth import get_current_user_keycloak
-from orgs.dependencies import require_org_admin  # ingestion = admin only
+from orgs.dependencies import require_uploader  # ingestion = admin/system_owner
 from clients.google_drive_client import (
     GoogleDriveClient,
     GoogleDriveError,
@@ -89,7 +89,7 @@ def _consume_state(state: str) -> Optional[Dict[str, Any]]:
 @router.get("/connect")
 async def connect(
     folder_name: str = "Google Drive",
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, str]:
     """Return the Google consent URL the user should be redirected to.
 
@@ -261,7 +261,7 @@ def _oauth_result_response(*, success: bool, email: str = "", message: str = "")
 
 @router.get("/status")
 async def status_endpoint(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     user_id = current_user.get("id")
     organization_id = current_user.get("organization_id")
@@ -304,7 +304,7 @@ class DriveIngestRequest(BaseModel):
 @router.post("/ingest")
 async def ingest(
     body: DriveIngestRequest,
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Queue one Celery task per picked file. Returns the doc ids it created.
 
@@ -384,7 +384,7 @@ async def list_files_paged(
     page_token: Optional[str] = None,
     page_size: int = 50,
     search: Optional[str] = None,
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Paginated file list for the in-app file picker.
 
@@ -416,7 +416,7 @@ async def list_files_paged(
 
 @router.get("/folders")
 async def list_folders(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Return every folder in the user's Drive (with computed paths).
 
@@ -450,7 +450,7 @@ class IngestFoldersRequest(BaseModel):
 @router.post("/ingest-folders")
 async def ingest_folders(
     body: IngestFoldersRequest,
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Ingest every supported file under the selected Drive folders.
 
@@ -491,7 +491,7 @@ async def ingest_folders(
 @router.post("/sync")
 async def sync(
     folder_name: str = "Google Drive",
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     """Re-run discovery for an already-connected user.
 
@@ -520,7 +520,7 @@ async def sync(
 
 @router.delete("/disconnect")
 async def disconnect(
-    current_user: dict = Depends(require_org_admin),
+    current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
     user_id = current_user.get("id")
     organization_id = current_user.get("organization_id")

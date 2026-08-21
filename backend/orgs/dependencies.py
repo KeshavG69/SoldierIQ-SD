@@ -15,7 +15,7 @@ from fastapi import Depends, HTTPException, status
 from typing import Dict, List, Any
 
 from auth.keycloak_auth import get_current_user_keycloak
-from orgs.keycloak_orgs import get_orgs_client, ADMIN_ROLE_SIGNAL
+from orgs.keycloak_orgs import get_orgs_client, ADMIN_ROLE_SIGNAL, SYSTEM_OWNER_ROLE
 from app.logger import logger
 
 
@@ -29,6 +29,15 @@ def _as_list(value: Any) -> List[str]:
     return []
 
 
+def _resolve_role(org_roles: List[str]) -> str:
+    """admin (manage-organization) > system_owner (custom role) > user."""
+    if ADMIN_ROLE_SIGNAL in org_roles:
+        return "admin"
+    if SYSTEM_OWNER_ROLE in org_roles:
+        return "system_owner"
+    return "user"
+
+
 async def get_current_context(
     current_user: Dict = Depends(get_current_user_keycloak),
 ) -> Dict:
@@ -37,7 +46,7 @@ async def get_current_context(
     Sets on the returned dict:
     - organization_id   : active org id (namespaces the FalkorDB graph)
     - organization_name : active org display name
-    - role              : "admin" | "user" (admin == holds manage-organization)
+    - role              : "admin" | "system_owner" | "user"
     - org_roles         : raw org-role names for the active org
     """
     user_id = current_user.get("id")
@@ -75,7 +84,7 @@ async def get_current_context(
 
     current_user["organization_id"] = org_id
     current_user["organization_name"] = org_name
-    current_user["role"] = "admin" if ADMIN_ROLE_SIGNAL in org_roles else "user"
+    current_user["role"] = _resolve_role(org_roles)
     current_user["org_roles"] = org_roles
     return current_user
 
@@ -86,5 +95,17 @@ async def require_org_admin(context: Dict = Depends(get_current_context)) -> Dic
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required for this organization",
+        )
+    return context
+
+
+async def require_uploader(context: Dict = Depends(get_current_context)) -> Dict:
+    """Require the caller to be an Admin or System Owner (can ingest documents).
+    Plain Users are read-only: they can view/query but not upload or manage
+    documents/folders."""
+    if context.get("role") not in ("admin", "system_owner"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin or System Owner privileges required to upload documents",
         )
     return context

@@ -161,7 +161,8 @@ class IngestionService:
         folder_name: str,
         user_id: str = None,
         organization_id: str = None,
-        additional_metadata: Dict[str, Any] = None
+        additional_metadata: Dict[str, Any] = None,
+        already_in_storage: bool = False,
     ) -> Dict[str, Any]:
         """
         Async document processing - all database operations in single event loop
@@ -183,7 +184,7 @@ class IngestionService:
 
         try:
             # Step 1: Update status and set file_key
-            logger.info(f"🚀 Starting processing: Upload to E2 + Content extraction for {filename}")
+            logger.info(f"🚀 Starting processing for {filename}")
             await self.postgres_client.update_document(
                 organization_id=organization_id,
                 user_id=user_id,
@@ -191,23 +192,21 @@ class IngestionService:
                 updates={
                     "file_key": file_key,  # Set the file_key now
                     "processing_stage": "uploading_extracting",
-                    "processing_stage_description": "Uploading to storage and extracting content"
+                    "processing_stage_description": "Extracting content"
                 }
             )
 
-            # Step 2+3: Upload to E2 and extract content IN PARALLEL
-            # These are independent — both only read file_content bytes
-            async def _upload_to_e2():
-                loop = asyncio.get_event_loop()
-                await loop.run_in_executor(
-                    None,
-                    lambda: self.idrivee2_client.upload_file_sync(
-                        file_obj=io.BytesIO(file_content),
-                        object_name=file_key,
-                        content_type=content_type
-                    )
-                )
-
+            # Step 2+3: (optionally) store to iDrive + extract content IN PARALLEL.
+            #
+            # already_in_storage=True (direct browser upload path): the file is
+            # ALREADY in iDrive — the browser uploaded it there directly
+            # (presign/multipart) and this worker just downloaded it from that
+            # exact file_key. Re-uploading the same bytes to the same key is
+            # pure redundant work, so we skip it.
+            #
+            # already_in_storage=False (Google Drive / SharePoint): the file
+            # was pulled from an external source and is NOT in iDrive yet, so
+            # this upload is what actually stores it.
             async def _extract_content():
                 loop = asyncio.get_event_loop()
                 return await loop.run_in_executor(
@@ -215,8 +214,23 @@ class IngestionService:
                     lambda: extract_raw_data(file_content, filename, folder_name, self.unstructured_client)
                 )
 
-            _, raw_content = await asyncio.gather(_upload_to_e2(), _extract_content())
-            logger.info(f"✅ Upload and extraction complete (parallel) for {filename}")
+            if already_in_storage:
+                raw_content = await _extract_content()
+                logger.info(f"✅ Extraction complete (already in storage) for {filename}")
+            else:
+                async def _upload_to_e2():
+                    loop = asyncio.get_event_loop()
+                    await loop.run_in_executor(
+                        None,
+                        lambda: self.idrivee2_client.upload_file_sync(
+                            file_obj=io.BytesIO(file_content),
+                            object_name=file_key,
+                            content_type=content_type
+                        )
+                    )
+
+                _, raw_content = await asyncio.gather(_upload_to_e2(), _extract_content())
+                logger.info(f"✅ Upload and extraction complete (parallel) for {filename}")
 
             # Check if video
             is_video = isinstance(raw_content, dict) and raw_content.get('type') == 'video'

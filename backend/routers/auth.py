@@ -10,7 +10,7 @@ import uuid
 
 # Keycloak Authentication imports
 from auth.keycloak_auth import get_current_user_keycloak, get_keycloak_client, get_keycloak_admin
-from orgs.keycloak_orgs import get_orgs_client, KeycloakOrgsError
+from orgs.keycloak_orgs import get_orgs_client, KeycloakOrgsError, SYSTEM_OWNER_ROLE
 from orgs.dependencies import get_current_context
 from app.logger import logger
 
@@ -70,7 +70,7 @@ class UserInfoResponse(BaseModel):
     roles: list[str] = []
     organization_id: Optional[str] = None
     organization_name: Optional[str] = None
-    role: Optional[str] = None  # role in the active org: "admin" | "user"
+    role: Optional[str] = None  # role in the active org: "admin" | "system_owner" | "user"
 
 
 # ==================== ENDPOINTS ====================
@@ -129,6 +129,11 @@ async def signup(user_data: SignupRequest):
         # 4. Add as member and grant admin (manage-organization)
         await orgs.add_member(org_id, user_id)
         await orgs.make_admin(org_id, user_id)
+        # Register the System Owner custom role up front so it's ready the
+        # moment this admin invites one or promotes a member.
+        await orgs.ensure_org_role(
+            org_id, SYSTEM_OWNER_ROLE, "Can upload documents and see all organization documents"
+        )
         logger.info(f"✅ Personal org {org_id} created; {user_data.username} is its admin")
 
     except KeycloakOrgsError as e:

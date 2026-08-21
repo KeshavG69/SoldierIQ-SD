@@ -43,7 +43,7 @@ export function useUploadDocument() {
         updated_at: new Date().toISOString(),
         status: 'processing' as const,
         processing_stage: 'uploading',
-        processing_stage_description: 'Uploading file to server...',
+        processing_stage_description: 'Uploading file...',
       }));
 
       // Optimistically prepend placeholders

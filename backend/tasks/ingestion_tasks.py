@@ -170,6 +170,112 @@ def process_single_document_task(
 
 
 @celery_app.task(bind=True)
+def process_uploaded_file_task(
+    self,
+    document_id: str,
+    file_key: str,
+    filename: str,
+    content_type: str,
+    folder_name: str,
+    user_id: str = None,
+    organization_id: str = None,
+) -> Dict[str, Any]:
+    """
+    Worker task — the browser PUT the file straight to iDrive E2 via a
+    presigned URL (the backend never touched the bytes). This task just
+    downloads it by file_key and runs the same ingestion pipeline as any
+    other source. Replaces the old base64-through-Celery path, which choked
+    on large files (huge task payloads through Redis, synchronous CPU-bound
+    base64 encode blocking the event loop, and long enough to blow past the
+    HTTP request timeout for videos).
+    """
+    from datetime import datetime
+    from services.ingestion_service import _run_in_worker_loop
+    from clients.idrivee2_client import get_idrivee2_client
+
+    ingestion_service = None
+    try:
+        logger.info(f"🚀 Worker processing uploaded file: {filename} (doc_id: {document_id})")
+
+        async def _download_then_ingest() -> Dict[str, Any]:
+            nonlocal ingestion_service
+            ingestion_service = IngestionService()
+
+            # The download happens BEFORE _process_single_document_async, so
+            # a failure here would otherwise never reach that method's own
+            # try/except — leaving the document stuck on status="processing"
+            # forever with no error shown. Mark it failed explicitly here.
+            try:
+                content = await get_idrivee2_client().download_file(file_key)
+            except Exception as e:
+                logger.error(f"❌ Could not download {filename} from iDrive ({file_key}): {e}")
+                await ingestion_service._update_document_status(
+                    document_id=document_id,
+                    status="failed",
+                    stage="failed",
+                    stage_description="Upload to storage did not complete — please try uploading again",
+                    error=str(e),
+                    failed_at=datetime.utcnow(),
+                    organization_id=organization_id,
+                    user_id=user_id,
+                )
+                raise
+
+            logger.info(
+                f"✅ Downloaded from iDrive: {filename} ({len(content) / (1024 * 1024):.2f} MB)"
+            )
+            return await ingestion_service._process_single_document_async(
+                document_id=document_id,
+                file_key=file_key,
+                file_content=content,
+                filename=filename,
+                content_type=content_type,
+                folder_name=folder_name,
+                user_id=user_id,
+                organization_id=organization_id,
+                additional_metadata=None,
+                already_in_storage=True,  # browser already uploaded it to iDrive
+            )
+
+        result = _run_in_worker_loop(_download_then_ingest())
+
+        logger.info(f"✅ Worker completed: {filename}")
+        return {
+            "status": "success",
+            "document_id": document_id,
+            "filename": filename,
+            "result": result,
+        }
+
+    except Exception as e:
+        logger.error(f"❌ Worker failed {filename}: {str(e)}", exc_info=True)
+        return {
+            "status": "error",
+            "document_id": document_id,
+            "filename": filename,
+            "error": str(e),
+        }
+    finally:
+        if ingestion_service:
+            try:
+                ingestion_service.cleanup()
+                logger.info(f"🧹 Cleaned up resources for: {filename}")
+            except Exception as cleanup_error:
+                logger.warning(f"Cleanup warning for {filename}: {str(cleanup_error)}")
+
+        try:
+            from clients.unstructured_client import UnstructuredClient
+            unstructured_client = UnstructuredClient()
+            if hasattr(unstructured_client, 'cleanup'):
+                unstructured_client.cleanup()
+        except Exception as e:
+            logger.warning(f"Unstructured cleanup warning: {str(e)}")
+
+        gc.collect()
+        logger.info(f"🗑️ Forced garbage collection after: {filename}")
+
+
+@celery_app.task(bind=True)
 def process_youtube_document_task(
     self,
     document_id: str,
