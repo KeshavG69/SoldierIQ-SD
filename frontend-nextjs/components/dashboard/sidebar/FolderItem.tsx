@@ -10,6 +10,7 @@ interface FolderItemProps {
   documents: Document[];
   selectedDocs: Set<string>;
   expandedFolders: Set<string>;
+  forceExpanded?: boolean;
   onToggleFolder: (folderName: string) => void;
   onToggleDoc: (docId: string) => void;
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
@@ -25,6 +26,7 @@ const FolderItem = React.memo(function FolderItem({
   documents: folderDocs,
   selectedDocs,
   expandedFolders,
+  forceExpanded = false,
   onToggleFolder,
   onToggleDoc,
   onSelectAllFolder,
@@ -34,7 +36,8 @@ const FolderItem = React.memo(function FolderItem({
   isDeletingFolder,
   animationDelay,
 }: FolderItemProps) {
-  const isExpanded = expandedFolders.has(folderName);
+  // While searching, matched folders are force-expanded so hits are visible.
+  const isExpanded = forceExpanded || expandedFolders.has(folderName);
   const folderDocCount = folderDocs.length;
 
   if (folderDocCount === 0) return null;

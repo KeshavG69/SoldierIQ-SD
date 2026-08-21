@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Document, KnowledgeBase } from "@/types";
 import FolderItem from "./FolderItem";
 
@@ -49,14 +49,45 @@ const FolderTree = React.memo(function FolderTree({
 
   const folderList = useMemo(() => {
     const allFolders = new Set<string>();
-    (Array.isArray(knowledgeBases) ? knowledgeBases : []).forEach((kb) =>
-      allFolders.add(kb.name)
-    );
+    (Array.isArray(knowledgeBases) ? knowledgeBases : []).forEach((kb) => {
+      // A KB can arrive with a missing/blank name — skip it so it never
+      // becomes an `undefined` entry that later crashes name comparisons.
+      if (kb?.name) allFolders.add(kb.name);
+    });
     Object.keys(documentsByFolder).forEach((folder) =>
       allFolders.add(folder)
     );
     return Array.from(allFolders).sort();
   }, [knowledgeBases, documentsByFolder]);
+
+  const [query, setQuery] = useState("");
+  const isSearching = query.trim().length > 0;
+
+  // Each entry is a folder + the documents to show under it. Searching matches
+  // folder names AND file names: a folder-name hit shows all its docs; a
+  // file-name hit shows just the matching files (and the folder auto-expands).
+  const filteredFolders = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const entryFor = (folderName: string, docs: Document[]) => ({ folderName, docs });
+
+    if (!q) {
+      return folderList.map((name) => entryFor(name, documentsByFolder[name] || []));
+    }
+
+    const out: { folderName: string; docs: Document[] }[] = [];
+    for (const folderName of folderList) {
+      const docs = documentsByFolder[folderName] || [];
+      if ((folderName || "").toLowerCase().includes(q)) {
+        out.push(entryFor(folderName, docs));
+      } else {
+        const matching = docs.filter((d) =>
+          (d.file_name || "").toLowerCase().includes(q)
+        );
+        if (matching.length > 0) out.push(entryFor(folderName, matching));
+      }
+    }
+    return out;
+  }, [folderList, documentsByFolder, query]);
 
   if (isLoading) {
     return (
@@ -95,24 +126,67 @@ const FolderTree = React.memo(function FolderTree({
   }
 
   return (
-    <div className="space-y-1">
-      {folderList.map((folderName, folderIdx) => (
-        <FolderItem
-          key={folderName}
-          folderName={folderName}
-          documents={documentsByFolder[folderName] || []}
-          selectedDocs={selectedDocs}
-          expandedFolders={expandedFolders}
-          onToggleFolder={onToggleFolder}
-          onToggleDoc={onToggleDoc}
-          onSelectAllFolder={onSelectAllFolder}
-          onDeleteDoc={onDeleteDoc}
-          onDeleteFolder={onDeleteFolder}
-          deletingDocId={deletingDocId}
-          isDeletingFolder={deletingKB === folderName}
-          animationDelay={folderIdx * 30}
+    <div>
+      {/* Search folders by name */}
+      <div className="relative mb-3">
+        <svg
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search folders & files…"
+          className="w-full pl-8 pr-8 py-1.5 rounded-lg bg-surface-2 dark:bg-card border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all"
         />
-      ))}
+        {query && (
+          <button
+            onClick={() => setQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {filteredFolders.length === 0 ? (
+        <div className="py-8 text-center text-xs text-muted-foreground">
+          Nothing matches “{query.trim()}”
+        </div>
+      ) : (
+        <div className="space-y-1">
+          {filteredFolders.map(({ folderName, docs }, folderIdx) => (
+            <FolderItem
+              key={folderName}
+              folderName={folderName}
+              documents={docs}
+              selectedDocs={selectedDocs}
+              expandedFolders={expandedFolders}
+              forceExpanded={isSearching}
+              onToggleFolder={onToggleFolder}
+              onToggleDoc={onToggleDoc}
+              onSelectAllFolder={onSelectAllFolder}
+              onDeleteDoc={onDeleteDoc}
+              onDeleteFolder={onDeleteFolder}
+              deletingDocId={deletingDocId}
+              isDeletingFolder={deletingKB === folderName}
+              animationDelay={folderIdx * 30}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 });
