@@ -130,6 +130,9 @@ class Settings(BaseSettings):
     # (ac_yZpaj2ORI7Fx), which only worked for its own tenant (invalid_client
     # for others).
     COMPOSIO_SHAREPOINT_AUTH_CONFIG_ID: str = "ac_4sOSygt9E5zf"
+    # Composio-managed Google Drive auth config — replaces the manual Google
+    # OAuth flow (no client id/secret or token storage on our side).
+    COMPOSIO_GDRIVE_AUTH_CONFIG_ID: str = "ac_ToHVoKYFYPLI"
 
     # Observability
 

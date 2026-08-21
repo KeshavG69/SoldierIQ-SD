@@ -486,7 +486,7 @@ def process_drive_file_task(
         user_id, organization_id: From the request.
     """
     from services.ingestion_service import _run_in_worker_loop
-    from clients.google_drive_client import GoogleDriveClient, GoogleDriveError
+    from clients.google_drive_composio import GoogleDriveComposioClient as GoogleDriveClient, GoogleDriveError
 
     ingestion_service = None
     try:
@@ -607,7 +607,7 @@ def discover_drive_files_task(
     import uuid as _uuid
 
     from services.ingestion_service import _run_in_worker_loop
-    from clients.google_drive_client import GoogleDriveClient, GoogleDriveError
+    from clients.google_drive_composio import GoogleDriveComposioClient as GoogleDriveClient, GoogleDriveError
     from clients.postgres_client import get_postgres_client
     from utils.file_utils import get_file_extension
 

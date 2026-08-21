@@ -8,9 +8,12 @@ import apiClient from "./client";
 
 export interface DriveStatus {
   connected: boolean;
-  email: string | null;
-  display_name: string | null;
-  connected_at?: string | null;
+  // Composio-backed: identity fields are no longer surfaced; kept optional
+  // for backward compatibility with the UI.
+  email?: string | null;
+  display_name?: string | null;
+  status?: string | null;
+  connection_id?: string | null;
   needs_reconnect?: boolean;
 }
 
@@ -35,6 +38,7 @@ export interface DriveIngestFoldersResponse {
 
 export interface DriveConnectResponse {
   auth_url: string;
+  connection_id?: string | null;
 }
 
 export interface DriveListFile {
@@ -77,11 +81,15 @@ export const googleDriveApi = {
     return res.data;
   },
 
-  /** Get the URL the browser should send the user to for the consent screen. */
-  connect: async (folderName = "Google Drive"): Promise<DriveConnectResponse> => {
-    const params = new URLSearchParams({ folder_name: folderName });
-    const res = await apiClient.get<DriveConnectResponse>(
-      `/google-drive/connect?${params.toString()}`
+  /**
+   * Start the Composio-hosted Google OAuth flow; returns the auth_url to open
+   * in a popup. Composio owns tokens; the popup lands on /oauth-callback which
+   * polls /status until the connection is ACTIVE.
+   */
+  connect: async (callbackUrl: string): Promise<DriveConnectResponse> => {
+    const res = await apiClient.post<DriveConnectResponse>(
+      "/google-drive/connect",
+      { callback_url: callbackUrl }
     );
     return res.data;
   },

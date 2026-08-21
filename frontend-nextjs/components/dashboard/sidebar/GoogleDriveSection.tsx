@@ -26,17 +26,6 @@ interface Props {
   onIngestStarted?: () => void;
 }
 
-// The callback HTML page is served from the backend origin, so postMessage
-// arrives with e.origin === the API origin. Validate against it when set.
-function apiOrigin(): string | null {
-  try {
-    const base = process.env.NEXT_PUBLIC_API_URL;
-    return base ? new URL(base).origin : null;
-  } catch {
-    return null;
-  }
-}
-
 export default function GoogleDriveSection({ onIngestStarted }: Props) {
   const [status, setStatus] = useState<{
     connected: boolean;
@@ -56,7 +45,7 @@ export default function GoogleDriveSection({ onIngestStarted }: Props) {
       const s = await googleDriveApi.status();
       setStatus({
         connected: s.connected,
-        email: s.email,
+        email: s.email ?? null,
         needsReconnect: !!s.needs_reconnect,
         loaded: true,
       });
@@ -69,70 +58,49 @@ export default function GoogleDriveSection({ onIngestStarted }: Props) {
     refreshStatus();
   }, [refreshStatus]);
 
-  // --- Connect (popup + postMessage) -------------------------------------
+  // --- Connect (Composio hosted flow: open popup, poll /status) ----------
   const startOAuth = useCallback(async () => {
     setBusy("connect");
     setToast(null);
     try {
-      const { auth_url } = await googleDriveApi.connect();
-      const popup = window.open(
-        auth_url,
-        "drive-oauth",
-        "width=560,height=720"
-      );
+      const callbackUrl = `${window.location.origin}/oauth-callback`;
+      const { auth_url } = await googleDriveApi.connect(callbackUrl);
+      const popup = window.open(auth_url, "drive-oauth", "width=600,height=760");
       if (!popup) {
-        // Popup blocked → full-page redirect; callback will redirect back
+        // Popup blocked → full-page redirect; /oauth-callback bounces back.
         window.location.href = auth_url;
         return;
       }
 
-      const origin = apiOrigin();
-      let poll: ReturnType<typeof setInterval> | null = null;
-
-      const cleanup = () => {
-        window.removeEventListener("message", onMessage);
-        if (poll) clearInterval(poll);
-      };
-
-      const onMessage = (e: MessageEvent) => {
-        if (origin && e.origin !== origin) return;
-        if (e.data?.type !== "drive-oauth-result") return;
-        cleanup();
+      // Composio owns the OAuth; poll /status until the connection goes ACTIVE
+      // (also detects the user manually closing the popup).
+      const poll = setInterval(async () => {
         try {
-          popup.close();
+          const s = await googleDriveApi.status();
+          if (s.connected) {
+            clearInterval(poll);
+            try {
+              popup.close();
+            } catch {
+              /* ignore */
+            }
+            setStatus({ connected: true, email: s.email ?? null, needsReconnect: false, loaded: true });
+            fetchDocuments();
+            setBusy(null);
+            setFolderPickerOpen(true); // prompt folder choice right away
+            return;
+          }
         } catch {
-          /* ignore */
+          /* keep polling */
         }
-        if (e.data.success) {
-          setStatus({
-            connected: true,
-            email: e.data.email || null,
-            needsReconnect: false,
-            loaded: true,
-          });
-          fetchDocuments();
-          setBusy(null);
-          // Prompt the user to choose folders right away
-          setFolderPickerOpen(true);
-        } else {
-          setToast(e.data.message || "Connection failed");
-          setBusy(null);
-        }
-      };
-
-      window.addEventListener("message", onMessage);
-
-      // Fallback: if the user closes the popup without finishing (no message),
-      // clear the busy state and re-check status.
-      poll = setInterval(() => {
         if (popup.closed) {
-          cleanup();
+          clearInterval(poll);
           refreshStatus();
           setBusy(null);
         }
-      }, 1000);
+      }, 1500);
     } catch (e: any) {
-      setToast(`Connect failed: ${e?.message || e}`);
+      setToast(`Connect failed: ${e?.response?.data?.detail || e?.message || e}`);
       setBusy(null);
     }
   }, [fetchDocuments, refreshStatus]);
@@ -228,7 +196,11 @@ export default function GoogleDriveSection({ onIngestStarted }: Props) {
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 <span className="text-xs text-foreground truncate">
-                  Connected as <strong>{status.email}</strong>
+                  {status.email ? (
+                    <>Connected as <strong>{status.email}</strong></>
+                  ) : (
+                    <>Google Drive <strong>connected</strong></>
+                  )}
                 </span>
               </div>
             </div>
