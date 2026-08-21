@@ -1232,6 +1232,14 @@
         "documentation": {}
     },
     {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -2977,6 +2985,14 @@
         "description": "starlette.responses",
         "isExtraImport": true,
         "detail": "starlette.responses",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
         "documentation": {}
     },
     {
@@ -9592,6 +9608,33 @@
         "description": "backend.clients.youtube_downloader",
         "peekOfCode": "def get_youtube_downloader() -> YouTubeDownloader:\n    \"\"\"Get or create YouTube downloader singleton\"\"\"\n    global _youtube_downloader\n    if _youtube_downloader is None:\n        _youtube_downloader = YouTubeDownloader()\n    return _youtube_downloader",
         "detail": "backend.clients.youtube_downloader",
+        "documentation": {}
+    },
+    {
+        "label": "extract_video_id",
+        "kind": 2,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "def extract_video_id(url: str) -> Optional[str]:\n    \"\"\"Pull the 11-char video id out of any common YouTube URL form.\"\"\"\n    if not url:\n        return None\n    for pat in _ID_PATTERNS:\n        m = re.search(pat, url)\n        if m:\n            return m.group(1)\n    # Bare id passed directly?\n    if re.fullmatch(r\"[A-Za-z0-9_-]{11}\", url.strip()):",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "fetch_transcript",
+        "kind": 2,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "def fetch_transcript(video_id: str) -> Optional[str]:\n    \"\"\"Return the full transcript text for a video, or None if it has no\n    captions (or they can't be fetched). Never raises.\"\"\"\n    if not video_id:\n        return None\n    try:\n        from youtube_transcript_api import YouTubeTranscriptApi\n        api = YouTubeTranscriptApi()\n        fetched = api.fetch(video_id)\n        snippets = getattr(fetched, \"snippets\", None) or list(fetched)",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "_ID_PATTERNS",
+        "kind": 5,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "_ID_PATTERNS = [\n    r\"(?:v=|/v/|youtu\\.be/|/embed/|/shorts/)([A-Za-z0-9_-]{11})\",\n]\ndef extract_video_id(url: str) -> Optional[str]:\n    \"\"\"Pull the 11-char video id out of any common YouTube URL form.\"\"\"\n    if not url:\n        return None\n    for pat in _ID_PATTERNS:\n        m = re.search(pat, url)\n        if m:",
+        "detail": "backend.clients.youtube_transcript",
         "documentation": {}
     },
     {

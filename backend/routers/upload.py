@@ -507,17 +507,27 @@ async def ingest_youtube_video(
         # Use YouTube URL as placeholder filename initially
         filename = f"YouTube Video - {request.youtube_url.split('=')[-1][:11]}"
 
+        # Generate the document_id up front so we can build a placeholder
+        # file_key. The documents.file_key column is NOT NULL, and the real
+        # key (with the downloaded video's actual extension) isn't known until
+        # the worker downloads it — so we seed a placeholder here and the
+        # worker overwrites it after download.
+        document_id = str(uuid.uuid4())
+        folder = request.folder_name.strip()
+        placeholder_file_key = f"{organization_id}/{folder}/{document_id}.mp4"
+
         # Add YouTube URL to metadata
         additional_metadata = {
+            "id": document_id,
             "source": "youtube",
             "youtube_url": request.youtube_url,
         }
 
-        # Create document record (without file_key initially)
-        document_id = await ingestion_service._create_document_with_status(
+        # Create document record with a placeholder file_key (worker updates it).
+        await ingestion_service._create_document_with_status(
             file_name=filename,
-            folder_name=request.folder_name.strip(),
-            file_key=None,  # Will be set by worker after download
+            folder_name=folder,
+            file_key=placeholder_file_key,
             file_size_mb=0,  # Unknown initially, will be updated by worker
             user_id=user_id,
             organization_id=organization_id,

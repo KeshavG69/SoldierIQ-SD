@@ -60,6 +60,15 @@ class YouTubeDownloader:
             'retries': 10,
             'fragment_retries': 10,
             'skip_unavailable_fragments': True,
+            # Anti-403: YouTube's "SABR-only" experiment makes the default web
+            # formats 403 on download. The ios / tv / mweb player clients serve
+            # non-gated progressive formats, so prefer them. (If 403s persist,
+            # update yt-dlp — YouTube changes often and yt-dlp ships fixes.)
+            'extractor_args': {
+                'youtube': {
+                    'player_client': ['ios', 'tv', 'mweb', 'web_safari'],
+                }
+            },
         }
 
     def download_video(self, youtube_url: str) -> Tuple[bytes, str, dict]:
@@ -95,6 +104,21 @@ class YouTubeDownloader:
                     'User-Agent': user_agent,
                 },
             }
+
+            # Cookies for YouTube's bot-check. As of 2026 YouTube blocks most
+            # server-side downloads ("The page needs to be reloaded" / 403)
+            # unless the request is authenticated. Export cookies from a
+            # logged-in browser to a Netscape cookies.txt and point
+            # YOUTUBE_COOKIES_FILE at it (or set YOUTUBE_COOKIES_FROM_BROWSER
+            # to e.g. "chrome" when a browser is available on the host).
+            cookies_file = os.getenv("YOUTUBE_COOKIES_FILE")
+            cookies_browser = os.getenv("YOUTUBE_COOKIES_FROM_BROWSER")
+            if cookies_file and os.path.exists(cookies_file):
+                ydl_opts['cookiefile'] = cookies_file
+                logger.info("🔐 Using YouTube cookies file for authenticated download")
+            elif cookies_browser:
+                ydl_opts['cookiesfrombrowser'] = (cookies_browser,)
+                logger.info(f"🔐 Using YouTube cookies from browser: {cookies_browser}")
 
             # Download video
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -142,8 +166,20 @@ class YouTubeDownloader:
                 return video_bytes, filename, metadata
 
         except Exception as e:
-            logger.error(f"❌ Failed to download YouTube video: {str(e)}")
-            raise Exception(f"Failed to download YouTube video: {str(e)}")
+            msg = str(e)
+            logger.error(f"❌ Failed to download YouTube video: {msg}")
+            # YouTube bot-check signatures → give the admin an actionable hint.
+            botcheck = any(
+                s in msg
+                for s in ("Forbidden", "page needs to be reloaded", "Sign in to confirm", "PO Token", "not a bot")
+            )
+            if botcheck and not (os.getenv("YOUTUBE_COOKIES_FILE") or os.getenv("YOUTUBE_COOKIES_FROM_BROWSER")):
+                raise Exception(
+                    "YouTube blocked this download (bot check). Provide YouTube cookies to "
+                    "authenticate: export them from a logged-in browser to a cookies.txt and set "
+                    "YOUTUBE_COOKIES_FILE on the backend."
+                )
+            raise Exception(f"Failed to download YouTube video: {msg}")
 
         finally:
             # Cleanup temp directory
@@ -152,6 +188,37 @@ class YouTubeDownloader:
                 shutil.rmtree(temp_dir, ignore_errors=True)
             except Exception as e:
                 logger.warning(f"Failed to cleanup temp directory: {str(e)}")
+
+    def get_metadata(self, youtube_url: str) -> dict:
+        """Fetch metadata only (no download). Often works even when the video
+        download is blocked, since it hits a different endpoint. Returns {} on
+        any failure (callers treat metadata as best-effort)."""
+        try:
+            opts = {
+                **self.ydl_opts,
+                'quiet': True,
+                'no_warnings': True,
+                'skip_download': True,
+            }
+            cookies_file = os.getenv("YOUTUBE_COOKIES_FILE")
+            cookies_browser = os.getenv("YOUTUBE_COOKIES_FROM_BROWSER")
+            if cookies_file and os.path.exists(cookies_file):
+                opts['cookiefile'] = cookies_file
+            elif cookies_browser:
+                opts['cookiesfrombrowser'] = (cookies_browser,)
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(youtube_url, download=False)
+            return {
+                "video_id": info.get("id"),
+                "title": info.get("title"),
+                "duration": info.get("duration"),
+                "uploader": info.get("uploader"),
+                "upload_date": info.get("upload_date"),
+                "description": info.get("description"),
+            }
+        except Exception as e:
+            logger.info(f"[yt] metadata fetch failed (non-fatal): {str(e)[:120]}")
+            return {}
 
     def _sanitize_filename(self, filename: str) -> str:
         """

@@ -299,6 +299,7 @@ def process_youtube_document_task(
         Processing result
     """
     from clients.youtube_downloader import YouTubeDownloader
+    from clients.youtube_transcript import extract_video_id, fetch_transcript
     from clients.postgres_client import get_postgres_client
     from services.ingestion_service import _run_in_worker_loop
     from datetime import datetime
@@ -309,9 +310,64 @@ def process_youtube_document_task(
     try:
         logger.info(f"🚀 Worker processing YouTube: {youtube_url} (doc_id: {document_id})")
 
-        # 1. Download video (returns bytes directly)
+        # --- Transcript-first path ---------------------------------------
+        # YouTube blocks server-side VIDEO downloads (bot-check/403), but the
+        # caption endpoint is open. For the ~85% of videos with captions we
+        # ingest the transcript text directly — no download, no bot-check.
+        # Only videos without captions fall through to the video download.
+        video_id = extract_video_id(youtube_url)
+        transcript_text = fetch_transcript(video_id) if video_id else None
+
+        if transcript_text:
+            logger.info(f"📝 Using captions for YouTube {video_id} ({len(transcript_text)} chars) — no download needed")
+            title = f"YouTube Video - {video_id}"
+            # Best-effort real title (metadata extraction usually works even
+            # when the video download is blocked); never fatal.
+            try:
+                meta = YouTubeDownloader().get_metadata(youtube_url)  # type: ignore[attr-defined]
+                if meta and meta.get("title"):
+                    title = meta["title"]
+            except Exception:
+                pass
+
+            txt_filename = f"{title}.txt"
+            file_key = (
+                f"{organization_id}/{folder_name}/{document_id}.txt"
+                if organization_id else f"{folder_name}/{document_id}.txt"
+            )
+            content_bytes = transcript_text.encode("utf-8")
+
+            postgres = get_postgres_client()
+            _run_in_worker_loop(postgres.update_document(
+                organization_id=organization_id,
+                user_id=user_id,
+                document_id=document_id,
+                updates={
+                    "filename": txt_filename,      # real column is `filename`
+                    "file_key": file_key,
+                    "file_size_mb": len(content_bytes) / (1024 * 1024),
+                    "updated_at": datetime.utcnow(),
+                },
+            ))
+
+            ingestion_service = IngestionService()
+            result = ingestion_service.process_single_document_sync(
+                document_id=document_id,
+                file_key=file_key,
+                file_content=content_bytes,
+                filename=txt_filename,
+                content_type="text/plain",
+                folder_name=folder_name,
+                user_id=user_id,
+                organization_id=organization_id,
+                additional_metadata=None,
+            )
+            logger.info(f"✅ Worker completed (transcript): {title}")
+            return {"status": "success", "document_id": document_id, "filename": txt_filename, "result": result}
+
+        # --- Fallback: download the video (needs cookies on a server) -----
+        logger.info(f"📥 No captions — falling back to video download for {youtube_url}")
         downloader = YouTubeDownloader()
-        logger.info(f"📥 Downloading YouTube video...")
 
         video_bytes, actual_filename, metadata = downloader.download_video(youtube_url)
 
@@ -338,16 +394,10 @@ def process_youtube_document_task(
             user_id=user_id,
             document_id=document_id,
             updates={
-                "file_name": actual_filename,
+                "filename": actual_filename,   # real column is `filename`
                 "file_key": file_key,
                 "file_size_mb": file_size_mb,
-                "youtube_video_id": metadata.get("video_id"),
-                "youtube_title": metadata.get("title"),
-                "youtube_uploader": metadata.get("uploader"),
-                "youtube_duration": metadata.get("duration"),
-                "youtube_upload_date": metadata.get("upload_date"),
-                "youtube_description": metadata.get("description"),
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.utcnow(),
             }
         ))
 
