@@ -295,12 +295,21 @@ class GoogleDriveComposioClient:
     async def list_files_page(self, page_token: Optional[str] = None, page_size: int = 50, search: Optional[str] = None) -> Dict[str, Any]:
         return await asyncio.to_thread(self._list_files_page_sync, page_token, page_size, search)
 
-    def _list_folders_sync(self) -> List[Dict[str, Any]]:
+    def _list_folders_sync(self, parent_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """List folders directly under `parent_id` (or My Drive root when None).
+
+        We deliberately do NOT walk the whole tree here — a large Drive has
+        thousands of folders and paginating them all through Composio takes
+        tens of seconds. The picker only needs one level at a time; ingesting
+        a folder already recurses into its subfolders, and the router exposes
+        `?parent=` for drill-down.
+        """
+        parent = parent_id or "root"
         raw: List[Dict[str, Any]] = []
         page_token = None
         while True:
             args: Dict[str, Any] = {
-                "q": f"mimeType = '{_FOLDER_MIME}' and trashed = false",
+                "q": f"mimeType = '{_FOLDER_MIME}' and '{parent}' in parents and trashed = false",
                 "pageSize": 200,
                 "fields": "nextPageToken, files(id, name, parents)",
                 "supportsAllDrives": True,
@@ -314,29 +323,14 @@ class GoogleDriveComposioClient:
             if not page_token:
                 break
 
-        by_id = {f["id"]: f for f in raw if f.get("id")}
-
-        def path_of(f: Dict[str, Any]) -> str:
-            parts = [f.get("name", "")]
-            seen = set()
-            cur = f
-            while cur.get("parents"):
-                pid = cur["parents"][0]
-                if pid in seen or pid not in by_id:
-                    break
-                seen.add(pid)
-                cur = by_id[pid]
-                parts.append(cur.get("name", ""))
-            return "/".join(reversed([p for p in parts if p]))
-
         return [
             {"id": f["id"], "name": f.get("name"), "parents": f.get("parents"),
-             "path": path_of(f), "shared_drive": None}
+             "path": f.get("name", ""), "shared_drive": None}
             for f in raw if f.get("id")
         ]
 
-    async def list_folders(self) -> List[Dict[str, Any]]:
-        return await asyncio.to_thread(self._list_folders_sync)
+    async def list_folders(self, parent_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        return await asyncio.to_thread(self._list_folders_sync, parent_id)
 
 
 def get_google_drive_client(user_id: str) -> GoogleDriveComposioClient:

@@ -13,6 +13,7 @@ interface FolderTreeProps {
   onToggleDoc: (docId: string) => void;
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
   onDeleteDoc: (docId: string) => void;
+  onRenameDoc: (docId: string, newFileName: string) => Promise<void>;
   onDeleteFolder: (folderName: string) => void;
   deletingDocId: string | null;
   deletingKB: string | null;
@@ -28,6 +29,7 @@ const FolderTree = React.memo(function FolderTree({
   onToggleDoc,
   onSelectAllFolder,
   onDeleteDoc,
+  onRenameDoc,
   onDeleteFolder,
   deletingDocId,
   deletingKB,
@@ -179,6 +181,7 @@ const FolderTree = React.memo(function FolderTree({
               onToggleDoc={onToggleDoc}
               onSelectAllFolder={onSelectAllFolder}
               onDeleteDoc={onDeleteDoc}
+              onRenameDoc={onRenameDoc}
               onDeleteFolder={onDeleteFolder}
               deletingDocId={deletingDocId}
               isDeletingFolder={deletingKB === folderName}

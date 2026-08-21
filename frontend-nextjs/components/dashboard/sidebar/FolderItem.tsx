@@ -15,6 +15,7 @@ interface FolderItemProps {
   onToggleDoc: (docId: string) => void;
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
   onDeleteDoc: (docId: string) => void;
+  onRenameDoc: (docId: string, newFileName: string) => Promise<void>;
   onDeleteFolder: (folderName: string) => void;
   deletingDocId: string | null;
   isDeletingFolder: boolean;
@@ -31,6 +32,7 @@ const FolderItem = React.memo(function FolderItem({
   onToggleDoc,
   onSelectAllFolder,
   onDeleteDoc,
+  onRenameDoc,
   onDeleteFolder,
   deletingDocId,
   isDeletingFolder,
@@ -145,6 +147,7 @@ const FolderItem = React.memo(function FolderItem({
                   isSelected={selectedDocs.has(doc.id)}
                   onToggle={onToggleDoc}
                   onDelete={onDeleteDoc}
+                  onRename={onRenameDoc}
                   isDeleting={deletingDocId === doc.id}
                   index={index}
                 />

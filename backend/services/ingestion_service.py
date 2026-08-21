@@ -1334,25 +1334,34 @@ class IngestionService:
         deleted_docs = []
         errors = []
 
-        # Delete each document (this handles PostgreSQL, Cognee, and iDrive E2)
-        for doc in documents:
-            try:
-                # Convert UUID object to string if needed
-                doc_id = str(doc["id"]) if doc["id"] else None
-                await self.delete_document(
-                    document_id=doc_id,
-                    organization_id=organization_id,
-                    user_id=user_id,
-                    delete_from_storage=delete_from_storage
-                )
+        # Delete documents CONCURRENTLY (each handles PostgreSQL + Cognee +
+        # iDrive E2). Sequential deletion made a 17-file folder take ~45s; a
+        # bounded semaphore keeps us from exhausting the Postgres pool
+        # (max_size=10) or hammering iDrive while still parallelizing.
+        sem = asyncio.Semaphore(8)
+
+        async def _delete_one(doc: Dict[str, Any]):
+            doc_id = str(doc["id"]) if doc.get("id") else None
+            async with sem:
+                try:
+                    await self.delete_document(
+                        document_id=doc_id,
+                        organization_id=organization_id,
+                        user_id=user_id,
+                        delete_from_storage=delete_from_storage,
+                    )
+                    return doc_id, None
+                except Exception as e:
+                    logger.error(f"❌ Failed to delete document {doc_id}: {str(e)}")
+                    return doc_id, str(e)
+
+        results = await asyncio.gather(*[_delete_one(d) for d in documents])
+        for doc_id, err in results:
+            if err is None:
                 deleted_count += 1
                 deleted_docs.append(doc_id)
-            except Exception as e:
-                logger.error(f"❌ Failed to delete document {doc.get('id')}: {str(e)}")
-                errors.append({
-                    "document_id": doc.get("id"),
-                    "error": str(e)
-                })
+            else:
+                errors.append({"document_id": doc_id, "error": err})
 
         logger.info(f"✅ Folder '{folder_name}' deleted: {deleted_count} documents removed from all systems")
 
@@ -1361,6 +1370,74 @@ class IngestionService:
             "deleted_count": deleted_count,
             "deleted_documents": deleted_docs,
             "errors": errors if errors else None
+        }
+
+    async def rename_document(
+        self,
+        document_id: str,
+        organization_id: str,
+        new_file_name: str
+    ) -> Dict[str, Any]:
+        """
+        Rename a document's display filename in PostgreSQL.
+
+        Only PostgreSQL holds the display name:
+        - iDrive E2 keeps its original file_key (the object never moves)
+        - GraphRAG / chunks reference the document by id, not by name
+
+        The extension is preserved from the original name: ingestion already
+        ran and routed on that extension, so letting the user change it would
+        make the stored type and the shown type disagree.
+
+        Args:
+            document_id: Document ID (UUID string)
+            organization_id: Organization ID (UUID string)
+            new_file_name: New display filename
+
+        Returns:
+            Dict with the document id and its old/new names
+
+        Raises:
+            ValueError: Document not found in this organization
+        """
+        # Scope by organization only — any uploader in the org may rename,
+        # including documents ingested by a teammate.
+        document = await self.postgres_client.find_document(
+            organization_id=organization_id,
+            document_id=document_id
+        )
+
+        if not document:
+            raise ValueError(f"Document not found: {document_id}")
+
+        old_file_name = document.get("file_name") or ""
+        safe_name = sanitize_filename(new_file_name.strip())
+
+        if not safe_name:
+            raise ValueError("New file name is required")
+
+        # Keep the original extension whatever the user typed.
+        old_ext = get_file_extension(old_file_name)
+        if old_ext and get_file_extension(safe_name) != old_ext:
+            safe_name = f"{safe_name}{old_ext}"
+
+        logger.info(f"📝 Renaming document {document_id}: '{old_file_name}' → '{safe_name}'")
+
+        # `filename` is the actual column name; `file_name` is the normalized
+        # key the client returns it under.
+        await self.postgres_client.update_document(
+            organization_id=organization_id,
+            user_id=document.get("user_id"),
+            document_id=document_id,
+            updates={"filename": safe_name}
+        )
+
+        logger.info(f"✅ Document renamed: {document_id}")
+
+        return {
+            "document_id": document_id,
+            "old_file_name": old_file_name,
+            "file_name": safe_name
         }
 
     async def rename_folder(

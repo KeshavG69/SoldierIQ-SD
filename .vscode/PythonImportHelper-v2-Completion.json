@@ -2548,14 +2548,6 @@
         "documentation": {}
     },
     {
-        "label": "Body",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
         "label": "Depends",
         "importPath": "fastapi",
         "description": "fastapi",
@@ -2565,22 +2557,6 @@
     },
     {
         "label": "HTTPException",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "Request",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "status",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -3596,6 +3572,14 @@
         "documentation": {}
     },
     {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
         "label": "time",
         "kind": 6,
         "isExtraImport": true,
@@ -3614,22 +3598,6 @@
     },
     {
         "label": "StreamingResponse",
-        "importPath": "fastapi.responses",
-        "description": "fastapi.responses",
-        "isExtraImport": true,
-        "detail": "fastapi.responses",
-        "documentation": {}
-    },
-    {
-        "label": "HTMLResponse",
-        "importPath": "fastapi.responses",
-        "description": "fastapi.responses",
-        "isExtraImport": true,
-        "detail": "fastapi.responses",
-        "documentation": {}
-    },
-    {
-        "label": "RedirectResponse",
         "importPath": "fastapi.responses",
         "description": "fastapi.responses",
         "isExtraImport": true,
@@ -4326,22 +4294,6 @@
         "documentation": {}
     },
     {
-        "label": "timedelta",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "timezone",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
         "label": "datetime",
         "importPath": "datetime",
         "description": "datetime",
@@ -4391,30 +4343,6 @@
     },
     {
         "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "datetime",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "timedelta",
-        "importPath": "datetime",
-        "description": "datetime",
-        "isExtraImport": true,
-        "detail": "datetime",
-        "documentation": {}
-    },
-    {
-        "label": "timezone",
         "importPath": "datetime",
         "description": "datetime",
         "isExtraImport": true,
@@ -5655,102 +5583,6 @@
         "documentation": {}
     },
     {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
-        "label": "get_postgres_client",
-        "importPath": "clients.postgres_client",
-        "description": "clients.postgres_client",
-        "isExtraImport": true,
-        "detail": "clients.postgres_client",
-        "documentation": {}
-    },
-    {
         "label": "hashlib",
         "kind": 6,
         "isExtraImport": true,
@@ -6740,6 +6572,86 @@
         "documentation": {}
     },
     {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
         "label": "send_invitation_email",
         "importPath": "clients.email_service",
         "description": "clients.email_service",
@@ -6852,52 +6764,27 @@
         "documentation": {}
     },
     {
-        "label": "secrets",
-        "kind": 6,
+        "label": "GoogleDriveComposioClient",
+        "importPath": "clients.google_drive_composio",
+        "description": "clients.google_drive_composio",
         "isExtraImport": true,
-        "importPath": "secrets",
-        "description": "secrets",
-        "detail": "secrets",
-        "documentation": {}
-    },
-    {
-        "label": "GoogleDriveClient",
-        "importPath": "clients.google_drive_client",
-        "description": "clients.google_drive_client",
-        "isExtraImport": true,
-        "detail": "clients.google_drive_client",
+        "detail": "clients.google_drive_composio",
         "documentation": {}
     },
     {
         "label": "GoogleDriveError",
-        "importPath": "clients.google_drive_client",
-        "description": "clients.google_drive_client",
+        "importPath": "clients.google_drive_composio",
+        "description": "clients.google_drive_composio",
         "isExtraImport": true,
-        "detail": "clients.google_drive_client",
+        "detail": "clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "build_authorize_url",
-        "importPath": "clients.google_drive_client",
-        "description": "clients.google_drive_client",
+        "label": "get_google_drive_client",
+        "importPath": "clients.google_drive_composio",
+        "description": "clients.google_drive_composio",
         "isExtraImport": true,
-        "detail": "clients.google_drive_client",
-        "documentation": {}
-    },
-    {
-        "label": "exchange_code_for_tokens",
-        "importPath": "clients.google_drive_client",
-        "description": "clients.google_drive_client",
-        "isExtraImport": true,
-        "detail": "clients.google_drive_client",
-        "documentation": {}
-    },
-    {
-        "label": "fetch_userinfo",
-        "importPath": "clients.google_drive_client",
-        "description": "clients.google_drive_client",
-        "isExtraImport": true,
-        "detail": "clients.google_drive_client",
+        "detail": "clients.google_drive_composio",
         "documentation": {}
     },
     {
@@ -8864,111 +8751,75 @@
         "documentation": {}
     },
     {
-        "label": "DriveFile",
-        "kind": 6,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "class DriveFile:\n    \"\"\"One discovered file's metadata — kept lean since we only need this much.\"\"\"\n    id: str\n    name: str\n    mime_type: str\n    size: int\n    modified_at: Optional[datetime]\n    web_url: Optional[str]\nclass GoogleDriveError(RuntimeError):\n    \"\"\"Anything from Drive that's not a 2xx response.\"\"\"",
-        "detail": "backend.clients.google_drive_client",
-        "documentation": {}
-    },
-    {
         "label": "GoogleDriveError",
         "kind": 6,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "class GoogleDriveError(RuntimeError):\n    \"\"\"Anything from Drive that's not a 2xx response.\"\"\"\n@dataclass\nclass _Tokens:\n    access_token: str\n    refresh_token: str\n    expires_at: datetime  # always tz-aware (UTC)\ndef build_authorize_url(state: str) -> str:\n    \"\"\"Build the URL we redirect the user to for the consent screen.\"\"\"\n    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "class GoogleDriveError(RuntimeError):\n    \"\"\"Anything from Drive/Composio that isn't a success.\"\"\"\n@dataclass\nclass DriveFile:\n    \"\"\"One discovered file's metadata (same shape as the manual client).\"\"\"\n    id: str\n    name: str\n    mime_type: str\n    size: int\n    modified_at: Optional[datetime]",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "_Tokens",
+        "label": "DriveFile",
         "kind": 6,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "class _Tokens:\n    access_token: str\n    refresh_token: str\n    expires_at: datetime  # always tz-aware (UTC)\ndef build_authorize_url(state: str) -> str:\n    \"\"\"Build the URL we redirect the user to for the consent screen.\"\"\"\n    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:\n        raise GoogleDriveError(\n            \"GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not configured\"\n        )",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "class DriveFile:\n    \"\"\"One discovered file's metadata (same shape as the manual client).\"\"\"\n    id: str\n    name: str\n    mime_type: str\n    size: int\n    modified_at: Optional[datetime]\n    web_url: Optional[str]\n# Google-native (Workspace) export targets — matches the pipeline's extractor\n# routing (text/csv are decoded cleanly; PDF is worse for text extraction).",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "GoogleDriveClient",
+        "label": "GoogleDriveComposioClient",
         "kind": 6,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "class GoogleDriveClient:\n    \"\"\"Per-(org, user) Drive client. Refreshes + persists tokens automatically.\"\"\"\n    def __init__(\n        self,\n        organization_id: str,\n        user_id: str,\n        tokens: _Tokens,\n    ):\n        self.organization_id = organization_id\n        self.user_id = user_id",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "class GoogleDriveComposioClient:\n    TOOLKIT = \"googledrive\"\n    def __init__(self, user_id: str):\n        if not user_id:\n            raise GoogleDriveError(\"user_id is required\")\n        self.user_id = str(user_id)\n        self._c = _composio()\n    # ---- connection management (no tokens stored on our side) -----------\n    @classmethod\n    async def for_user(cls, organization_id: str, user_id: str) -> Optional[\"GoogleDriveComposioClient\"]:",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "build_authorize_url",
+        "label": "get_google_drive_client",
         "kind": 2,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "def build_authorize_url(state: str) -> str:\n    \"\"\"Build the URL we redirect the user to for the consent screen.\"\"\"\n    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:\n        raise GoogleDriveError(\n            \"GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not configured\"\n        )\n    from urllib.parse import urlencode\n    params = {\n        \"client_id\": settings.GOOGLE_CLIENT_ID,\n        \"response_type\": \"code\",",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "def get_google_drive_client(user_id: str) -> GoogleDriveComposioClient:\n    return GoogleDriveComposioClient(user_id)",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "logger",
+        "label": "_EXPORT_MIME",
         "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "logger = logging.getLogger(__name__)\n# Google endpoints\nTOKEN_URL = \"https://oauth2.googleapis.com/token\"\nAUTHORIZE_URL = \"https://accounts.google.com/o/oauth2/v2/auth\"\nUSERINFO_URL = \"https://openidconnect.googleapis.com/v1/userinfo\"\nDRIVE_API = \"https://www.googleapis.com/drive/v3\"\n# Refresh proactively before actual expiry so we don't race a 401.\n_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "_EXPORT_MIME = {\n    \"application/vnd.google-apps.document\": \"text/plain\",\n    \"application/vnd.google-apps.spreadsheet\": \"text/csv\",\n    \"application/vnd.google-apps.presentation\": \"text/plain\",\n}\n_FOLDER_MIME = \"application/vnd.google-apps.folder\"\n_client_singleton = None\n_client_lock = threading.Lock()\ndef _composio():\n    global _client_singleton",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "TOKEN_URL",
+        "label": "_FOLDER_MIME",
         "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "TOKEN_URL = \"https://oauth2.googleapis.com/token\"\nAUTHORIZE_URL = \"https://accounts.google.com/o/oauth2/v2/auth\"\nUSERINFO_URL = \"https://openidconnect.googleapis.com/v1/userinfo\"\nDRIVE_API = \"https://www.googleapis.com/drive/v3\"\n# Refresh proactively before actual expiry so we don't race a 401.\n_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.\n_EXPORT_MIME: Dict[str, str] = {\n    \"application/vnd.google-apps.document\":     \"text/plain\",",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "_FOLDER_MIME = \"application/vnd.google-apps.folder\"\n_client_singleton = None\n_client_lock = threading.Lock()\ndef _composio():\n    global _client_singleton\n    if _client_singleton is None:\n        with _client_lock:\n            if _client_singleton is None:\n                from composio import Composio\n                if not settings.COMPOSIO_API_KEY:",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "AUTHORIZE_URL",
+        "label": "_client_singleton",
         "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "AUTHORIZE_URL = \"https://accounts.google.com/o/oauth2/v2/auth\"\nUSERINFO_URL = \"https://openidconnect.googleapis.com/v1/userinfo\"\nDRIVE_API = \"https://www.googleapis.com/drive/v3\"\n# Refresh proactively before actual expiry so we don't race a 401.\n_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.\n_EXPORT_MIME: Dict[str, str] = {\n    \"application/vnd.google-apps.document\":     \"text/plain\",\n    \"application/vnd.google-apps.spreadsheet\":  \"text/csv\",",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "_client_singleton = None\n_client_lock = threading.Lock()\ndef _composio():\n    global _client_singleton\n    if _client_singleton is None:\n        with _client_lock:\n            if _client_singleton is None:\n                from composio import Composio\n                if not settings.COMPOSIO_API_KEY:\n                    raise GoogleDriveError(\"COMPOSIO_API_KEY is not configured\")",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
-        "label": "USERINFO_URL",
+        "label": "_client_lock",
         "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "USERINFO_URL = \"https://openidconnect.googleapis.com/v1/userinfo\"\nDRIVE_API = \"https://www.googleapis.com/drive/v3\"\n# Refresh proactively before actual expiry so we don't race a 401.\n_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.\n_EXPORT_MIME: Dict[str, str] = {\n    \"application/vnd.google-apps.document\":     \"text/plain\",\n    \"application/vnd.google-apps.spreadsheet\":  \"text/csv\",\n    \"application/vnd.google-apps.presentation\": \"text/plain\",",
-        "detail": "backend.clients.google_drive_client",
-        "documentation": {}
-    },
-    {
-        "label": "DRIVE_API",
-        "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "DRIVE_API = \"https://www.googleapis.com/drive/v3\"\n# Refresh proactively before actual expiry so we don't race a 401.\n_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.\n_EXPORT_MIME: Dict[str, str] = {\n    \"application/vnd.google-apps.document\":     \"text/plain\",\n    \"application/vnd.google-apps.spreadsheet\":  \"text/csv\",\n    \"application/vnd.google-apps.presentation\": \"text/plain\",\n}",
-        "detail": "backend.clients.google_drive_client",
-        "documentation": {}
-    },
-    {
-        "label": "_REFRESH_LEEWAY",
-        "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "_REFRESH_LEEWAY = timedelta(seconds=60)\n# Google-native MIME types → what we export them as. The keys are what\n# Drive reports; the values are what we send to MarkItDown / the parser.\n_EXPORT_MIME: Dict[str, str] = {\n    \"application/vnd.google-apps.document\":     \"text/plain\",\n    \"application/vnd.google-apps.spreadsheet\":  \"text/csv\",\n    \"application/vnd.google-apps.presentation\": \"text/plain\",\n}\n# Only enumerate these during auto-discovery. Everything else is either\n# unparseable for our pipeline, irrelevant (images, video unless we add",
-        "detail": "backend.clients.google_drive_client",
-        "documentation": {}
-    },
-    {
-        "label": "_INCLUDE_MIME",
-        "kind": 5,
-        "importPath": "backend.clients.google_drive_client",
-        "description": "backend.clients.google_drive_client",
-        "peekOfCode": "_INCLUDE_MIME = {\n    # Google-native (handled via export to text/csv)\n    \"application/vnd.google-apps.document\",\n    \"application/vnd.google-apps.spreadsheet\",\n    \"application/vnd.google-apps.presentation\",\n    # Documents\n    \"application/pdf\",\n    \"application/msword\",\n    \"application/vnd.openxmlformats-officedocument.wordprocessingml.document\",\n    \"application/vnd.ms-excel\",",
-        "detail": "backend.clients.google_drive_client",
+        "importPath": "backend.clients.google_drive_composio",
+        "description": "backend.clients.google_drive_composio",
+        "peekOfCode": "_client_lock = threading.Lock()\ndef _composio():\n    global _client_singleton\n    if _client_singleton is None:\n        with _client_lock:\n            if _client_singleton is None:\n                from composio import Composio\n                if not settings.COMPOSIO_API_KEY:\n                    raise GoogleDriveError(\"COMPOSIO_API_KEY is not configured\")\n                _client_singleton = Composio(api_key=settings.COMPOSIO_API_KEY)",
+        "detail": "backend.clients.google_drive_composio",
         "documentation": {}
     },
     {
@@ -10016,6 +9867,15 @@
         "documentation": {}
     },
     {
+        "label": "ConnectRequest",
+        "kind": 6,
+        "importPath": "backend.routers.google_drive",
+        "description": "backend.routers.google_drive",
+        "peekOfCode": "class ConnectRequest(BaseModel):\n    # Where Composio redirects the browser after consent completes. The\n    # frontend passes `${origin}/oauth-callback`.\n    callback_url: Optional[str] = Field(default=None)\n@router.post(\"/connect\")\nasync def connect(\n    body: ConnectRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:\n    \"\"\"Start the Composio-hosted Google OAuth flow; returns the auth URL the",
+        "detail": "backend.routers.google_drive",
+        "documentation": {}
+    },
+    {
         "label": "DrivePickedFile",
         "kind": 6,
         "importPath": "backend.routers.google_drive",
@@ -10056,16 +9916,7 @@
         "kind": 5,
         "importPath": "backend.routers.google_drive",
         "description": "backend.routers.google_drive",
-        "peekOfCode": "router = APIRouter(prefix=\"/google-drive\", tags=[\"google-drive\"])\n# Single-use state tokens (CSRF protection for OAuth round-trip).\n# In-memory is fine — they expire in 10 minutes and we have one worker.\n# For multi-worker prod, move this to Redis.\n_state_store: Dict[str, Dict[str, Any]] = {}\n_STATE_TTL = timedelta(minutes=10)\ndef _new_state(organization_id: str, user_id: str, folder_name: str) -> str:\n    \"\"\"Generate a CSRF state token + remember which user it belongs to.\"\"\"\n    state = secrets.token_urlsafe(32)\n    _state_store[state] = {",
-        "detail": "backend.routers.google_drive",
-        "documentation": {}
-    },
-    {
-        "label": "_STATE_TTL",
-        "kind": 5,
-        "importPath": "backend.routers.google_drive",
-        "description": "backend.routers.google_drive",
-        "peekOfCode": "_STATE_TTL = timedelta(minutes=10)\ndef _new_state(organization_id: str, user_id: str, folder_name: str) -> str:\n    \"\"\"Generate a CSRF state token + remember which user it belongs to.\"\"\"\n    state = secrets.token_urlsafe(32)\n    _state_store[state] = {\n        \"organization_id\": organization_id,\n        \"user_id\": user_id,\n        \"folder_name\": folder_name,\n        \"created_at\": datetime.now(timezone.utc),\n    }",
+        "peekOfCode": "router = APIRouter(prefix=\"/google-drive\", tags=[\"google-drive\"])\ndef _client(current_user: dict) -> GoogleDriveComposioClient:\n    user_id = current_user.get(\"id\")\n    if not user_id:\n        raise HTTPException(status_code=400, detail=\"User missing id\")\n    try:\n        return get_google_drive_client(user_id)\n    except GoogleDriveError as e:\n        raise HTTPException(status_code=503, detail=str(e))\nasync def _require_connected(current_user: dict) -> GoogleDriveComposioClient:",
         "detail": "backend.routers.google_drive",
         "documentation": {}
     },
@@ -10381,6 +10232,15 @@
         "importPath": "backend.routers.upload",
         "description": "backend.routers.upload",
         "peekOfCode": "class YouTubeIngestionRequest(BaseModel):\n    \"\"\"Request model for YouTube URL ingestion\"\"\"\n    youtube_url: str\n    folder_name: str\n@router.post(\"/youtube\")\nasync def ingest_youtube_video(\n    request: YouTubeIngestionRequest,\n    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner\n):\n    \"\"\"",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "RenameDocumentRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class RenameDocumentRequest(BaseModel):\n    \"\"\"New display name for an already-ingested document.\"\"\"\n    new_file_name: str\n@router.put(\"/documents/{document_id}/name\")\nasync def rename_document(\n    document_id: str,\n    payload: RenameDocumentRequest,\n    current_user: dict = Depends(require_uploader)  # write = admin/system_owner\n):\n    \"\"\"",
         "detail": "backend.routers.upload",
         "documentation": {}
     },

@@ -7,6 +7,7 @@ import { useDocumentStore } from "@/lib/stores/documentStore";
 import { useDocuments, useKnowledgeBases, documentKeys } from "@/lib/hooks/useDocuments";
 import { useUploadDocument } from "@/lib/hooks/useUploadDocument";
 import { useDeleteDocument, useDeleteKnowledgeBase } from "@/lib/hooks/useDeleteDocument";
+import { useRenameDocument } from "@/lib/hooks/useRenameDocument";
 import SidebarHeader from "./sidebar/SidebarHeader";
 import FolderTree from "./sidebar/FolderTree";
 import UploadModal from "./sidebar/UploadModal";
@@ -24,6 +25,10 @@ export default function Sidebar() {
   const uploadMutation = useUploadDocument();
   const deleteMutation = useDeleteDocument();
   const deleteKBMutation = useDeleteKnowledgeBase();
+  // Destructured because `mutateAsync` keeps a stable identity across renders
+  // while the mutation object does not — handing the object's method straight
+  // to the tree would re-render every memoized DocumentItem on each render.
+  const { mutateAsync: renameDocument } = useRenameDocument();
 
   // Client-side selection state (stays in Zustand)
   const {
@@ -163,6 +168,19 @@ export default function Sidebar() {
     [documents]
   );
 
+  // Renaming is inline in the row — no confirmation needed. Errors bubble
+  // back to DocumentItem, which keeps the editor open and shows the message.
+  const handleRenameDoc = useCallback(
+    async (docId: string, newFileName: string) => {
+      await renameDocument({
+        docId,
+        newFileName,
+        organizationId: user?.organization_id || "",
+      });
+    },
+    [renameDocument, user?.organization_id]
+  );
+
   const handleDeleteFolder = useCallback((folderName: string) => {
     setDeleteError(null);
     setPendingDelete({ kind: "folder", id: folderName, label: folderName });
@@ -220,6 +238,7 @@ export default function Sidebar() {
           onToggleDoc={toggleDocSelection}
           onSelectAllFolder={handleSelectAllFolder}
           onDeleteDoc={handleDeleteDoc}
+          onRenameDoc={handleRenameDoc}
           onDeleteFolder={handleDeleteFolder}
           deletingDocId={deletingDocId}
           deletingKB={deletingKB}

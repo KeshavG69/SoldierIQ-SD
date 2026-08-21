@@ -115,10 +115,15 @@ export const googleDriveApi = {
     return res.data;
   },
 
-  /** List all folders in the user's Drive (for the folder picker). */
-  listFolders: async (): Promise<DriveFoldersResponse> => {
+  /**
+   * List folders directly under `parentId` (or My Drive root by default).
+   * Only one level per call — big drives have thousands of folders, so the
+   * picker loads top-level fast and can drill down by passing a folder id.
+   */
+  listFolders: async (parentId?: string): Promise<DriveFoldersResponse> => {
+    const qs = parentId ? `?parent=${encodeURIComponent(parentId)}` : "";
     const res = await apiClient.get<DriveFoldersResponse>(
-      "/google-drive/folders"
+      `/google-drive/folders${qs}`
     );
     return res.data;
   },

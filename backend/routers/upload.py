@@ -656,6 +656,65 @@ async def list_documents(
         raise HTTPException(status_code=500, detail=f"Failed to list documents: {str(e)}")
 
 
+class RenameDocumentRequest(BaseModel):
+    """New display name for an already-ingested document."""
+    new_file_name: str
+
+
+@router.put("/documents/{document_id}/name")
+async def rename_document(
+    document_id: str,
+    payload: RenameDocumentRequest,
+    current_user: dict = Depends(require_uploader)  # write = admin/system_owner
+):
+    """
+    Rename a document's display filename.
+
+    Only the PostgreSQL `documents.filename` is authoritative for display —
+    the stored object keeps its original file_key, and the knowledge graph
+    references the document by id — so nothing else has to move.
+
+    Args:
+        document_id: Document UUID
+        payload: New file name
+
+    Returns:
+        Updated document id + new name
+    """
+    try:
+        organization_id = current_user.get("organization_id")
+
+        # Validate document_id is a valid UUID
+        try:
+            uuid.UUID(document_id)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid document_id format: {document_id}")
+
+        if not payload.new_file_name or not payload.new_file_name.strip():
+            raise HTTPException(status_code=400, detail="New file name is required")
+
+        ingestion_service = get_ingestion_service()
+        result = await ingestion_service.rename_document(
+            document_id=document_id,
+            organization_id=organization_id,
+            new_file_name=payload.new_file_name.strip(),
+        )
+
+        return {
+            "success": True,
+            "message": "Document renamed successfully",
+            "data": result
+        }
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"❌ Rename document failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to rename document: {str(e)}")
+
+
 @router.delete("/documents/{document_id}")
 async def delete_document(
     document_id: str,

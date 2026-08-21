@@ -234,16 +234,19 @@ async def list_files_paged(
 
 @router.get("/folders")
 async def list_folders(
+    parent: Optional[str] = None,
     current_user: dict = Depends(require_uploader),
 ) -> Dict[str, Any]:
-    """Return every folder in the user's Drive (with computed paths).
+    """Return folders directly under `parent` (or My Drive root by default).
 
-    Backs the folder-picker UI shown right after connecting, so the user
-    chooses which folders to ingest instead of slurping the whole drive.
+    Only one level is returned per call — a large Drive has thousands of
+    folders, and loading them all is slow. The picker shows top-level folders
+    fast and can drill down by passing ?parent=<folder_id>. Ingesting a folder
+    recurses into its subfolders regardless.
     """
     client = await _require_connected(current_user)
     try:
-        folders = await client.list_folders()
+        folders = await client.list_folders(parent)
     except GoogleDriveError as e:
         raise HTTPException(status_code=502, detail=f"Drive API error: {e}")
     return {"folders": folders}

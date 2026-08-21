@@ -208,6 +208,23 @@ export const documentsApi = {
     return response.data.data;
   },
 
+  // Rename a document's display name. Only the display name changes — the
+  // stored object keeps its file_key and the knowledge graph keeps its chunks,
+  // so this is safe on an already-ingested doc.
+  renameDocument: async (
+    docId: string,
+    newFileName: string
+  ): Promise<{ document_id: string; old_file_name: string; file_name: string }> => {
+    const response = await apiClient.put<ApiResponse<{
+      document_id: string;
+      old_file_name: string;
+      file_name: string;
+    }>>(`/upload/documents/${encodeURIComponent(docId)}/name`, {
+      new_file_name: newFileName,
+    });
+    return response.data.data;
+  },
+
   // Delete document
   deleteDocument: async (docId: string): Promise<void> => {
     await apiClient.delete(`/upload/documents/${encodeURIComponent(docId)}`);
