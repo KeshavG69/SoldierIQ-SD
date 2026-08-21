@@ -182,9 +182,15 @@ export default function LoginPage() {
                 </div>
               </form>
 
-              <div className="hairline mt-14 mb-3" />
-              <div className="flex justify-between items-center">
-                <span className="label">Session logged</span>
+              <div className="hairline mt-14 mb-4" />
+              <Link
+                href="/request-access"
+                className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider border border-[var(--od)] text-[var(--od)] px-4 py-2.5 hover:bg-[var(--od)] hover:text-[var(--bg-alt)] transition-colors"
+              >
+                Request System Owner access →
+              </Link>
+              <div className="flex justify-between items-center mt-4">
+                <span className="label">Need access to an existing org</span>
                 <span className="label mono label-ink">{zulu}</span>
               </div>
             </div>

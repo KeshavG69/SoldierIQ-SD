@@ -244,8 +244,14 @@ export default function SignupPage() {
                 </div>
               </form>
 
-              <div className="hairline mt-14 mb-3" />
-              <div className="flex justify-between items-center">
+              <div className="hairline mt-14 mb-4" />
+              <Link
+                href="/request-access"
+                className="inline-flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider border border-[var(--od)] text-[var(--od)] px-4 py-2.5 hover:bg-[var(--od)] hover:text-[var(--bg-alt)] transition-colors"
+              >
+                Request System Owner access →
+              </Link>
+              <div className="flex justify-between items-center mt-4">
                 <span className="label">No resale · No marketing</span>
                 <span className="label mono label-ink">{zulu}</span>
               </div>

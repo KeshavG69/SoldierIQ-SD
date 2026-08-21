@@ -888,6 +888,30 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Optional",
         "importPath": "typing",
         "description": "typing",
@@ -1360,6 +1384,14 @@
         "documentation": {}
     },
     {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -1377,22 +1409,6 @@
     },
     {
         "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -2412,6 +2428,38 @@
         "documentation": {}
     },
     {
+        "label": "Depends",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "status",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
         "label": "HTTPException",
         "importPath": "fastapi",
         "description": "fastapi",
@@ -2453,38 +2501,6 @@
     },
     {
         "label": "Depends",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "APIRouter",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "Depends",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "HTTPException",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "status",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -2885,6 +2901,14 @@
     },
     {
         "label": "Depends",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "status",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -3893,6 +3917,14 @@
         "documentation": {}
     },
     {
+        "label": "settings",
+        "importPath": "app.settings",
+        "description": "app.settings",
+        "isExtraImport": true,
+        "detail": "app.settings",
+        "documentation": {}
+    },
+    {
         "label": "Settings",
         "importPath": "app.settings",
         "description": "app.settings",
@@ -4069,7 +4101,7 @@
         "documentation": {}
     },
     {
-        "label": "document_access",
+        "label": "access_requests",
         "importPath": "routers",
         "description": "routers",
         "isExtraImport": true,
@@ -4151,6 +4183,14 @@
     },
     {
         "label": "process_youtube_document_task",
+        "importPath": "tasks.ingestion_tasks",
+        "description": "tasks.ingestion_tasks",
+        "isExtraImport": true,
+        "detail": "tasks.ingestion_tasks",
+        "documentation": {}
+    },
+    {
+        "label": "process_uploaded_file_task",
         "importPath": "tasks.ingestion_tasks",
         "description": "tasks.ingestion_tasks",
         "isExtraImport": true,
@@ -4873,7 +4913,7 @@
         "documentation": {}
     },
     {
-        "label": "BaseModel",
+        "label": "EmailStr",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -4881,7 +4921,15 @@
         "documentation": {}
     },
     {
-        "label": "EmailStr",
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -5396,22 +5444,6 @@
         "documentation": {}
     },
     {
-        "label": "RBACManager",
-        "importPath": "clients.kg.rbac",
-        "description": "clients.kg.rbac",
-        "isExtraImport": true,
-        "detail": "clients.kg.rbac",
-        "documentation": {}
-    },
-    {
-        "label": "RBACManager",
-        "importPath": "clients.kg.rbac",
-        "description": "clients.kg.rbac",
-        "isExtraImport": true,
-        "detail": "clients.kg.rbac",
-        "documentation": {}
-    },
-    {
         "label": "falkordb",
         "kind": 6,
         "isExtraImport": true,
@@ -5604,6 +5636,14 @@
         "importPath": "httpx",
         "description": "httpx",
         "detail": "httpx",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
         "documentation": {}
     },
     {
@@ -6195,6 +6235,14 @@
         "documentation": {}
     },
     {
+        "label": "get_idrivee2_client",
+        "importPath": "clients.idrivee2_client",
+        "description": "clients.idrivee2_client",
+        "isExtraImport": true,
+        "detail": "clients.idrivee2_client",
+        "documentation": {}
+    },
+    {
         "label": "detect",
         "importPath": "scenedetect",
         "description": "scenedetect",
@@ -6380,6 +6428,14 @@
         "documentation": {}
     },
     {
+        "label": "SYSTEM_OWNER_ROLE",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
         "label": "get_orgs_client",
         "importPath": "orgs.keycloak_orgs",
         "description": "orgs.keycloak_orgs",
@@ -6389,6 +6445,46 @@
     },
     {
         "label": "KeycloakOrgsError",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "SYSTEM_OWNER_ROLE",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "ADMIN_ROLE_SIGNAL",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "get_orgs_client",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "KeycloakOrgsError",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "SYSTEM_OWNER_ROLE",
         "importPath": "orgs.keycloak_orgs",
         "description": "orgs.keycloak_orgs",
         "isExtraImport": true,
@@ -6428,6 +6524,14 @@
         "documentation": {}
     },
     {
+        "label": "SYSTEM_OWNER_ROLE",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
         "label": "get_orgs_client",
         "importPath": "orgs.keycloak_orgs",
         "description": "orgs.keycloak_orgs",
@@ -6452,6 +6556,14 @@
         "documentation": {}
     },
     {
+        "label": "SYSTEM_OWNER_ROLE",
+        "importPath": "orgs.keycloak_orgs",
+        "description": "orgs.keycloak_orgs",
+        "isExtraImport": true,
+        "detail": "orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
         "label": "get_orgs_client",
         "importPath": "orgs.keycloak_orgs",
         "description": "orgs.keycloak_orgs",
@@ -6468,46 +6580,6 @@
         "documentation": {}
     },
     {
-        "label": "get_current_context",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
-        "label": "get_current_context",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
-        "label": "require_org_admin",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
-        "label": "get_current_context",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
-        "label": "require_org_admin",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
         "label": "require_org_admin",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
@@ -6525,6 +6597,22 @@
     },
     {
         "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "require_uploader",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
         "isExtraImport": true,
@@ -6572,15 +6660,7 @@
         "documentation": {}
     },
     {
-        "label": "get_current_context",
-        "importPath": "orgs.dependencies",
-        "description": "orgs.dependencies",
-        "isExtraImport": true,
-        "detail": "orgs.dependencies",
-        "documentation": {}
-    },
-    {
-        "label": "require_org_admin",
+        "label": "_resolve_role",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
         "isExtraImport": true,
@@ -6593,6 +6673,70 @@
         "description": "orgs.dependencies",
         "isExtraImport": true,
         "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "require_uploader",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "require_uploader",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "send_invitation_email",
+        "importPath": "clients.email_service",
+        "description": "clients.email_service",
+        "isExtraImport": true,
+        "detail": "clients.email_service",
+        "documentation": {}
+    },
+    {
+        "label": "send_invitation_email",
+        "importPath": "clients.email_service",
+        "description": "clients.email_service",
+        "isExtraImport": true,
+        "detail": "clients.email_service",
         "documentation": {}
     },
     {
@@ -6853,14 +6997,6 @@
         "documentation": {}
     },
     {
-        "label": "send_invitation_email",
-        "importPath": "clients.email_service",
-        "description": "clients.email_service",
-        "isExtraImport": true,
-        "detail": "clients.email_service",
-        "documentation": {}
-    },
-    {
         "label": "MindMapRequest",
         "importPath": "models.mindmap",
         "description": "models.mindmap",
@@ -7050,6 +7186,15 @@
         "description": "utils.tak_config_utils",
         "isExtraImport": true,
         "detail": "utils.tak_config_utils",
+        "documentation": {}
+    },
+    {
+        "label": "math",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "math",
+        "description": "math",
+        "detail": "math",
         "documentation": {}
     },
     {
@@ -8086,7 +8231,7 @@
         "kind": 6,
         "importPath": "backend.clients.kg.extraction_gliner",
         "description": "backend.clients.kg.extraction_gliner",
-        "peekOfCode": "class GlinerExtractor:\n    def __init__(\n        self,\n        ontology: dict,\n        model_name: str = \"fastino/gliner2-base-v1\",\n        device: str = \"cpu\",\n        entity_threshold: float = 0.5,\n        relation_threshold: float = 0.5,\n    ):\n        from gliner2 import GLiNER2  # lazy: heavy import",
+        "peekOfCode": "class GlinerExtractor:\n    def __init__(\n        self,\n        ontology: dict,\n        model_name: str = \"fastino/gliner2-base-v1\",\n        device: str = \"cpu\",\n        entity_threshold: float = 0.5,\n        relation_threshold: float = 0.5,\n    ):\n        _pin_torch_threads()",
         "detail": "backend.clients.kg.extraction_gliner",
         "documentation": {}
     },
@@ -9598,7 +9743,16 @@
         "kind": 5,
         "importPath": "backend.orgs.keycloak_orgs",
         "description": "backend.orgs.keycloak_orgs",
-        "peekOfCode": "ADMIN_ROLE_SIGNAL = \"manage-organization\"\nclass KeycloakOrgsError(Exception):\n    \"\"\"Raised when the keycloak-orgs API returns an error status.\"\"\"\n    def __init__(self, status_code: int, message: str):\n        self.status_code = status_code\n        self.message = message\n        super().__init__(f\"[{status_code}] {message}\")\nclass KeycloakOrgsClient:\n    def __init__(self):\n        base = settings.KEYCLOAK_SERVER_URL.rstrip(\"/\")",
+        "peekOfCode": "ADMIN_ROLE_SIGNAL = \"manage-organization\"\n# Custom org role marking a \"System Owner\": can upload/ingest documents and\n# sees everything in the org (like an admin), but holds none of the\n# manage-* org-management roles above (can't remove members, change roles,\n# or manage the org itself). Created per-org on first use (see\n# ensure_org_role) since keycloak-orgs custom roles must exist before being\n# granted.\nSYSTEM_OWNER_ROLE = \"system-owner\"\nclass KeycloakOrgsError(Exception):\n    \"\"\"Raised when the keycloak-orgs API returns an error status.\"\"\"",
+        "detail": "backend.orgs.keycloak_orgs",
+        "documentation": {}
+    },
+    {
+        "label": "SYSTEM_OWNER_ROLE",
+        "kind": 5,
+        "importPath": "backend.orgs.keycloak_orgs",
+        "description": "backend.orgs.keycloak_orgs",
+        "peekOfCode": "SYSTEM_OWNER_ROLE = \"system-owner\"\nclass KeycloakOrgsError(Exception):\n    \"\"\"Raised when the keycloak-orgs API returns an error status.\"\"\"\n    def __init__(self, status_code: int, message: str):\n        self.status_code = status_code\n        self.message = message\n        super().__init__(f\"[{status_code}] {message}\")\nclass KeycloakOrgsClient:\n    def __init__(self):\n        base = settings.KEYCLOAK_SERVER_URL.rstrip(\"/\")",
         "detail": "backend.orgs.keycloak_orgs",
         "documentation": {}
     },
@@ -9681,6 +9835,42 @@
         "description": "backend.orgs.models",
         "peekOfCode": "VALID_ROLES = {\"admin\", \"user\"}\n# ----------------------------------------------------------------------------\n# Organizations\n# ----------------------------------------------------------------------------\nclass OrganizationResponse(BaseModel):\n    id: str\n    name: str\n    slug: str\n    owner_user_id: str\n    created_at: Optional[datetime] = None",
         "detail": "backend.orgs.models",
+        "documentation": {}
+    },
+    {
+        "label": "AccessRequestCreate",
+        "kind": 6,
+        "importPath": "backend.routers.access_requests",
+        "description": "backend.routers.access_requests",
+        "peekOfCode": "class AccessRequestCreate(BaseModel):\n    requester_email: EmailStr\n    admin_email: EmailStr\n    requester_name: Optional[str] = Field(None, max_length=200)\n    message: Optional[str] = Field(None, max_length=1000)\n@router.post(\"\")\nasync def create_access_request(payload: AccessRequestCreate):\n    \"\"\"Public: submit a request for System Owner access, addressed to an\n    org admin's email.\"\"\"\n    await _ensure_table()",
+        "detail": "backend.routers.access_requests",
+        "documentation": {}
+    },
+    {
+        "label": "router",
+        "kind": 5,
+        "importPath": "backend.routers.access_requests",
+        "description": "backend.routers.access_requests",
+        "peekOfCode": "router = APIRouter(prefix=\"/access-requests\", tags=[\"access-requests\"])\n_TABLE_READY = False\n_DDL = \"\"\"\nCREATE TABLE IF NOT EXISTS access_requests (\n    id UUID PRIMARY KEY,\n    requester_email TEXT NOT NULL,\n    requester_name TEXT,\n    admin_email TEXT NOT NULL,\n    message TEXT,\n    status TEXT NOT NULL DEFAULT 'pending',",
+        "detail": "backend.routers.access_requests",
+        "documentation": {}
+    },
+    {
+        "label": "_TABLE_READY",
+        "kind": 5,
+        "importPath": "backend.routers.access_requests",
+        "description": "backend.routers.access_requests",
+        "peekOfCode": "_TABLE_READY = False\n_DDL = \"\"\"\nCREATE TABLE IF NOT EXISTS access_requests (\n    id UUID PRIMARY KEY,\n    requester_email TEXT NOT NULL,\n    requester_name TEXT,\n    admin_email TEXT NOT NULL,\n    message TEXT,\n    status TEXT NOT NULL DEFAULT 'pending',\n    granted_org_ids TEXT[] NOT NULL DEFAULT '{}',",
+        "detail": "backend.routers.access_requests",
+        "documentation": {}
+    },
+    {
+        "label": "_DDL",
+        "kind": 5,
+        "importPath": "backend.routers.access_requests",
+        "description": "backend.routers.access_requests",
+        "peekOfCode": "_DDL = \"\"\"\nCREATE TABLE IF NOT EXISTS access_requests (\n    id UUID PRIMARY KEY,\n    requester_email TEXT NOT NULL,\n    requester_name TEXT,\n    admin_email TEXT NOT NULL,\n    message TEXT,\n    status TEXT NOT NULL DEFAULT 'pending',\n    granted_org_ids TEXT[] NOT NULL DEFAULT '{}',\n    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),",
+        "detail": "backend.routers.access_requests",
         "documentation": {}
     },
     {
@@ -9774,24 +9964,6 @@
         "documentation": {}
     },
     {
-        "label": "GrantAccessRequest",
-        "kind": 6,
-        "importPath": "backend.routers.document_access",
-        "description": "backend.routers.document_access",
-        "peekOfCode": "class GrantAccessRequest(BaseModel):\n    email: EmailStr\n@router.get(\"/{document_id}/access\")\nasync def get_document_access(document_id: str, context: dict = Depends(require_org_admin)):\n    \"\"\"List the emails that can access a document (admin only).\"\"\"\n    try:\n        emails = await RBACManager(context[\"organization_id\"]).who_can_access(document_id)\n    except Exception as e:\n        logger.error(f\"[doc-access] who_can_access failed: {e}\")\n        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=\"Could not read document access\")",
-        "detail": "backend.routers.document_access",
-        "documentation": {}
-    },
-    {
-        "label": "router",
-        "kind": 5,
-        "importPath": "backend.routers.document_access",
-        "description": "backend.routers.document_access",
-        "peekOfCode": "router = APIRouter(prefix=\"/documents\", tags=[\"document-access\"])\nclass GrantAccessRequest(BaseModel):\n    email: EmailStr\n@router.get(\"/{document_id}/access\")\nasync def get_document_access(document_id: str, context: dict = Depends(require_org_admin)):\n    \"\"\"List the emails that can access a document (admin only).\"\"\"\n    try:\n        emails = await RBACManager(context[\"organization_id\"]).who_can_access(document_id)\n    except Exception as e:\n        logger.error(f\"[doc-access] who_can_access failed: {e}\")",
-        "detail": "backend.routers.document_access",
-        "documentation": {}
-    },
-    {
         "label": "router",
         "kind": 5,
         "importPath": "backend.routers.flashcards",
@@ -9814,7 +9986,7 @@
         "kind": 6,
         "importPath": "backend.routers.google_drive",
         "description": "backend.routers.google_drive",
-        "peekOfCode": "class DriveIngestRequest(BaseModel):\n    folder_name: str = Field(default=\"Google Drive\", description=\"Folder to file ingested docs under\")\n    files: List[DrivePickedFile] = Field(..., min_length=1)\n@router.post(\"/ingest\")\nasync def ingest(\n    body: DriveIngestRequest,\n    current_user: dict = Depends(require_org_admin),\n) -> Dict[str, Any]:\n    \"\"\"Queue one Celery task per picked file. Returns the doc ids it created.\n    Mirrors the regular /upload flow: we create document rows in PostgreSQL",
+        "peekOfCode": "class DriveIngestRequest(BaseModel):\n    folder_name: str = Field(default=\"Google Drive\", description=\"Folder to file ingested docs under\")\n    files: List[DrivePickedFile] = Field(..., min_length=1)\n@router.post(\"/ingest\")\nasync def ingest(\n    body: DriveIngestRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:\n    \"\"\"Queue one Celery task per picked file. Returns the doc ids it created.\n    Mirrors the regular /upload flow: we create document rows in PostgreSQL",
         "detail": "backend.routers.google_drive",
         "documentation": {}
     },
@@ -9823,7 +9995,7 @@
         "kind": 6,
         "importPath": "backend.routers.google_drive",
         "description": "backend.routers.google_drive",
-        "peekOfCode": "class IngestFolderSpec(BaseModel):\n    id: str = Field(..., description=\"Drive folder (or shared-drive) id\")\n    name: str = Field(..., description=\"Folder name — used as the KB folder\")\nclass IngestFoldersRequest(BaseModel):\n    folders: List[IngestFolderSpec] = Field(..., min_length=1)\n@router.post(\"/ingest-folders\")\nasync def ingest_folders(\n    body: IngestFoldersRequest,\n    current_user: dict = Depends(require_org_admin),\n) -> Dict[str, Any]:",
+        "peekOfCode": "class IngestFolderSpec(BaseModel):\n    id: str = Field(..., description=\"Drive folder (or shared-drive) id\")\n    name: str = Field(..., description=\"Folder name — used as the KB folder\")\nclass IngestFoldersRequest(BaseModel):\n    folders: List[IngestFolderSpec] = Field(..., min_length=1)\n@router.post(\"/ingest-folders\")\nasync def ingest_folders(\n    body: IngestFoldersRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:",
         "detail": "backend.routers.google_drive",
         "documentation": {}
     },
@@ -9832,7 +10004,7 @@
         "kind": 6,
         "importPath": "backend.routers.google_drive",
         "description": "backend.routers.google_drive",
-        "peekOfCode": "class IngestFoldersRequest(BaseModel):\n    folders: List[IngestFolderSpec] = Field(..., min_length=1)\n@router.post(\"/ingest-folders\")\nasync def ingest_folders(\n    body: IngestFoldersRequest,\n    current_user: dict = Depends(require_org_admin),\n) -> Dict[str, Any]:\n    \"\"\"Ingest every supported file under the selected Drive folders.\n    Each selected folder's files (recursively, including subfolders) land in a\n    KB folder named after that Drive folder — so \"HR\" / \"Services\" show up as",
+        "peekOfCode": "class IngestFoldersRequest(BaseModel):\n    folders: List[IngestFolderSpec] = Field(..., min_length=1)\n@router.post(\"/ingest-folders\")\nasync def ingest_folders(\n    body: IngestFoldersRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:\n    \"\"\"Ingest every supported file under the selected Drive folders.\n    Each selected folder's files (recursively, including subfolders) land in a\n    KB folder named after that Drive folder — so \"HR\" / \"Services\" show up as",
         "detail": "backend.routers.google_drive",
         "documentation": {}
     },
@@ -9868,7 +10040,7 @@
         "kind": 6,
         "importPath": "backend.routers.invitations",
         "description": "backend.routers.invitations",
-        "peekOfCode": "class InviteRequest(BaseModel):\n    email: EmailStr\n    role: str = Field(\"user\", description=\"Role in the org: 'admin' or 'user'\")\nclass AcceptRequest(BaseModel):\n    invitation_id: str\n    organization_id: str\n    firstName: Optional[str] = Field(None, min_length=1, max_length=100)\n    lastName: Optional[str] = Field(None, min_length=1, max_length=100)\n    password: Optional[str] = Field(None, min_length=8, max_length=128)\ndef _accept_link(inv_id: str, org_id: str) -> str:",
+        "peekOfCode": "class InviteRequest(BaseModel):\n    email: EmailStr\n    role: str = Field(\"user\", description=\"Role in the org: 'admin', 'system_owner', or 'user'\")\nclass AcceptRequest(BaseModel):\n    invitation_id: str\n    organization_id: str\n    firstName: Optional[str] = Field(None, min_length=1, max_length=100)\n    lastName: Optional[str] = Field(None, min_length=1, max_length=100)\n    password: Optional[str] = Field(None, min_length=8, max_length=128)\ndef _accept_link(inv_id: str, org_id: str) -> str:",
         "detail": "backend.routers.invitations",
         "documentation": {}
     },
@@ -9886,7 +10058,7 @@
         "kind": 5,
         "importPath": "backend.routers.invitations",
         "description": "backend.routers.invitations",
-        "peekOfCode": "router = APIRouter(prefix=\"/invitations\", tags=[\"invitations\"])\nclass InviteRequest(BaseModel):\n    email: EmailStr\n    role: str = Field(\"user\", description=\"Role in the org: 'admin' or 'user'\")\nclass AcceptRequest(BaseModel):\n    invitation_id: str\n    organization_id: str\n    firstName: Optional[str] = Field(None, min_length=1, max_length=100)\n    lastName: Optional[str] = Field(None, min_length=1, max_length=100)\n    password: Optional[str] = Field(None, min_length=8, max_length=128)",
+        "peekOfCode": "router = APIRouter(prefix=\"/invitations\", tags=[\"invitations\"])\nclass InviteRequest(BaseModel):\n    email: EmailStr\n    role: str = Field(\"user\", description=\"Role in the org: 'admin', 'system_owner', or 'user'\")\nclass AcceptRequest(BaseModel):\n    invitation_id: str\n    organization_id: str\n    firstName: Optional[str] = Field(None, min_length=1, max_length=100)\n    lastName: Optional[str] = Field(None, min_length=1, max_length=100)\n    password: Optional[str] = Field(None, min_length=8, max_length=128)",
         "detail": "backend.routers.invitations",
         "documentation": {}
     },
@@ -9913,7 +10085,7 @@
         "kind": 6,
         "importPath": "backend.routers.organizations",
         "description": "backend.routers.organizations",
-        "peekOfCode": "class RoleChange(BaseModel):\n    role: str  # \"admin\" | \"user\"\n@router.get(\"/me\")\nasync def get_my_organization(context: dict = Depends(get_current_context)):\n    \"\"\"The caller's active organization.\"\"\"\n    return {\n        \"id\": context.get(\"organization_id\"),\n        \"name\": context.get(\"organization_name\"),\n        \"role\": context.get(\"role\"),\n    }",
+        "peekOfCode": "class RoleChange(BaseModel):\n    role: str  # \"admin\" | \"system_owner\" | \"user\"\n@router.get(\"/me\")\nasync def get_my_organization(context: dict = Depends(get_current_context)):\n    \"\"\"The caller's active organization.\"\"\"\n    return {\n        \"id\": context.get(\"organization_id\"),\n        \"name\": context.get(\"organization_name\"),\n        \"role\": context.get(\"role\"),\n    }",
         "detail": "backend.routers.organizations",
         "documentation": {}
     },
@@ -9922,7 +10094,7 @@
         "kind": 5,
         "importPath": "backend.routers.organizations",
         "description": "backend.routers.organizations",
-        "peekOfCode": "router = APIRouter(prefix=\"/organizations\", tags=[\"organizations\"])\nclass RoleChange(BaseModel):\n    role: str  # \"admin\" | \"user\"\n@router.get(\"/me\")\nasync def get_my_organization(context: dict = Depends(get_current_context)):\n    \"\"\"The caller's active organization.\"\"\"\n    return {\n        \"id\": context.get(\"organization_id\"),\n        \"name\": context.get(\"organization_name\"),\n        \"role\": context.get(\"role\"),",
+        "peekOfCode": "router = APIRouter(prefix=\"/organizations\", tags=[\"organizations\"])\nclass RoleChange(BaseModel):\n    role: str  # \"admin\" | \"system_owner\" | \"user\"\n@router.get(\"/me\")\nasync def get_my_organization(context: dict = Depends(get_current_context)):\n    \"\"\"The caller's active organization.\"\"\"\n    return {\n        \"id\": context.get(\"organization_id\"),\n        \"name\": context.get(\"organization_name\"),\n        \"role\": context.get(\"role\"),",
         "detail": "backend.routers.organizations",
         "documentation": {}
     },
@@ -10030,7 +10202,7 @@
         "kind": 6,
         "importPath": "backend.routers.sharepoint",
         "description": "backend.routers.sharepoint",
-        "peekOfCode": "class IngestLibrarySpec(BaseModel):\n    id: str = Field(..., description=\"Drive (document library) id\")\n    name: str = Field(..., description=\"Library name — used as the KB folder\")\nclass IngestLibrariesRequest(BaseModel):\n    libraries: List[IngestLibrarySpec] = Field(..., min_length=1)\n@router.post(\"/ingest-libraries\")\nasync def ingest_libraries(\n    body: IngestLibrariesRequest,\n    current_user: dict = Depends(require_org_admin),\n) -> Dict[str, Any]:",
+        "peekOfCode": "class IngestLibrarySpec(BaseModel):\n    id: str = Field(..., description=\"Drive (document library) id\")\n    name: str = Field(..., description=\"Library name — used as the KB folder\")\nclass IngestLibrariesRequest(BaseModel):\n    libraries: List[IngestLibrarySpec] = Field(..., min_length=1)\n@router.post(\"/ingest-libraries\")\nasync def ingest_libraries(\n    body: IngestLibrariesRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:",
         "detail": "backend.routers.sharepoint",
         "documentation": {}
     },
@@ -10039,7 +10211,7 @@
         "kind": 6,
         "importPath": "backend.routers.sharepoint",
         "description": "backend.routers.sharepoint",
-        "peekOfCode": "class IngestLibrariesRequest(BaseModel):\n    libraries: List[IngestLibrarySpec] = Field(..., min_length=1)\n@router.post(\"/ingest-libraries\")\nasync def ingest_libraries(\n    body: IngestLibrariesRequest,\n    current_user: dict = Depends(require_org_admin),\n) -> Dict[str, Any]:\n    \"\"\"Queue discovery for each selected library. Each library's files\n    (recursively) land in a KB folder named after the library. Files already\n    ingested are skipped via metadata.sharepoint_item_id dedup.\"\"\"",
+        "peekOfCode": "class IngestLibrariesRequest(BaseModel):\n    libraries: List[IngestLibrarySpec] = Field(..., min_length=1)\n@router.post(\"/ingest-libraries\")\nasync def ingest_libraries(\n    body: IngestLibrariesRequest,\n    current_user: dict = Depends(require_uploader),\n) -> Dict[str, Any]:\n    \"\"\"Queue discovery for each selected library. Each library's files\n    (recursively) land in a KB folder named after the library. Files already\n    ingested are skipped via metadata.sharepoint_item_id dedup.\"\"\"",
         "detail": "backend.routers.sharepoint",
         "documentation": {}
     },
@@ -10107,11 +10279,65 @@
         "documentation": {}
     },
     {
+        "label": "PresignUploadRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class PresignUploadRequest(BaseModel):\n    \"\"\"Request a presigned iDrive PUT URL for one file, before any bytes move.\"\"\"\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n@router.post(\"/presign\")\nasync def presign_upload(\n    payload: PresignUploadRequest,\n    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner\n):",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "ConfirmUploadRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class ConfirmUploadRequest(BaseModel):\n    \"\"\"Sent once the browser's direct PUT to iDrive finishes.\"\"\"\n    document_id: str\n    file_key: str\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n    file_size_mb: Optional[float] = None\n@router.post(\"/confirm\")\nasync def confirm_upload(",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "PresignMultipartRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class PresignMultipartRequest(BaseModel):\n    \"\"\"Request a multipart upload session for one (large) file.\"\"\"\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n    file_size_bytes: int\n@router.post(\"/presign-multipart\")\nasync def presign_multipart_upload(\n    payload: PresignMultipartRequest,\n    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "MultipartPart",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class MultipartPart(BaseModel):\n    part_number: int\n    etag: str\nclass CompleteMultipartRequest(BaseModel):\n    \"\"\"Sent once every part has uploaded successfully.\"\"\"\n    document_id: str\n    file_key: str\n    upload_id: str\n    filename: str\n    folder_name: str",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "CompleteMultipartRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class CompleteMultipartRequest(BaseModel):\n    \"\"\"Sent once every part has uploaded successfully.\"\"\"\n    document_id: str\n    file_key: str\n    upload_id: str\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n    file_size_mb: Optional[float] = None\n    parts: List[MultipartPart]",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "AbortMultipartRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class AbortMultipartRequest(BaseModel):\n    \"\"\"Sent if a part fails past all retries — cleans up the orphaned S3\n    session and marks the document failed instead of leaving it stuck on\n    'processing' forever.\"\"\"\n    document_id: str\n    file_key: str\n    upload_id: str\n@router.post(\"/abort-multipart\")\nasync def abort_multipart_upload_endpoint(\n    payload: AbortMultipartRequest,",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
         "label": "YouTubeIngestionRequest",
         "kind": 6,
         "importPath": "backend.routers.upload",
         "description": "backend.routers.upload",
-        "peekOfCode": "class YouTubeIngestionRequest(BaseModel):\n    \"\"\"Request model for YouTube URL ingestion\"\"\"\n    youtube_url: str\n    folder_name: str\n@router.post(\"/youtube\")\nasync def ingest_youtube_video(\n    request: YouTubeIngestionRequest,\n    current_user: dict = Depends(require_org_admin)  # ingestion = admin only\n):\n    \"\"\"",
+        "peekOfCode": "class YouTubeIngestionRequest(BaseModel):\n    \"\"\"Request model for YouTube URL ingestion\"\"\"\n    youtube_url: str\n    folder_name: str\n@router.post(\"/youtube\")\nasync def ingest_youtube_video(\n    request: YouTubeIngestionRequest,\n    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner\n):\n    \"\"\"",
         "detail": "backend.routers.upload",
         "documentation": {}
     },
@@ -10120,7 +10346,16 @@
         "kind": 5,
         "importPath": "backend.routers.upload",
         "description": "backend.routers.upload",
-        "peekOfCode": "router = APIRouter(prefix=\"/upload\", tags=[\"upload\"])\n@router.post(\"/documents\")\nasync def upload_documents(\n    files: List[UploadFile] = File(..., description=\"Multiple files to upload\"),\n    folder_name: str = Form(..., description=\"Folder name for organization\"),\n    current_user: dict = Depends(require_org_admin)  # ingestion = admin only\n):\n    \"\"\"\n    Upload multiple documents for ingestion (Celery background processing)\n    This endpoint:",
+        "peekOfCode": "router = APIRouter(prefix=\"/upload\", tags=[\"upload\"])\nclass PresignUploadRequest(BaseModel):\n    \"\"\"Request a presigned iDrive PUT URL for one file, before any bytes move.\"\"\"\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n@router.post(\"/presign\")\nasync def presign_upload(\n    payload: PresignUploadRequest,\n    current_user: dict = Depends(require_uploader)  # ingestion = admin/system_owner",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
+        "label": "MULTIPART_PART_SIZE_BYTES",
+        "kind": 5,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "MULTIPART_PART_SIZE_BYTES = 20 * 1024 * 1024\nclass PresignMultipartRequest(BaseModel):\n    \"\"\"Request a multipart upload session for one (large) file.\"\"\"\n    filename: str\n    folder_name: str\n    content_type: Optional[str] = None\n    file_size_bytes: int\n@router.post(\"/presign-multipart\")\nasync def presign_multipart_upload(\n    payload: PresignMultipartRequest,",
         "detail": "backend.routers.upload",
         "documentation": {}
     },
@@ -10805,6 +11040,15 @@
         "importPath": "backend.tasks.ingestion_tasks",
         "description": "backend.tasks.ingestion_tasks",
         "peekOfCode": "def process_single_document_task(\n    self,\n    document_id: str,\n    file_key: str,\n    content_b64: str,\n    filename: str,\n    content_type: str,\n    folder_name: str,\n    user_id: str = None,\n    organization_id: str = None",
+        "detail": "backend.tasks.ingestion_tasks",
+        "documentation": {}
+    },
+    {
+        "label": "process_uploaded_file_task",
+        "kind": 2,
+        "importPath": "backend.tasks.ingestion_tasks",
+        "description": "backend.tasks.ingestion_tasks",
+        "peekOfCode": "def process_uploaded_file_task(\n    self,\n    document_id: str,\n    file_key: str,\n    filename: str,\n    content_type: str,\n    folder_name: str,\n    user_id: str = None,\n    organization_id: str = None,\n) -> Dict[str, Any]:",
         "detail": "backend.tasks.ingestion_tasks",
         "documentation": {}
     },

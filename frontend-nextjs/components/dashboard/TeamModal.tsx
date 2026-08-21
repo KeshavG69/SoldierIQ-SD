@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { organizationsApi, OrgMember } from "@/lib/api/organizations";
 import { invitationsApi, OrgInvitation } from "@/lib/api/invitations";
+import { accessRequestsApi, AccessRequest } from "@/lib/api/accessRequests";
 import { Z_INDEX } from "@/lib/constants/zIndex";
 
 const inputCls =
@@ -41,6 +42,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
 
   const [members, setMembers] = useState<OrgMember[]>([]);
   const [invites, setInvites] = useState<OrgInvitation[]>([]);
+  const [accessReqs, setAccessReqs] = useState<AccessRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -60,6 +62,11 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
       if (isAdmin) {
         try {
           setInvites(await invitationsApi.list());
+        } catch {
+          /* ignore */
+        }
+        try {
+          setAccessReqs(await accessRequestsApi.list());
         } catch {
           /* ignore */
         }
@@ -132,6 +139,44 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
       setInvites((x) => x.filter((i) => i.id !== id));
     } catch {
       /* ignore */
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleApproveRequest = async (req: AccessRequest) => {
+    setBusy(req.id);
+    setError(null);
+    try {
+      await accessRequestsApi.approve(req.id);
+      // Approved for THIS org → drops out of this org's pending list.
+      setAccessReqs((x) => x.filter((r) => r.id !== req.id));
+      // Refresh members (an existing user may have just been upgraded to
+      // System Owner) and invitations (a new person got a fresh invite).
+      try {
+        setMembers(await organizationsApi.listMembers());
+      } catch {
+        /* ignore */
+      }
+      try {
+        setInvites(await invitationsApi.list());
+      } catch {
+        /* ignore */
+      }
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || "Failed to approve request.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleDenyRequest = async (req: AccessRequest) => {
+    setBusy(req.id);
+    try {
+      await accessRequestsApi.deny(req.id);
+      setAccessReqs((x) => x.filter((r) => r.id !== req.id));
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || "Failed to deny request.");
     } finally {
       setBusy(null);
     }
@@ -272,6 +317,54 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
                 </div>
               )}
             </div>
+
+            {/* Access requests (admin only) — people asking for System Owner
+                access in THIS org. Approving sends them an invite for this org;
+                the same request must be approved separately in each org. */}
+            {isAdmin && accessReqs.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Access requests ({accessReqs.length})
+                </h3>
+                <p className="text-[11px] text-muted-foreground mb-2">
+                  Requests for System Owner access to <span className="font-medium">{user?.organization_name}</span>.
+                </p>
+                <div className="space-y-1">
+                  {accessReqs.map((r) => (
+                    <div key={r.id} className="flex items-center gap-3 px-2 py-2 rounded-lg bg-surface-2 dark:bg-card/60">
+                      <span className="w-8 h-8 rounded-full bg-blue-500/15 text-blue-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                        {(r.requester_name || r.requester_email).charAt(0).toUpperCase()}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">
+                          {r.requester_name || r.requester_email}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate">{r.requester_email}</div>
+                        {r.message && (
+                          <div className="text-[11px] text-muted-foreground mt-0.5 italic truncate">“{r.message}”</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleApproveRequest(r)}
+                          disabled={busy === r.id}
+                          className="text-[11px] font-medium px-2 py-1 rounded-md bg-brand text-brand-foreground hover:bg-brand-hover shadow-accent disabled:opacity-60 transition-all"
+                        >
+                          {busy === r.id ? "…" : "Approve"}
+                        </button>
+                        <button
+                          onClick={() => handleDenyRequest(r)}
+                          disabled={busy === r.id}
+                          className="text-[11px] font-medium text-red-500 hover:text-red-600 px-1.5 py-1 rounded transition-colors"
+                        >
+                          Deny
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Pending invitations (admin only) */}
             {isAdmin && invites.length > 0 && (
