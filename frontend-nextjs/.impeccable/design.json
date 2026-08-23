@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-21T17:37:21Z",
+  "title": "Design System: SoldierIQ",
+  "extensions": {
+    "colorMeta": {
+      "ground": { "role": "neutral", "displayName": "Graphite Green", "canonical": "#0B0F0E", "tonalRamp": ["#070A09", "#0B0F0E", "#101514", "#161D1B", "#1F2624", "#2C3430", "#454E49", "#99A08F"] },
+      "olive-drab": { "role": "primary", "displayName": "Olive Drab", "canonical": "#B2AA7D", "tonalRamp": ["#3A3623", "#4E4930", "#635C3D", "#837B54", "#9C9268", "#B2AA7D", "#C6BE8F", "#DAD4AF"] },
+      "signal-red": { "role": "secondary", "displayName": "Signal Red", "canonical": "#CC4B39", "tonalRamp": ["#3E140E", "#5A1D14", "#7C271B", "#9E3324", "#B84030", "#CC4B39", "#DB6B5B", "#E8968A"] },
+      "paper": { "role": "tertiary", "displayName": "Estimate Manila", "canonical": "#E9E3D1", "tonalRamp": ["#55584A", "#7A7860", "#9C987C", "#C6BC9F", "#DED6C0", "#E0D9C2", "#E9E3D1", "#F3EEDF"] },
+      "ink": { "role": "neutral", "displayName": "Warm Bone Ink", "canonical": "#E7E6DC", "tonalRamp": ["#5C6259", "#727868", "#8A907E", "#99A08F", "#B4B8AB", "#D2D3C8", "#E7E6DC", "#FBFBF6"] },
+      "supported-green": { "role": "secondary", "displayName": "Supported Green", "canonical": "#7FA65E", "tonalRamp": ["#26331B", "#374A26", "#4E6B34", "#5F8145", "#6F9350", "#7FA65E", "#9BBB80", "#BCD2A6"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Monumental uppercase hero and section headlines (Saira Condensed 800)." },
+      "command": { "displayName": "Command", "purpose": "Capability names, sheet titles, masthead (Saira Condensed 700, uppercase)." },
+      "body": { "displayName": "Body", "purpose": "Leads and paragraphs; measure ~52ch (Public Sans)." },
+      "label": { "displayName": "Label", "purpose": "Section labels, figure captions, status readouts (Overpass Mono, tracked, uppercase)." },
+      "mono": { "displayName": "Data", "purpose": "Grades, citations, counters, timestamps, coordinates — tabular figures." }
+    },
+    "shadows": [
+      { "name": "sheet-lift", "value": "0 22px 50px -18px rgba(0,0,0,0.7), 0 6px 18px -8px rgba(0,0,0,0.5)", "purpose": "The one warm estimate sheet, lifted onto the dark operations ground. Dark surfaces otherwise carry no shadow." },
+      { "name": "button-hover-glow", "value": "0 6px 22px -6px rgba(178,170,125,0.14)", "purpose": "Low olive glow under the primary action on hover." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Exponential ease-out for reveals, counters, and state transitions." },
+      { "name": "counter-count-up", "value": "1100ms ease-out on view", "purpose": "Archive instrument counters animate from 0 when scrolled into view; the signature interaction (reliability scrub) is instant." },
+      { "name": "reveal", "value": "iq-rise 640ms — opacity 0 + translateY(10px) → none, once", "purpose": "Restrained one-shot scroll reveal; honored only when prefers-reduced-motion is not set." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "container", "value": "1320px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The operational primary action (Request access). Olive-drab slab, square, uppercase command type.",
+      "html": "<button class=\"ds-btn-primary\">Request access</button>",
+      "css": ".ds-btn-primary { display:inline-flex; align-items:center; gap:0.55rem; background:#B2AA7D; color:#14170D; font-family:'Saira Condensed',sans-serif; font-weight:700; font-size:14px; letter-spacing:0.04em; text-transform:uppercase; padding:0.85rem 1.4rem; border:1px solid #B2AA7D; border-radius:0; cursor:pointer; transition:transform 150ms cubic-bezier(0.22,1,0.36,1), background-color 180ms, box-shadow 180ms; } .ds-btn-primary:hover { background:#C6BE8F; box-shadow:0 6px 22px -6px rgba(178,170,125,0.24); } .ds-btn-primary:active { transform:translateY(1px); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action (Sign in). Transparent with a hairline border that shifts olive on hover.",
+      "html": "<button class=\"ds-btn-ghost\">Sign in</button>",
+      "css": ".ds-btn-ghost { display:inline-flex; align-items:center; gap:0.5rem; background:transparent; color:#E7E6DC; font-family:'Saira Condensed',sans-serif; font-weight:600; font-size:14px; letter-spacing:0.04em; text-transform:uppercase; padding:0.85rem 1.3rem; border:1px solid #2C3430; border-radius:0; cursor:pointer; transition:border-color 180ms, color 180ms; } .ds-btn-ghost:hover { border-color:#B2AA7D; color:#B2AA7D; }"
+    },
+    {
+      "name": "Reliability Grade Chip",
+      "kind": "chip",
+      "refersTo": "grade-chip",
+      "description": "NATO admiralty source grade (reliability A–F / credibility 1–6). Border color encodes reliability band.",
+      "html": "<span class=\"ds-grade ds-grade-hi\">A2</span> <span class=\"ds-grade ds-grade-lo\">F6</span>",
+      "css": ".ds-grade { font-family:'Overpass Mono',monospace; font-size:11px; font-weight:700; letter-spacing:0.04em; padding:1px 5px; border:1px solid currentColor; display:inline-flex; line-height:1.35; } .ds-grade-hi { color:#4E6B34; } .ds-grade-lo { color:#B03A2A; }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "Mono uppercase label used for figure captions and status readouts.",
+      "html": "<span class=\"ds-label\">Fig. I — Intelligence estimate, live</span>",
+      "css": ".ds-label { font-family:'Overpass Mono',monospace; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.16em; color:#99A08F; }"
+    },
+    {
+      "name": "Reliability Scrub",
+      "kind": "input",
+      "refersTo": "reliability-scrub",
+      "description": "Plotting-style range slider that sets the minimum acceptable source reliability; bare track, thin signal-red thumb.",
+      "html": "<input class=\"ds-range\" type=\"range\" min=\"0\" max=\"5\" value=\"0\" aria-label=\"Minimum source reliability\">",
+      "css": ".ds-range { -webkit-appearance:none; appearance:none; width:100%; height:22px; background:transparent; cursor:ew-resize; } .ds-range::-webkit-slider-runnable-track { height:2px; background:#C6BC9F; } .ds-range::-webkit-slider-thumb { -webkit-appearance:none; width:3px; height:22px; margin-top:-10px; background:#B03A2A; border:none; border-radius:0; } .ds-range:focus-visible { outline:2px solid #B03A2A; outline-offset:4px; }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat dark surface with a 1px rule and drawn olive registration ticks; no shadow.",
+      "html": "<div class=\"ds-panel\"><span class=\"ds-reg\"></span>Registered graph layers</div>",
+      "css": ".ds-panel { position:relative; background:#101514; color:#E7E6DC; border:1px solid #1F2624; border-radius:0; padding:24px; font-family:'Public Sans',sans-serif; } .ds-reg::before, .ds-reg::after { content:''; position:absolute; width:9px; height:9px; border:1px solid #B2AA7D; } .ds-reg::before { top:-1px; left:-1px; border-right:none; border-bottom:none; } .ds-reg::after { bottom:-1px; right:-1px; border-left:none; border-top:none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Intelligence Estimate",
+    "overview": "SoldierIQ answers as a finished all-source intelligence estimate — an assessed answer, a confidence lexicon, and footnoted source-reliability grading. The identity makes that literal: the surface is a dark analytic operations ground on which a single warm estimate sheet is worked. Provenance is not a claim on this page, it is the material — a real cited assessment with a reliability ledger the visitor can re-grade in their own hands. The world deliberately refuses the two ruts this category falls into: the dark-HUD tactical dashboard and the neutral enterprise-AI hero. It is mission-grade without cosplay: authority comes from the analytic-document tradition, not from HUD decoration.",
+    "keyCharacteristics": [
+      "A dark graphite-green operations ground carrying one warm, worked estimate sheet.",
+      "Condensed command display (Saira) + government body (Public Sans) + Highway-Gothic mono (Overpass Mono).",
+      "Square corners, hairline rules, drawn marks — no pills, no soft shadows on dark, no glyph icons.",
+      "Every metric and citation is real data type (tabular mono), never mono-as-costume.",
+      "One authored interaction — the reliability scrub — carries the thesis; motion elsewhere is restrained."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "Olive drab is the only saturated brand color and stays under ~10% of any screen; its rarity is the authority. Signal red is rarer still and means classification, citation, or alarm — never emphasis.", "section": "colors" },
+      { "name": "The Warm Sheet Rule", "body": "There is exactly one light surface — the estimate sheet. It earns focus by contrast; do not add second and third paper panels or the proof loses its weight.", "section": "colors" },
+      { "name": "The Data-Is-Mono Rule", "body": "Monospace appears only on real measurement — grades, citations, counts, timestamps, coordinates. It is never a technical costume on prose.", "section": "typography" },
+      { "name": "The Flat-Ground Rule", "body": "Dark surfaces never carry shadows; they layer by tone and hairline. Shadow is reserved for the one paper object.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep the ground flat and layer by tone + 1px hairlines; reserve shadow for the one paper sheet.",
+      "Do render every metric, grade, citation, and timestamp in Overpass Mono with tabular figures.",
+      "Do let headlines stand alone; use figure captions (Fig. N —) only on an actual figure.",
+      "Do keep olive drab sparse (<=10%) and signal red rarer still (classification / citation / alarm only).",
+      "Do label all demonstration data synthetic."
+    ],
+    "donts": [
+      "Don't add eyebrows/kickers above headings, decorative section numbers on non-sequential items, or glyph/emoji icons.",
+      "Don't introduce a second light/paper panel — one estimate sheet only.",
+      "Don't use pills, rounded cards, gradient text, or HUD/terminal chrome.",
+      "Don't invent customers, benchmarks, pricing, or deployment claims."
+    ]
+  }
+}
