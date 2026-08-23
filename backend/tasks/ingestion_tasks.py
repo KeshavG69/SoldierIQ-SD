@@ -299,7 +299,11 @@ def process_youtube_document_task(
         Processing result
     """
     from clients.youtube_downloader import YouTubeDownloader
-    from clients.youtube_transcript import extract_video_id, fetch_transcript
+    from clients.youtube_transcript import (
+        extract_video_id,
+        fetch_transcript,
+        fetch_transcript_hosted,
+    )
     from clients.postgres_client import get_postgres_client
     from services.ingestion_service import _run_in_worker_loop
     from datetime import datetime
@@ -316,7 +320,13 @@ def process_youtube_document_task(
         # ingest the transcript text directly — no download, no bot-check.
         # Only videos without captions fall through to the video download.
         video_id = extract_video_id(youtube_url)
+        # 1) youtube-transcript-api on our IP (clean segments; works locally /
+        #    when not blocked). 2) hosted endpoint on an unblocked IP (the free
+        #    path that survives YouTube's datacenter block — no key/cookies/proxy).
         transcript_text = fetch_transcript(video_id) if video_id else None
+        if not transcript_text and video_id:
+            logger.info(f"↪️  Direct transcript unavailable for {video_id}; trying hosted endpoint")
+            transcript_text = fetch_transcript_hosted(video_id)
 
         if transcript_text:
             logger.info(f"📝 Using captions for YouTube {video_id} ({len(transcript_text)} chars) — no download needed")

@@ -120,6 +120,15 @@ class YouTubeDownloader:
                 ydl_opts['cookiesfrombrowser'] = (cookies_browser,)
                 logger.info(f"🔐 Using YouTube cookies from browser: {cookies_browser}")
 
+            # Residential proxy for datacenter IPs. YouTube blocks most
+            # datacenter IPs outright; routing through a residential proxy is
+            # the reliable way to download from a server. Set YOUTUBE_PROXY (a
+            # full proxy URL) or WEBSHARE_PROXY_USERNAME/PASSWORD.
+            proxy = self._proxy_url()
+            if proxy:
+                ydl_opts['proxy'] = proxy
+                logger.info("🌐 Routing YouTube download through configured proxy")
+
             # Download video
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 # Extract info first
@@ -173,11 +182,17 @@ class YouTubeDownloader:
                 s in msg
                 for s in ("Forbidden", "page needs to be reloaded", "Sign in to confirm", "PO Token", "not a bot")
             )
-            if botcheck and not (os.getenv("YOUTUBE_COOKIES_FILE") or os.getenv("YOUTUBE_COOKIES_FROM_BROWSER")):
+            has_auth = bool(
+                os.getenv("YOUTUBE_COOKIES_FILE")
+                or os.getenv("YOUTUBE_COOKIES_FROM_BROWSER")
+                or self._proxy_url()
+            )
+            if botcheck and not has_auth:
                 raise Exception(
-                    "YouTube blocked this download (bot check). Provide YouTube cookies to "
-                    "authenticate: export them from a logged-in browser to a cookies.txt and set "
-                    "YOUTUBE_COOKIES_FILE on the backend."
+                    "YouTube blocked this download (bot check). From a datacenter IP you need "
+                    "either a residential proxy (set YOUTUBE_PROXY or WEBSHARE_PROXY_USERNAME/"
+                    "PASSWORD) or cookies (export them from a logged-in browser to a cookies.txt "
+                    "and set YOUTUBE_COOKIES_FILE). A proxy also unblocks the caption endpoint."
                 )
             raise Exception(f"Failed to download YouTube video: {msg}")
 
@@ -188,6 +203,21 @@ class YouTubeDownloader:
                 shutil.rmtree(temp_dir, ignore_errors=True)
             except Exception as e:
                 logger.warning(f"Failed to cleanup temp directory: {str(e)}")
+
+    @staticmethod
+    def _proxy_url():
+        """Proxy URL for yt-dlp from env, or None. YOUTUBE_PROXY (a full proxy
+        URL, e.g. http://user:pass@host:port) takes priority; otherwise a
+        Webshare residential endpoint is built from WEBSHARE_PROXY_USERNAME /
+        WEBSHARE_PROXY_PASSWORD."""
+        generic = os.getenv("YOUTUBE_PROXY")
+        if generic:
+            return generic
+        user = os.getenv("WEBSHARE_PROXY_USERNAME")
+        pw = os.getenv("WEBSHARE_PROXY_PASSWORD")
+        if user and pw:
+            return f"http://{user}:{pw}@p.webshare.io:80"
+        return None
 
     def get_metadata(self, youtube_url: str) -> dict:
         """Fetch metadata only (no download). Often works even when the video
@@ -206,6 +236,9 @@ class YouTubeDownloader:
                 opts['cookiefile'] = cookies_file
             elif cookies_browser:
                 opts['cookiesfrombrowser'] = (cookies_browser,)
+            proxy = self._proxy_url()
+            if proxy:
+                opts['proxy'] = proxy
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(youtube_url, download=False)
             return {

@@ -9475,7 +9475,16 @@
         "kind": 2,
         "importPath": "backend.clients.youtube_transcript",
         "description": "backend.clients.youtube_transcript",
-        "peekOfCode": "def fetch_transcript(video_id: str) -> Optional[str]:\n    \"\"\"Return the full transcript text for a video, or None if it has no\n    captions (or they can't be fetched). Never raises.\"\"\"\n    if not video_id:\n        return None\n    try:\n        from youtube_transcript_api import YouTubeTranscriptApi\n        api = YouTubeTranscriptApi()\n        fetched = api.fetch(video_id)\n        snippets = getattr(fetched, \"snippets\", None) or list(fetched)",
+        "peekOfCode": "def fetch_transcript(video_id: str) -> Optional[str]:\n    \"\"\"Return the full transcript text for a video, or None if it has no\n    captions or the request is blocked. Never raises.\n    On a datacenter IP a None return is usually a *block*, not a missing\n    transcript — the log line distinguishes the two so the operator knows\n    whether to add cookies/a proxy or accept that the video has no captions.\"\"\"\n    if not video_id:\n        return None\n    http_client = _build_http_client()\n    # Generic proxy already rides on the session; only pass a Webshare config",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "fetch_transcript_hosted",
+        "kind": 2,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "def fetch_transcript_hosted(video_id: str) -> Optional[str]:\n    \"\"\"Fetch captions via a hosted transcript endpoint (runs on an unblocked\n    IP). Returns cleaned text or None. Never raises.\"\"\"\n    if not video_id:\n        return None\n    url_tmpl = os.getenv(\"YOUTUBE_TRANSCRIPT_API_URL\", _DEFAULT_HOSTED_URL)\n    if not url_tmpl:  # explicitly disabled\n        return None\n    url = url_tmpl.format(video_id=video_id)\n    headers = {\"User-Agent\": \"SoldierIQ/1.0 (+knowledge-ingest)\"}",
         "detail": "backend.clients.youtube_transcript",
         "documentation": {}
     },
@@ -9484,7 +9493,34 @@
         "kind": 5,
         "importPath": "backend.clients.youtube_transcript",
         "description": "backend.clients.youtube_transcript",
-        "peekOfCode": "_ID_PATTERNS = [\n    r\"(?:v=|/v/|youtu\\.be/|/embed/|/shorts/)([A-Za-z0-9_-]{11})\",\n]\ndef extract_video_id(url: str) -> Optional[str]:\n    \"\"\"Pull the 11-char video id out of any common YouTube URL form.\"\"\"\n    if not url:\n        return None\n    for pat in _ID_PATTERNS:\n        m = re.search(pat, url)\n        if m:",
+        "peekOfCode": "_ID_PATTERNS = [\n    r\"(?:v=|/v/|youtu\\.be/|/embed/|/shorts/)([A-Za-z0-9_-]{11})\",\n]\n# Exceptions that mean \"this IP is blocked\" (add a proxy or cookies) vs\n# \"this video genuinely has no captions\" (fall back to the video download).\n_BLOCKED_ERRORS = {\"RequestBlocked\", \"IpBlocked\", \"YouTubeRequestFailed\"}\n_NO_CAPTIONS_ERRORS = {\n    \"TranscriptsDisabled\",\n    \"NoTranscriptFound\",\n    \"VideoUnavailable\",",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "_BLOCKED_ERRORS",
+        "kind": 5,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "_BLOCKED_ERRORS = {\"RequestBlocked\", \"IpBlocked\", \"YouTubeRequestFailed\"}\n_NO_CAPTIONS_ERRORS = {\n    \"TranscriptsDisabled\",\n    \"NoTranscriptFound\",\n    \"VideoUnavailable\",\n    \"VideoUnplayable\",\n    \"AgeRestricted\",\n}\ndef extract_video_id(url: str) -> Optional[str]:\n    \"\"\"Pull the 11-char video id out of any common YouTube URL form.\"\"\"",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "_NO_CAPTIONS_ERRORS",
+        "kind": 5,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "_NO_CAPTIONS_ERRORS = {\n    \"TranscriptsDisabled\",\n    \"NoTranscriptFound\",\n    \"VideoUnavailable\",\n    \"VideoUnplayable\",\n    \"AgeRestricted\",\n}\ndef extract_video_id(url: str) -> Optional[str]:\n    \"\"\"Pull the 11-char video id out of any common YouTube URL form.\"\"\"\n    if not url:",
+        "detail": "backend.clients.youtube_transcript",
+        "documentation": {}
+    },
+    {
+        "label": "_DEFAULT_HOSTED_URL",
+        "kind": 5,
+        "importPath": "backend.clients.youtube_transcript",
+        "description": "backend.clients.youtube_transcript",
+        "peekOfCode": "_DEFAULT_HOSTED_URL = \"https://youtube-transcript.ai/transcript/{video_id}.txt\"\ndef _collapse_repeats(text: str) -> str:\n    \"\"\"Collapse the rolling-caption triplication auto-generated transcripts\n    carry (a phrase repeated 2-3× back-to-back). Best-effort, order-preserving.\"\"\"\n    words = text.split()\n    n = len(words)\n    out: list[str] = []\n    i = 0\n    while i < n:\n        matched = False",
         "detail": "backend.clients.youtube_transcript",
         "documentation": {}
     },
