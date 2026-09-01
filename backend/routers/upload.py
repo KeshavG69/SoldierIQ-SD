@@ -588,6 +588,14 @@ async def get_document(document_id: str, current_user: dict = Depends(get_curren
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid document_id format: {document_id}")
 
+        # This endpoint mints a presigned download URL — a plain "user" may not
+        # see or open individual files.
+        if current_user.get("role") == "user":
+            raise HTTPException(
+                status_code=403,
+                detail="Admin or System Owner privileges required to open a file",
+            )
+
         ingestion_service = get_ingestion_service()
         document = await ingestion_service.get_document(
             document_id=document_id,
@@ -608,6 +616,20 @@ async def get_document(document_id: str, current_user: dict = Depends(get_curren
     except Exception as e:
         logger.error(f"❌ Get document failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to get document: {str(e)}")
+
+
+# Fields that carry a document's identity or content. A plain "user" may see
+# that a folder holds N documents (so they can pick the folder as chat context)
+# but not which files those are — so these are stripped before the list leaves
+# the API, not merely hidden in the UI.
+_VIEWER_REDACTED_FIELDS = ("file_key", "metadata", "raw_content", "error")
+
+
+def _redact_document_for_viewer(document: dict) -> dict:
+    """Strip file identity from a document row for a read-only 'user'."""
+    safe = {k: v for k, v in document.items() if k not in _VIEWER_REDACTED_FIELDS}
+    safe["file_name"] = "Protected file"
+    return safe
 
 
 @router.get("/documents")
@@ -642,8 +664,12 @@ async def list_documents(
             skip=skip
         )
 
-        # Every org member (Admin, System Owner, or User) sees every document
-        # in the org — no per-document access filtering.
+        # Admins and System Owners see the real file list. A plain "user" gets
+        # the same rows with the file identity removed: enough to count a
+        # folder's contents and use it as chat context, nothing that names or
+        # opens a file.
+        if current_user.get("role") == "user":
+            documents = [_redact_document_for_viewer(d) for d in documents]
 
         return {
             "success": True,

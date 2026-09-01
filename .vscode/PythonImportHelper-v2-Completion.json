@@ -10299,6 +10299,15 @@
         "documentation": {}
     },
     {
+        "label": "_VIEWER_REDACTED_FIELDS",
+        "kind": 5,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "_VIEWER_REDACTED_FIELDS = (\"file_key\", \"metadata\", \"raw_content\", \"error\")\ndef _redact_document_for_viewer(document: dict) -> dict:\n    \"\"\"Strip file identity from a document row for a read-only 'user'.\"\"\"\n    safe = {k: v for k, v in document.items() if k not in _VIEWER_REDACTED_FIELDS}\n    safe[\"file_name\"] = \"Protected file\"\n    return safe\n@router.get(\"/documents\")\nasync def list_documents(\n    folder_name: Optional[str] = None,\n    user_id: Optional[str] = None,",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
         "label": "router",
         "kind": 5,
         "importPath": "backend.routers.workspace",

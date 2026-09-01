@@ -14,6 +14,10 @@ interface FolderTreeProps {
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
   onDeleteDoc: (docId: string) => void;
   onRenameDoc: (docId: string, newFileName: string) => Promise<void>;
+  // False for a read-only "user": folders are listed, their files are not.
+  canSeeFiles: boolean;
+  // False for a read-only "user": no folder-level destructive actions.
+  canManageFolders: boolean;
   onDeleteFolder: (folderName: string) => void;
   deletingDocId: string | null;
   deletingKB: string | null;
@@ -30,6 +34,8 @@ const FolderTree = React.memo(function FolderTree({
   onSelectAllFolder,
   onDeleteDoc,
   onRenameDoc,
+  canSeeFiles,
+  canManageFolders,
   onDeleteFolder,
   deletingDocId,
   deletingKB,
@@ -68,6 +74,8 @@ const FolderTree = React.memo(function FolderTree({
   // Each entry is a folder + the documents to show under it. Searching matches
   // folder names AND file names: a folder-name hit shows all its docs; a
   // file-name hit shows just the matching files (and the folder auto-expands).
+  // Without file visibility the file-name pass is skipped entirely — matching
+  // on a name the user can't see would tell them it exists.
   const filteredFolders = useMemo(() => {
     const q = query.trim().toLowerCase();
     const entryFor = (folderName: string, docs: Document[]) => ({ folderName, docs });
@@ -81,7 +89,7 @@ const FolderTree = React.memo(function FolderTree({
       const docs = documentsByFolder[folderName] || [];
       if ((folderName || "").toLowerCase().includes(q)) {
         out.push(entryFor(folderName, docs));
-      } else {
+      } else if (canSeeFiles) {
         const matching = docs.filter((d) =>
           (d.file_name || "").toLowerCase().includes(q)
         );
@@ -89,7 +97,7 @@ const FolderTree = React.memo(function FolderTree({
       }
     }
     return out;
-  }, [folderList, documentsByFolder, query]);
+  }, [folderList, documentsByFolder, query, canSeeFiles]);
 
   if (isLoading) {
     return (
@@ -121,7 +129,9 @@ const FolderTree = React.memo(function FolderTree({
           No documents yet
         </div>
         <div className="text-xs text-muted-foreground dark:text-muted-foreground leading-relaxed max-w-[220px]">
-          Upload a document to create your first knowledge base.
+          {canSeeFiles
+            ? "Upload a document to create your first knowledge base."
+            : "Ask an admin to add documents to your organization."}
         </div>
       </div>
     );
@@ -147,7 +157,7 @@ const FolderTree = React.memo(function FolderTree({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search folders & files…"
+          placeholder={canSeeFiles ? "Search folders & files…" : "Search folders…"}
           className="w-full pl-8 pr-8 py-1.5 rounded-lg bg-surface-2 dark:bg-card border border-border text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all"
         />
         {query && (
@@ -177,6 +187,8 @@ const FolderTree = React.memo(function FolderTree({
               selectedDocs={selectedDocs}
               expandedFolders={expandedFolders}
               forceExpanded={isSearching}
+              canSeeFiles={canSeeFiles}
+              canManageFolders={canManageFolders}
               onToggleFolder={onToggleFolder}
               onToggleDoc={onToggleDoc}
               onSelectAllFolder={onSelectAllFolder}

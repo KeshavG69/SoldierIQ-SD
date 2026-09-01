@@ -15,6 +15,11 @@ import DriveImportBanner from "./sidebar/DriveImportBanner";
 
 export default function Sidebar() {
   const user = useAuthStore((s) => s.user);
+  // Admins and System Owners manage the knowledge base; a plain "user" member
+  // is read-only and doesn't see individual files at all. The API enforces both
+  // halves (it redacts the file rows and rejects writes) — this keeps the UI
+  // from offering what the server will refuse.
+  const isUploader = user?.role === "admin" || user?.role === "system_owner";
   const queryClient = useQueryClient();
 
   // Server state via React Query (cached, deduped)
@@ -239,6 +244,8 @@ export default function Sidebar() {
           onSelectAllFolder={handleSelectAllFolder}
           onDeleteDoc={handleDeleteDoc}
           onRenameDoc={handleRenameDoc}
+          canSeeFiles={isUploader}
+          canManageFolders={isUploader}
           onDeleteFolder={handleDeleteFolder}
           deletingDocId={deletingDocId}
           deletingKB={deletingKB}

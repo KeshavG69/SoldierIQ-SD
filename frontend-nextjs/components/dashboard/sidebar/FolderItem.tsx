@@ -11,6 +11,12 @@ interface FolderItemProps {
   selectedDocs: Set<string>;
   expandedFolders: Set<string>;
   forceExpanded?: boolean;
+  // A read-only "user" sees the folder and its file count, but never the
+  // files themselves — the backend redacts them too, this is just the UI half.
+  canSeeFiles: boolean;
+  // Deleting a folder is Admin/System Owner only; the API 403s for everyone
+  // else, so don't offer the button to them.
+  canManageFolders: boolean;
   onToggleFolder: (folderName: string) => void;
   onToggleDoc: (docId: string) => void;
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
@@ -28,6 +34,8 @@ const FolderItem = React.memo(function FolderItem({
   selectedDocs,
   expandedFolders,
   forceExpanded = false,
+  canSeeFiles,
+  canManageFolders,
   onToggleFolder,
   onToggleDoc,
   onSelectAllFolder,
@@ -39,7 +47,8 @@ const FolderItem = React.memo(function FolderItem({
   animationDelay,
 }: FolderItemProps) {
   // While searching, matched folders are force-expanded so hits are visible.
-  const isExpanded = forceExpanded || expandedFolders.has(folderName);
+  const isExpanded =
+    canSeeFiles && (forceExpanded || expandedFolders.has(folderName));
   const folderDocCount = folderDocs.length;
 
   if (folderDocCount === 0) return null;
@@ -55,25 +64,30 @@ const FolderItem = React.memo(function FolderItem({
       {/* Folder Header */}
       <div className="group rounded-lg transition-colors hover:bg-surface-2 dark:hover:bg-accent/60">
         <div className="flex items-center gap-2 px-2 py-2">
-          <button
-            onClick={() => onToggleFolder(folderName)}
-            disabled={isDeletingFolder}
-            className="text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-          >
-            <motion.svg
-              className="w-3.5 h-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              animate={{ rotate: isExpanded ? 90 : 0 }}
-              transition={{ duration: 0.15, ease: "easeInOut" }}
+          {canSeeFiles ? (
+            <button
+              onClick={() => onToggleFolder(folderName)}
+              disabled={isDeletingFolder}
+              className="text-muted-foreground hover:text-foreground dark:hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
-              <path d="M9 5l7 7-7 7" />
-            </motion.svg>
-          </button>
+              <motion.svg
+                className="w-3.5 h-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                animate={{ rotate: isExpanded ? 90 : 0 }}
+                transition={{ duration: 0.15, ease: "easeInOut" }}
+              >
+                <path d="M9 5l7 7-7 7" />
+              </motion.svg>
+            </button>
+          ) : (
+            // Keep the row aligned with expandable folders above/below it.
+            <span className="w-3.5 flex-shrink-0" aria-hidden="true" />
+          )}
 
           <input
             type="checkbox"
@@ -114,7 +128,7 @@ const FolderItem = React.memo(function FolderItem({
             {folderDocCount}
           </span>
 
-          {!isDeletingFolder && (
+          {!isDeletingFolder && canManageFolders && (
             <button
               onClick={() => onDeleteFolder(folderName)}
               className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-all p-0.5 flex-shrink-0"
