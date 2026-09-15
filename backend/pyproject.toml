@@ -52,7 +52,7 @@ dependencies = [
     # Utilities
     "pytz>=2025.2",
     "chonkie==1.5.6",
-    "agno>=2.0.11",
+    "agno==2.5.2",
     "groq>=1.0.0",
     "moviepy>=2.2.1",
     "scikit-image>=0.26.0",
