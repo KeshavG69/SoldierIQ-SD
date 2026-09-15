@@ -103,11 +103,17 @@ def create_knowledge_retriever(
         # payload (chunks[0] → source [1]). Without it the model falls back to
         # citing the raw chunk_id ("<uuid>::0"), which the citation renderer
         # can't match, so it leaks into the answer as literal text.
-        chunks = results.get("chunks")
-        if isinstance(chunks, list):
-            for i, chunk in enumerate(chunks, start=1):
-                if isinstance(chunk, dict):
-                    chunk["n"] = i
+        #
+        # `search` returns the drop-in graphrag shape: a list with one wrapper
+        # dict ({chunks, anchors, triples, count, query}). Handle both that and
+        # a bare dict defensively.
+        wrapper = results[0] if isinstance(results, list) and results else results
+        if isinstance(wrapper, dict):
+            chunks = wrapper.get("chunks")
+            if isinstance(chunks, list):
+                for i, chunk in enumerate(chunks, start=1):
+                    if isinstance(chunk, dict):
+                        chunk["n"] = i
 
         return results
 
