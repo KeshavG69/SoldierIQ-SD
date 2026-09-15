@@ -130,11 +130,38 @@ const PlainLink = ({ node, href, children, ...props }: any) => (
 // Turn bare [n] references into links (#source-n) the citation renderer picks
 // up. Only done once the message is finished and has sources — during
 // streaming the [n] stays as plain text.
+//
+// The model is instructed to cite the 1-based source number ([1], [2], …). As
+// a safety net we also repair raw-id citations it sometimes leaks — the chunk
+// id ("<document_id>::<seq>") or a bare document id — by mapping the document
+// id back to its first source index. Without this those tags fail to match and
+// render as literal text like "[c889b68e-…::0]" in the answer.
 function processContent(content: string, sources?: DocumentSource[]): string {
   if (!sources || sources.length === 0) return content;
-  return content.replace(/\[\s*(\d+)\s*\]/g, (match, id) => {
-    const index = parseInt(id, 10);
-    if (index > 0 && index <= sources.length) return ` [${index}](#source-${index})`;
+
+  const docToIndex = new Map<string, number>();
+  sources.forEach((s, i) => {
+    if (s.document_id && !docToIndex.has(s.document_id)) {
+      docToIndex.set(s.document_id, i + 1);
+    }
+  });
+
+  // One capture group per bracketed token; the callback decides how to resolve
+  // it. Non-citation brackets (real markdown link text, etc.) fall through
+  // unchanged, so [label](url) links are preserved.
+  return content.replace(/\[\s*([^\]]+?)\s*\]/g, (match, inner: string) => {
+    // Correct form: a plain source number.
+    if (/^\d+$/.test(inner)) {
+      const index = parseInt(inner, 10);
+      if (index > 0 && index <= sources.length) return ` [${index}](#source-${index})`;
+      return match;
+    }
+    // Leaked raw id: "<uuid>::<seq>" or a bare "<uuid>". Resolve by document id.
+    if (/^[0-9a-fA-F-]{8,}(::\d+)?$/.test(inner)) {
+      const docId = inner.split("::")[0];
+      const index = docToIndex.get(docId);
+      if (index) return ` [${index}](#source-${index})`;
+    }
     return match;
   });
 }

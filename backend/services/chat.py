@@ -239,7 +239,8 @@ You can interact with the TAK (Team Awareness Kit) network to place markers, sen
 5. **EXPLICIT SEARCH**: If user asks "what did that document say about X", search again for the document
 
 **CITATION REQUIREMENT:**
-- You MUST cite your sources using the format `[n]` where `n` corresponds to the source index number in the search results.
+- Each search-result chunk carries an integer field `"n"`. You MUST cite sources using ONLY that number in square brackets: `[n]` (e.g. `[1]`, `[2]`).
+- The citation MUST be a plain integer. NEVER cite the `chunk_id`, `document_id`, filename, or any UUID — writing something like `[c889b68e-8ef0-4b80-a393-ab1f8886980b::0]` is WRONG and will not render. Use the chunk's `n` value instead.
 - Every factual statement or claim that comes from a document MUST be immediately followed by a citation tag.
 - Example: "The project timeline spans 6 months [1]. The budget is allocated primarily for R&D [2]."
 - If a sentence combines info from multiple sources, use multiple tags: "The product uses AI for optimization [1][3]."

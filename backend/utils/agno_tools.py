@@ -97,6 +97,18 @@ def create_knowledge_retriever(
             logger.info("search_knowledge_base: no results")
             return None
 
+        # Stamp each chunk with a 1-based `n`. This is the ONLY citable
+        # identifier the model should use ("[1]", "[2]", …) and it lines up
+        # exactly with the source order the frontend builds from this same
+        # payload (chunks[0] → source [1]). Without it the model falls back to
+        # citing the raw chunk_id ("<uuid>::0"), which the citation renderer
+        # can't match, so it leaks into the answer as literal text.
+        chunks = results.get("chunks")
+        if isinstance(chunks, list):
+            for i, chunk in enumerate(chunks, start=1):
+                if isinstance(chunk, dict):
+                    chunk["n"] = i
+
         return results
 
     return search_knowledge_base
