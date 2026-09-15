@@ -10,8 +10,8 @@ interface Model {
 }
 
 const AVAILABLE_MODELS: Model[] = [
-  { id: "google/gemini-3.1-pro-preview", name: "Gemini 3 Pro" },
   { id: "anthropic/claude-sonnet-4.5", name: "Claude Sonnet 4.5" },
+  { id: "google/gemini-3.1-pro-preview", name: "Gemini 3 Pro" },
   { id: "google/gemini-3.8-flash", name: "Gemini 3 Flash" },
   { id: "google/gemini-2.5-pro", name: "Gemini 2.5 Pro" },
   { id: "anthropic/claude-haiku-4.5", name: "Claude Haiku 4.5" },
