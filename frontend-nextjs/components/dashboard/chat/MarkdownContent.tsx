@@ -150,10 +150,18 @@ function processContent(content: string, sources?: DocumentSource[]): string {
   // it. Non-citation brackets (real markdown link text, etc.) fall through
   // unchanged, so [label](url) links are preserved.
   return content.replace(/\[\s*([^\]]+?)\s*\]/g, (match, inner: string) => {
-    // Correct form: a plain source number.
-    if (/^\d+$/.test(inner)) {
-      const index = parseInt(inner, 10);
-      if (index > 0 && index <= sources.length) return ` [${index}](#source-${index})`;
+    // Correct form: a plain source number, or a grouped citation like
+    // "[11, 12, 13]" the model sometimes emits when several sources back the
+    // same statement. Expand the group into individual [n](#source-n) tags so
+    // each renders as its own citation pill instead of literal "[11, 12, 13]".
+    if (/^\d+(?:\s*,\s*\d+)*$/.test(inner)) {
+      const nums = inner.split(",").map((n) => parseInt(n.trim(), 10));
+      // Only rewrite when every number is a valid source index; otherwise leave
+      // the bracket untouched so non-citation text (e.g. "[1, 2]" ranges in
+      // prose) isn't mangled.
+      if (nums.every((n) => n > 0 && n <= sources.length)) {
+        return nums.map((n) => ` [${n}](#source-${n})`).join("");
+      }
       return match;
     }
     // Leaked raw id: "<uuid>::<seq>" or a bare "<uuid>". Resolve by document id.
