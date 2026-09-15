@@ -430,6 +430,72 @@ class PostgresClient:
 
         return count
 
+    async def update_documents_bulk(
+        self,
+        filters: Dict[str, Any],
+        updates: Dict[str, Any]
+    ) -> int:
+        """
+        Update every document matching `filters` with `updates`.
+
+        Used for folder-wide operations like renaming a folder (re-stamp
+        folder_name on all its documents in one statement).
+
+        Args:
+            filters: Match conditions. Recognized keys: organization_id,
+                user_id (UUID strings), folder_name, status (plain values).
+            updates: Column → new value.
+
+        Returns:
+            Number of rows updated
+        """
+        if not updates:
+            return 0
+
+        pool = await self.get_pool()
+
+        set_clauses: List[str] = []
+        params: List[Any] = []
+        param_index = 1
+
+        for key, value in updates.items():
+            set_clauses.append(f"{key} = ${param_index}")
+            params.append(json.dumps(value) if isinstance(value, dict) else value)
+            param_index += 1
+
+        # Stamp updated_at unless the caller set it explicitly.
+        if "updated_at" not in updates:
+            set_clauses.append(f"updated_at = ${param_index}")
+            params.append(datetime.utcnow())
+            param_index += 1
+
+        # UUID columns must be cast; everything else passes through as-is.
+        uuid_keys = {"organization_id", "user_id", "id"}
+        conditions: List[str] = []
+        for key, value in filters.items():
+            if value is None:
+                continue
+            conditions.append(f"{key} = ${param_index}")
+            params.append(uuid.UUID(value) if key in uuid_keys else value)
+            param_index += 1
+
+        if not conditions:
+            # Refuse an unfiltered UPDATE — it would rewrite the whole table.
+            raise ValueError("update_documents_bulk requires at least one filter")
+
+        query = f"""
+            UPDATE documents
+            SET {', '.join(set_clauses)}
+            WHERE {' AND '.join(conditions)}
+        """
+
+        async with pool.acquire() as conn:
+            result = await conn.execute(query, *params)
+
+        count = int(result.split()[-1])
+        logger.info(f"✅ Bulk-updated {count} document(s)")
+        return count
+
     async def distinct_folders(
         self,
         filters: Optional[Dict[str, Any]] = None,

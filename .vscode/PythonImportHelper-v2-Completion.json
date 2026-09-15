@@ -10281,6 +10281,15 @@
         "documentation": {}
     },
     {
+        "label": "RenameFolderRequest",
+        "kind": 6,
+        "importPath": "backend.routers.upload",
+        "description": "backend.routers.upload",
+        "peekOfCode": "class RenameFolderRequest(BaseModel):\n    \"\"\"New name for an existing folder (knowledge base).\"\"\"\n    new_folder_name: str\n@router.put(\"/folders/{folder_name}\")\nasync def rename_folder(\n    folder_name: str,\n    payload: RenameFolderRequest,\n    current_user: dict = Depends(require_uploader)  # write = admin/system_owner\n):\n    \"\"\"",
+        "detail": "backend.routers.upload",
+        "documentation": {}
+    },
+    {
         "label": "router",
         "kind": 5,
         "importPath": "backend.routers.upload",

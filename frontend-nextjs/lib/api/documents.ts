@@ -258,6 +258,24 @@ export const documentsApi = {
 
     await apiClient.delete(`/upload/folders/${encodeURIComponent(folderName)}?${params.toString()}`);
   },
+
+  // Rename a folder (knowledge base). Only PostgreSQL stores folder_name, so
+  // this just re-stamps every document in the folder — the stored files and
+  // knowledge graph reference documents by id and don't move. The backend
+  // scopes the rename to the caller's org via their token.
+  renameFolder: async (
+    folderName: string,
+    newFolderName: string
+  ): Promise<{ old_folder_name: string; new_folder_name: string; postgres_updated: number }> => {
+    const response = await apiClient.put<ApiResponse<{
+      old_folder_name: string;
+      new_folder_name: string;
+      postgres_updated: number;
+    }>>(`/upload/folders/${encodeURIComponent(folderName)}`, {
+      new_folder_name: newFolderName,
+    });
+    return response.data.data;
+  },
 };
 
 // TAK Credentials type (matches backend TAKCredentials)

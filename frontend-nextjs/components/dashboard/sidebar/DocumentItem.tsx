@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Document } from "@/types";
 import { documentsApi } from "@/lib/api/documents";
 import IngestionPipeline from "./IngestionPipeline";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface DocumentItemProps {
   document: Document;
@@ -70,9 +71,7 @@ const DocumentItem = React.memo(function DocumentItem({
       await onRename(doc.id, next);
       setIsEditing(false);
     } catch (err: any) {
-      setRenameError(
-        err?.response?.data?.detail || err?.message || "Rename failed. Please try again."
-      );
+      setRenameError(getErrorMessage(err, "Rename failed. Please try again."));
       // Stay in edit mode so the typed name isn't lost.
     } finally {
       setRenaming(false);

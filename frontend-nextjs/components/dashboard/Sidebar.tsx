@@ -8,6 +8,8 @@ import { useDocuments, useKnowledgeBases, documentKeys } from "@/lib/hooks/useDo
 import { useUploadDocument } from "@/lib/hooks/useUploadDocument";
 import { useDeleteDocument, useDeleteKnowledgeBase } from "@/lib/hooks/useDeleteDocument";
 import { useRenameDocument } from "@/lib/hooks/useRenameDocument";
+import { useRenameFolder } from "@/lib/hooks/useRenameFolder";
+import { getErrorMessage } from "@/lib/utils/errors";
 import SidebarHeader from "./sidebar/SidebarHeader";
 import FolderTree from "./sidebar/FolderTree";
 import UploadModal from "./sidebar/UploadModal";
@@ -34,6 +36,7 @@ export default function Sidebar() {
   // while the mutation object does not — handing the object's method straight
   // to the tree would re-render every memoized DocumentItem on each render.
   const { mutateAsync: renameDocument } = useRenameDocument();
+  const { mutateAsync: renameFolder } = useRenameFolder();
 
   // Client-side selection state (stays in Zustand)
   const {
@@ -186,6 +189,19 @@ export default function Sidebar() {
     [renameDocument, user?.organization_id]
   );
 
+  // Inline folder rename (Admin/System Owner). Errors bubble back to FolderItem,
+  // which keeps its editor open and shows the message.
+  const handleRenameFolder = useCallback(
+    async (folderName: string, newFolderName: string) => {
+      await renameFolder({
+        folderName,
+        newFolderName,
+        organizationId: user?.organization_id || "",
+      });
+    },
+    [renameFolder, user?.organization_id]
+  );
+
   const handleDeleteFolder = useCallback((folderName: string) => {
     setDeleteError(null);
     setPendingDelete({ kind: "folder", id: folderName, label: folderName });
@@ -210,9 +226,7 @@ export default function Sidebar() {
       }
       setPendingDelete(null);
     } catch (e: any) {
-      setDeleteError(
-        e?.response?.data?.detail || e?.message || "Delete failed. Please try again."
-      );
+      setDeleteError(getErrorMessage(e, "Delete failed. Please try again."));
     } finally {
       setDeletingDocId(null);
       setDeleteBusy(false);
@@ -246,6 +260,7 @@ export default function Sidebar() {
           onRenameDoc={handleRenameDoc}
           canSeeFiles={isUploader}
           canManageFolders={isUploader}
+          onRenameFolder={handleRenameFolder}
           onDeleteFolder={handleDeleteFolder}
           deletingDocId={deletingDocId}
           deletingKB={deletingKB}

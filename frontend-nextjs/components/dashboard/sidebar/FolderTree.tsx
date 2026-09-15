@@ -14,6 +14,7 @@ interface FolderTreeProps {
   onSelectAllFolder: (folderName: string, anySelected: boolean, docIds: string[]) => void;
   onDeleteDoc: (docId: string) => void;
   onRenameDoc: (docId: string, newFileName: string) => Promise<void>;
+  onRenameFolder: (folderName: string, newFolderName: string) => Promise<void>;
   // False for a read-only "user": folders are listed, their files are not.
   canSeeFiles: boolean;
   // False for a read-only "user": no folder-level destructive actions.
@@ -34,6 +35,7 @@ const FolderTree = React.memo(function FolderTree({
   onSelectAllFolder,
   onDeleteDoc,
   onRenameDoc,
+  onRenameFolder,
   canSeeFiles,
   canManageFolders,
   onDeleteFolder,
@@ -194,6 +196,7 @@ const FolderTree = React.memo(function FolderTree({
               onSelectAllFolder={onSelectAllFolder}
               onDeleteDoc={onDeleteDoc}
               onRenameDoc={onRenameDoc}
+              onRenameFolder={onRenameFolder}
               onDeleteFolder={onDeleteFolder}
               deletingDocId={deletingDocId}
               isDeletingFolder={deletingKB === folderName}

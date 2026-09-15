@@ -864,46 +864,54 @@ async def delete_folder(
         raise HTTPException(status_code=500, detail=f"Failed to delete folder: {str(e)}")
 
 
+class RenameFolderRequest(BaseModel):
+    """New name for an existing folder (knowledge base)."""
+    new_folder_name: str
+
+
 @router.put("/folders/{folder_name}")
 async def rename_folder(
     folder_name: str,
-    new_folder_name: str = Form(..., description="New folder name"),
-    user_id: Optional[str] = Form(None, description="Optional user ID"),
-    organization_id: Optional[str] = Form(None, description="Optional organization ID"),
+    payload: RenameFolderRequest,
     current_user: dict = Depends(require_uploader)  # write = admin/system_owner
 ):
     """
     Rename folder in PostgreSQL
-    (pgvector and Apache AGE don't store folder_name)
+    (pgvector and Apache AGE don't store folder_name).
+
+    Accepts a JSON body ({"new_folder_name": "..."}) like the rest of the API.
+    The organization is taken from the caller's token, not the client, so a
+    folder can only be renamed within the caller's own org.
 
     Args:
-        folder_name: Current folder name
-        new_folder_name: New folder name
-        user_id: Optional user ID filter (Keycloak UUID)
-        organization_id: Optional organization ID filter (Keycloak UUID)
+        folder_name: Current folder name (path)
+        payload: New folder name
 
     Returns:
         Rename result with counts
     """
     try:
+        organization_id = current_user.get("organization_id")
+
         # Validate input
-        if not new_folder_name or not new_folder_name.strip():
+        if not payload.new_folder_name or not payload.new_folder_name.strip():
             raise HTTPException(status_code=400, detail="New folder name is required")
 
         ingestion_service = get_ingestion_service()
         result = await ingestion_service.rename_folder(
             old_folder_name=folder_name,
-            new_folder_name=new_folder_name.strip(),
-            user_id=user_id,
+            new_folder_name=payload.new_folder_name.strip(),
             organization_id=organization_id
         )
 
         return {
             "success": True,
-            "message": f"Folder renamed from '{folder_name}' to '{new_folder_name}' successfully",
+            "message": f"Folder renamed from '{folder_name}' to '{payload.new_folder_name.strip()}' successfully",
             "data": result
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Rename folder failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to rename folder: {str(e)}")

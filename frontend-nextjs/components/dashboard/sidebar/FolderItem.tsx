@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Document } from "@/types";
 import DocumentItem from "./DocumentItem";
+import { getErrorMessage } from "@/lib/utils/errors";
 
 interface FolderItemProps {
   folderName: string;
@@ -23,6 +24,7 @@ interface FolderItemProps {
   onDeleteDoc: (docId: string) => void;
   onRenameDoc: (docId: string, newFileName: string) => Promise<void>;
   onDeleteFolder: (folderName: string) => void;
+  onRenameFolder: (folderName: string, newFolderName: string) => Promise<void>;
   deletingDocId: string | null;
   isDeletingFolder: boolean;
   animationDelay: number;
@@ -42,6 +44,7 @@ const FolderItem = React.memo(function FolderItem({
   onDeleteDoc,
   onRenameDoc,
   onDeleteFolder,
+  onRenameFolder,
   deletingDocId,
   isDeletingFolder,
   animationDelay,
@@ -50,6 +53,57 @@ const FolderItem = React.memo(function FolderItem({
   const isExpanded =
     canSeeFiles && (forceExpanded || expandedFolders.has(folderName));
   const folderDocCount = folderDocs.length;
+
+  // Inline folder rename (Admin/System Owner only). Mirrors DocumentItem's
+  // editor. Not optimistic — the folder name is this row's key, so the editor
+  // must stay mounted through the request; see useRenameFolder.
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(folderName);
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const startRename = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      if (isDeletingFolder || renaming) return;
+      setDraft(folderName);
+      setRenameError(null);
+      setIsEditing(true);
+    },
+    [folderName, isDeletingFolder, renaming]
+  );
+
+  const cancelRename = useCallback(() => {
+    setIsEditing(false);
+    setRenameError(null);
+  }, []);
+
+  const commitRename = useCallback(async () => {
+    const next = draft.trim();
+    if (!next || next === folderName) {
+      cancelRename();
+      return;
+    }
+    setRenaming(true);
+    setRenameError(null);
+    try {
+      await onRenameFolder(folderName, next);
+      setIsEditing(false);
+    } catch (err: any) {
+      setRenameError(getErrorMessage(err, "Rename failed. Please try again."));
+    } finally {
+      setRenaming(false);
+    }
+  }, [draft, folderName, onRenameFolder, cancelRename]);
+
+  useEffect(() => {
+    if (!isEditing) return;
+    const input = inputRef.current;
+    if (!input) return;
+    input.focus();
+    input.select();
+  }, [isEditing]);
 
   if (folderDocCount === 0) return null;
 
@@ -119,16 +173,85 @@ const FolderItem = React.memo(function FolderItem({
           )}
 
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-foreground dark:text-foreground truncate">
-              {folderName}
-            </div>
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                type="text"
+                value={draft}
+                disabled={renaming}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitRename();
+                  } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    cancelRename();
+                  }
+                }}
+                onBlur={() => {
+                  if (!renaming) commitRename();
+                }}
+                onClick={(e) => e.stopPropagation()}
+                aria-label={`Rename folder ${folderName}`}
+                className="w-full px-1.5 py-0.5 rounded-md bg-surface-2 dark:bg-card border border-border text-sm font-medium text-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all disabled:opacity-60"
+              />
+            ) : (
+              <div className="text-sm font-medium text-foreground dark:text-foreground truncate">
+                {folderName}
+              </div>
+            )}
+            {isEditing && !renameError && (
+              <div className="text-[10px] text-muted-foreground mt-0.5">
+                {renaming ? "Saving…" : "Enter to save · Esc to cancel"}
+              </div>
+            )}
+            {renameError && (
+              <div className="text-[10px] text-red-500 dark:text-red-400 mt-0.5">
+                {renameError}
+              </div>
+            )}
           </div>
 
-          <span className="text-[11px] text-muted-foreground dark:text-muted-foreground font-mono flex-shrink-0">
-            {folderDocCount}
-          </span>
+          {!isEditing && (
+            <span className="text-[11px] text-muted-foreground dark:text-muted-foreground font-mono flex-shrink-0">
+              {folderDocCount}
+            </span>
+          )}
 
-          {!isDeletingFolder && canManageFolders && (
+          {!isDeletingFolder && !isEditing && canManageFolders && (
+            <button
+              onClick={startRename}
+              className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-muted-foreground hover:text-foreground dark:hover:text-white transition-all p-0.5 flex-shrink-0"
+              title="Rename folder"
+              aria-label={`Rename folder ${folderName}`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+              </svg>
+            </button>
+          )}
+
+          {isEditing && (
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                cancelRename();
+              }}
+              disabled={renaming}
+              className="text-muted-foreground hover:text-foreground dark:hover:text-white transition-all p-0.5 flex-shrink-0 disabled:opacity-50"
+              title="Cancel rename"
+              aria-label="Cancel rename"
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+
+          {!isDeletingFolder && !isEditing && canManageFolders && (
             <button
               onClick={() => onDeleteFolder(folderName)}
               className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 transition-all p-0.5 flex-shrink-0"
