@@ -22,7 +22,7 @@ async def list_models(current_user: dict = Depends(get_current_user_keycloak)) -
 
     models = [
         {
-            "id": "google/gemini-3-pro-preview",
+            "id": "google/gemini-3.1-pro-preview",
             "name": "Gemini 3 Pro"
         },
         {
@@ -30,7 +30,7 @@ async def list_models(current_user: dict = Depends(get_current_user_keycloak)) -
             "name": "Claude Sonnet 4.5"
         },
         {
-            "id": "google/gemini-3-flash-preview",
+            "id": "google/gemini-3.8-flash",
             "name": "Gemini 3 Flash"
         },
         {
