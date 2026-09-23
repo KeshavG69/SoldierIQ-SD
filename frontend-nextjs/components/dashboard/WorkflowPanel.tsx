@@ -5,9 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDocumentStore } from "@/lib/stores/documentStore";
 import { mindmapApi, MindMapResponse } from "@/lib/api/mindmap";
 import { flashcardsApi, FlashcardData } from "@/lib/api/flashcards";
+import { quizApi, QuizData, QuizOptions } from "@/lib/api/quiz";
+import { useQueryClient } from "@tanstack/react-query";
 import MindMapViewer from "./MindMapViewer";
 import ReportStudio from "./ReportStudio";
 import FlashcardViewer from "./FlashcardViewer";
+import QuizSetupDialog from "./QuizSetupDialog";
+import QuizViewer from "./QuizViewer";
 import PodcastGenerator from "../PodcastGenerator";
 
 interface WorkflowOption {
@@ -33,6 +37,10 @@ export default function WorkflowPanel({
   const [showReportStudio, setShowReportStudio] = useState(false);
   const [flashcardData, setFlashcardData] = useState<FlashcardData | null>(null);
   const [showPodcastGenerator, setShowPodcastGenerator] = useState(false);
+  const [showQuizSetup, setShowQuizSetup] = useState(false);
+  const [quizData, setQuizData] = useState<QuizData | null>(null);
+  const [isLoadingSavedQuiz, setIsLoadingSavedQuiz] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const { selectedDocs } = useDocumentStore();
   const [internalCollapsed, setInternalCollapsed] = useState(false);
@@ -126,7 +134,7 @@ export default function WorkflowPanel({
     {
       id: "quiz",
       title: "Quiz",
-      available: false,
+      available: true,
       description: "Generate interactive quizzes.",
       icon: icon(
         <>
@@ -209,6 +217,11 @@ export default function WorkflowPanel({
       setShowReportStudio(true);
     }
 
+    if (workflow.id === "quiz") {
+      // Opens even with no selection so saved quizzes can be reopened
+      setShowQuizSetup(true);
+    }
+
     if (workflow.id === "audio-overview") {
       if (selectedDocs.size === 0) {
         setError("Select at least one document to generate an audio overview.");
@@ -225,6 +238,42 @@ export default function WorkflowPanel({
   };
   const handleCloseFlashcards = () => {
     setFlashcardData(null);
+    setSelectedWorkflow(null);
+  };
+  const handleGenerateQuiz = async (options: QuizOptions) => {
+    setShowQuizSetup(false);
+    try {
+      setIsGenerating(true);
+      const response = await quizApi.generate(Array.from(selectedDocs), options);
+      setQuizData(response);
+      queryClient.invalidateQueries({ queryKey: ["quizzes"] });
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to generate quiz.");
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+  const handleOpenSavedQuiz = async (workflowId: string) => {
+    setShowQuizSetup(false);
+    try {
+      setIsLoadingSavedQuiz(true);
+      setIsGenerating(true);
+      setQuizData(await quizApi.getById(workflowId));
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to load quiz.");
+      setTimeout(() => setError(null), 5000);
+    } finally {
+      setIsLoadingSavedQuiz(false);
+      setIsGenerating(false);
+    }
+  };
+  const handleCloseQuizSetup = () => {
+    setShowQuizSetup(false);
+    setSelectedWorkflow(null);
+  };
+  const handleCloseQuiz = () => {
+    setQuizData(null);
     setSelectedWorkflow(null);
   };
   const handleCloseReportStudio = () => {
@@ -388,10 +437,13 @@ export default function WorkflowPanel({
               {selectedWorkflow === "mind-map" && "Generating mind map"}
               {selectedWorkflow === "flashcards" && "Generating flashcards"}
               {selectedWorkflow === "reports" && "Generating report"}
+              {selectedWorkflow === "quiz" && (isLoadingSavedQuiz ? "Loading quiz" : "Generating quiz")}
             </p>
-            <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
-              Analyzing {selectedDocs.size} document{selectedDocs.size !== 1 ? "s" : ""}
-            </p>
+            {!isLoadingSavedQuiz && (
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground mt-1">
+                Analyzing {selectedDocs.size} document{selectedDocs.size !== 1 ? "s" : ""}
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -401,6 +453,14 @@ export default function WorkflowPanel({
         <FlashcardViewer flashcardData={flashcardData} onClose={handleCloseFlashcards} />
       )}
       {showReportStudio && <ReportStudio onClose={handleCloseReportStudio} />}
+      <QuizSetupDialog
+        open={showQuizSetup}
+        documentCount={selectedDocs.size}
+        onClose={handleCloseQuizSetup}
+        onGenerate={handleGenerateQuiz}
+        onOpenQuiz={handleOpenSavedQuiz}
+      />
+      {quizData && <QuizViewer quizData={quizData} onClose={handleCloseQuiz} />}
       {showPodcastGenerator && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <PodcastGenerator
