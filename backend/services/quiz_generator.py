@@ -5,7 +5,6 @@ Generates multiple-choice quizzes using Map-Reduce pattern
 
 import asyncio
 import random
-import re
 import uuid
 from typing import List, Dict, Any, Optional
 from datetime import datetime, timezone
@@ -13,6 +12,7 @@ from datetime import datetime, timezone
 from clients.postgres_client import get_postgres_client
 from clients.ultimate_llm import get_llm
 from models.quiz_models import Quiz, QUESTION_COUNTS
+from utils.text_match import normalize_text, quote_in_text
 from app.logger import logger
 
 
@@ -21,31 +21,6 @@ DIFFICULTY_GUIDANCE = {
     "medium": "Mix recall with comprehension: ask why/how things work and how concepts relate. Wrong options should be plausible and drawn from the same domain.",
     "hard": "Test application, analysis and synthesis across concepts (scenarios, implications, comparisons). Wrong options should be highly plausible and reflect common misconceptions.",
 }
-
-# Evidence quotes shorter than this must match exactly; longer ones are matched by word shingles
-SHINGLE_SIZE = 3
-SHINGLE_MATCH_THRESHOLD = 0.7
-
-
-def _normalize(text: str) -> str:
-    """Lowercase, strip punctuation and collapse whitespace for fuzzy quote matching"""
-    return " ".join(re.sub(r"[^\w]+", " ", text.lower()).split())
-
-
-def _quote_in_text(quote: str, normalized_text: str) -> bool:
-    """Check that a quote appears (near-)verbatim in already-normalized source text"""
-    normalized_quote = _normalize(quote)
-    if not normalized_quote:
-        return False
-    if normalized_quote in normalized_text:
-        return True
-
-    words = normalized_quote.split()
-    if len(words) < SHINGLE_SIZE:
-        return False
-    shingles = [" ".join(words[i:i + SHINGLE_SIZE]) for i in range(len(words) - SHINGLE_SIZE + 1)]
-    found = sum(1 for s in shingles if s in normalized_text)
-    return found / len(shingles) >= SHINGLE_MATCH_THRESHOLD
 
 
 class QuizGeneratorService:
@@ -154,7 +129,7 @@ Document content:
                         "document_id": doc_id,
                         "filename": filename,
                         "facts": facts,
-                        "normalized_content": _normalize(raw_content),
+                        "normalized_content": normalize_text(raw_content),
                         "success": True
                     }
 
@@ -220,7 +195,7 @@ Source material:
             # Verify the evidence quote against the cited document, falling back to any selected document
             source_content = content_by_filename.get(q.source)
             candidates = [source_content] if source_content else list(content_by_filename.values())
-            if any(_quote_in_text(q.evidence, content) for content in candidates):
+            if any(quote_in_text(q.evidence, content) for content in candidates):
                 verified.append(q_dict)
             else:
                 q_dict["evidence"] = None

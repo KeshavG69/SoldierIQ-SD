@@ -20,6 +20,15 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libsm6 \
     ffmpeg \
+    # Slide-deck agent: Node (pptxgenjs build scripts), LibreOffice (pptx -> pdf), Poppler (pdf -> images), fonts
+    nodejs \
+    npm \
+    libreoffice-impress \
+    poppler-utils \
+    fonts-dejavu-core \
+    fonts-liberation \
+    fonts-crosextra-carlito \
+    fonts-crosextra-caladea \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv for faster dependency installation
@@ -30,6 +39,10 @@ COPY pyproject.toml ./
 
 # Install Python dependencies using uv
 RUN uv sync --no-cache
+
+# Node packages for the slide-deck agent's generated build scripts (resolved via NODE_PATH)
+COPY pptx_runtime/package.json pptx_runtime/package-lock.json ./pptx_runtime/
+RUN cd pptx_runtime && npm ci --omit=dev --no-audit --no-fund
 
 # Copy application code
 COPY . .

@@ -921,7 +921,7 @@ class PostgresClient:
         pool = await self.get_pool()
 
         query = """
-            SELECT id, created_at, cardinality(document_ids) AS document_count,
+            SELECT id, status, created_at, updated_at, cardinality(document_ids) AS document_count,
                    data - $4::text[] AS data
             FROM workflows
             WHERE type = $1

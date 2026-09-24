@@ -353,7 +353,8 @@ class IDriveE2Client:
     async def generate_presigned_url(
         self,
         object_name: str,
-        expiration: int = 3600
+        expiration: int = 3600,
+        download_filename: Optional[str] = None
     ) -> str:
         """
         Generate a presigned URL for temporary file access (async)
@@ -361,6 +362,7 @@ class IDriveE2Client:
         Args:
             object_name: S3 object name (key) in the bucket
             expiration: URL expiration time in seconds (default: 1 hour)
+            download_filename: If set, the URL forces a browser download with this filename
 
         Returns:
             str: Presigned URL
@@ -374,12 +376,15 @@ class IDriveE2Client:
                 endpoint_url=self.endpoint_url,
                 config=self.config
             ) as client:
+                params = {
+                    'Bucket': self.bucket_name,
+                    'Key': object_name
+                }
+                if download_filename:
+                    params['ResponseContentDisposition'] = f'attachment; filename="{download_filename}"'
                 url = await client.generate_presigned_url(
                     'get_object',
-                    Params={
-                        'Bucket': self.bucket_name,
-                        'Key': object_name
-                    },
+                    Params=params,
                     ExpiresIn=expiration
                 )
 

@@ -6,12 +6,18 @@ import { useDocumentStore } from "@/lib/stores/documentStore";
 import { mindmapApi, MindMapResponse } from "@/lib/api/mindmap";
 import { flashcardsApi, FlashcardData } from "@/lib/api/flashcards";
 import { quizApi, QuizData, QuizOptions } from "@/lib/api/quiz";
+import { infographicApi, InfographicOptions } from "@/lib/api/infographic";
+import { slideDeckApi, SlideDeckOptions } from "@/lib/api/slideDeck";
 import { useQueryClient } from "@tanstack/react-query";
 import MindMapViewer from "./MindMapViewer";
 import ReportStudio from "./ReportStudio";
 import FlashcardViewer from "./FlashcardViewer";
 import QuizSetupDialog from "./QuizSetupDialog";
 import QuizViewer from "./QuizViewer";
+import InfographicSetupDialog from "./InfographicSetupDialog";
+import InfographicViewer from "./InfographicViewer";
+import SlideDeckSetupDialog from "./SlideDeckSetupDialog";
+import SlideDeckViewer from "./SlideDeckViewer";
 import PodcastGenerator from "../PodcastGenerator";
 
 interface WorkflowOption {
@@ -40,6 +46,10 @@ export default function WorkflowPanel({
   const [showQuizSetup, setShowQuizSetup] = useState(false);
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [isLoadingSavedQuiz, setIsLoadingSavedQuiz] = useState(false);
+  const [showInfographicSetup, setShowInfographicSetup] = useState(false);
+  const [infographicViewId, setInfographicViewId] = useState<string | null>(null);
+  const [showSlideDeckSetup, setShowSlideDeckSetup] = useState(false);
+  const [slideDeckViewId, setSlideDeckViewId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const { selectedDocs } = useDocumentStore();
@@ -146,7 +156,7 @@ export default function WorkflowPanel({
     {
       id: "infographic",
       title: "Infographic",
-      available: false,
+      available: true,
       description: "Design visual infographics.",
       icon: icon(
         <>
@@ -158,7 +168,7 @@ export default function WorkflowPanel({
     {
       id: "slide-deck",
       title: "Slide deck",
-      available: false,
+      available: true,
       description: "Create presentation slides automatically.",
       icon: icon(
         <>
@@ -222,6 +232,16 @@ export default function WorkflowPanel({
       setShowQuizSetup(true);
     }
 
+    if (workflow.id === "infographic") {
+      // Opens even with no selection so saved infographics can be reopened
+      setShowInfographicSetup(true);
+    }
+
+    if (workflow.id === "slide-deck") {
+      // Opens even with no selection so saved decks can be reopened
+      setShowSlideDeckSetup(true);
+    }
+
     if (workflow.id === "audio-overview") {
       if (selectedDocs.size === 0) {
         setError("Select at least one document to generate an audio overview.");
@@ -274,6 +294,56 @@ export default function WorkflowPanel({
   };
   const handleCloseQuiz = () => {
     setQuizData(null);
+    setSelectedWorkflow(null);
+  };
+  const handleGenerateInfographic = async (options: InfographicOptions) => {
+    setShowInfographicSetup(false);
+    try {
+      // Generation runs in the background; the viewer polls until the image is ready
+      const { workflow_id } = await infographicApi.generate(Array.from(selectedDocs), options);
+      queryClient.invalidateQueries({ queryKey: ["infographics"] });
+      setInfographicViewId(workflow_id);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to start infographic generation.");
+      setTimeout(() => setError(null), 5000);
+      setSelectedWorkflow(null);
+    }
+  };
+  const handleOpenSavedInfographic = (workflowId: string) => {
+    setShowInfographicSetup(false);
+    setInfographicViewId(workflowId);
+  };
+  const handleCloseInfographicSetup = () => {
+    setShowInfographicSetup(false);
+    setSelectedWorkflow(null);
+  };
+  const handleCloseInfographic = () => {
+    setInfographicViewId(null);
+    setSelectedWorkflow(null);
+  };
+  const handleGenerateSlideDeck = async (options: SlideDeckOptions) => {
+    setShowSlideDeckSetup(false);
+    try {
+      // Generation runs in the background; the viewer polls until the deck is ready
+      const { workflow_id } = await slideDeckApi.generate(Array.from(selectedDocs), options);
+      queryClient.invalidateQueries({ queryKey: ["slideDecks"] });
+      setSlideDeckViewId(workflow_id);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to start slide deck generation.");
+      setTimeout(() => setError(null), 5000);
+      setSelectedWorkflow(null);
+    }
+  };
+  const handleOpenSavedSlideDeck = (workflowId: string) => {
+    setShowSlideDeckSetup(false);
+    setSlideDeckViewId(workflowId);
+  };
+  const handleCloseSlideDeckSetup = () => {
+    setShowSlideDeckSetup(false);
+    setSelectedWorkflow(null);
+  };
+  const handleCloseSlideDeck = () => {
+    setSlideDeckViewId(null);
     setSelectedWorkflow(null);
   };
   const handleCloseReportStudio = () => {
@@ -461,6 +531,36 @@ export default function WorkflowPanel({
         onOpenQuiz={handleOpenSavedQuiz}
       />
       {quizData && <QuizViewer quizData={quizData} onClose={handleCloseQuiz} />}
+      <InfographicSetupDialog
+        open={showInfographicSetup}
+        documentCount={selectedDocs.size}
+        onClose={handleCloseInfographicSetup}
+        onGenerate={handleGenerateInfographic}
+        onOpenInfographic={handleOpenSavedInfographic}
+      />
+      <SlideDeckSetupDialog
+        open={showSlideDeckSetup}
+        documentCount={selectedDocs.size}
+        onClose={handleCloseSlideDeckSetup}
+        onGenerate={handleGenerateSlideDeck}
+        onOpenDeck={handleOpenSavedSlideDeck}
+      />
+      {slideDeckViewId && (
+        <SlideDeckViewer
+          key={slideDeckViewId}
+          workflowId={slideDeckViewId}
+          onClose={handleCloseSlideDeck}
+          onSwitch={setSlideDeckViewId}
+        />
+      )}
+      {infographicViewId && (
+        <InfographicViewer
+          key={infographicViewId}
+          workflowId={infographicViewId}
+          onClose={handleCloseInfographic}
+          onSwitch={setInfographicViewId}
+        />
+      )}
       {showPodcastGenerator && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <PodcastGenerator

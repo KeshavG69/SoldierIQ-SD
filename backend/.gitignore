@@ -64,3 +64,5 @@ htmlcov/
 
 data/
 dump.rdb
+# Slide-deck agent Node runtime (installed via npm ci in Docker)
+pptx_runtime/node_modules/

@@ -6,6 +6,30 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend-nextjs", "run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "backend-8010",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "uvicorn", "app.server:app", "--reload", "--host", "0.0.0.0", "--port", "8010"],
+      "port": 8010
+    },
+    {
+      "name": "nextjs-dev-backend-8010",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8010", "npm", "--prefix", "frontend-nextjs", "run", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "backend-8020",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "uvicorn", "app.server:app", "--reload", "--host", "0.0.0.0", "--port", "8020"],
+      "port": 8020
+    },
+    {
+      "name": "nextjs-dev-3001",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8020", "npm", "--prefix", "frontend-nextjs", "run", "dev", "--", "-p", "3001"],
+      "port": 3001
     }
   ]
 }
