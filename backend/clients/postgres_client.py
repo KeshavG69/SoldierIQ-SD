@@ -906,6 +906,53 @@ class PostgresClient:
 
         return results
 
+    async def find_workflow_summaries_by_user(
+        self,
+        workflow_type: str,
+        user_id: str,
+        organization_id: str,
+        exclude_data_keys: List[str],
+        limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        """
+        Lightweight listing of a user's workflows: strips heavy keys from the JSONB
+        `data` column in Postgres (e.g. quiz questions) so they never leave the DB
+        """
+        pool = await self.get_pool()
+
+        query = """
+            SELECT id, status, created_at, updated_at, cardinality(document_ids) AS document_count,
+                   data - $4::text[] AS data
+            FROM workflows
+            WHERE type = $1
+            AND user_id = $2
+            AND organization_id = $3
+            ORDER BY created_at DESC
+            LIMIT $5
+        """
+
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                query,
+                workflow_type,
+                uuid.UUID(user_id),
+                uuid.UUID(organization_id),
+                exclude_data_keys,
+                limit
+            )
+
+        results = []
+        for row in rows:
+            result = dict(row)
+            result['id'] = str(result['id'])
+            if result.get('data'):
+                result['data'] = json.loads(result['data']) if isinstance(result['data'], str) else result['data']
+            else:
+                result['data'] = {}
+            results.append(result)
+
+        return results
+
     # ========================================================================
     # TAK CONFIGURATION OPERATIONS
     # ========================================================================

@@ -67,3 +67,6 @@ docs/
 scripts/
 check_documents.py
 download_youtube.py
+
+# Slide-deck agent Node runtime is installed inside the image
+pptx_runtime/node_modules/

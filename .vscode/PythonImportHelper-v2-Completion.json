@@ -201,6 +201,30 @@
         "documentation": {}
     },
     {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
         "label": "os",
         "kind": 6,
         "isExtraImport": true,
@@ -289,6 +313,14 @@
     },
     {
         "label": "Container",
+        "importPath": "collections.abc",
+        "description": "collections.abc",
+        "isExtraImport": true,
+        "detail": "collections.abc",
+        "documentation": {}
+    },
+    {
+        "label": "Iterable",
         "importPath": "collections.abc",
         "description": "collections.abc",
         "isExtraImport": true,
@@ -1264,6 +1296,30 @@
         "documentation": {}
     },
     {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Optional",
         "importPath": "typing",
         "description": "typing",
@@ -1288,6 +1344,30 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Optional",
         "importPath": "typing",
         "description": "typing",
@@ -1297,6 +1377,30 @@
     },
     {
         "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Literal",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1376,7 +1480,23 @@
         "documentation": {}
     },
     {
-        "label": "Optional",
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Mapping",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "NoReturn",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1385,78 +1505,6 @@
     },
     {
         "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Optional",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Any",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "Dict",
-        "importPath": "typing",
-        "description": "typing",
-        "isExtraImport": true,
-        "detail": "typing",
-        "documentation": {}
-    },
-    {
-        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1512,6 +1560,110 @@
         "documentation": {}
     },
     {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "List",
         "importPath": "typing",
         "description": "typing",
@@ -1552,6 +1704,22 @@
         "documentation": {}
     },
     {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Any",
         "importPath": "typing",
         "description": "typing",
@@ -1585,6 +1753,30 @@
     },
     {
         "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1872,6 +2064,38 @@
         "documentation": {}
     },
     {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Optional",
         "importPath": "typing",
         "description": "typing",
@@ -1897,6 +2121,38 @@
     },
     {
         "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -1976,6 +2232,38 @@
         "documentation": {}
     },
     {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
         "label": "Dict",
         "importPath": "typing",
         "description": "typing",
@@ -2017,6 +2305,54 @@
     },
     {
         "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Dict",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
         "importPath": "typing",
         "description": "typing",
         "isExtraImport": true,
@@ -2324,6 +2660,15 @@
         "documentation": {}
     },
     {
+        "label": "zipfile",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "zipfile",
+        "description": "zipfile",
+        "detail": "zipfile",
+        "documentation": {}
+    },
+    {
         "label": "BadZipFile",
         "importPath": "zipfile",
         "description": "zipfile",
@@ -2580,6 +2925,38 @@
         "documentation": {}
     },
     {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "Depends",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "BackgroundTasks",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
         "label": "Depends",
         "importPath": "fastapi",
         "description": "fastapi",
@@ -2732,6 +3109,30 @@
         "documentation": {}
     },
     {
+        "label": "Depends",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
         "label": "BackgroundTasks",
         "importPath": "fastapi",
         "description": "fastapi",
@@ -2805,6 +3206,38 @@
     },
     {
         "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "APIRouter",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "Depends",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "BackgroundTasks",
         "importPath": "fastapi",
         "description": "fastapi",
         "isExtraImport": true,
@@ -3580,6 +4013,70 @@
         "documentation": {}
     },
     {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "importPath": "app.logger",
+        "description": "app.logger",
+        "isExtraImport": true,
+        "detail": "app.logger",
+        "documentation": {}
+    },
+    {
         "label": "time",
         "kind": 6,
         "isExtraImport": true,
@@ -3634,6 +4131,15 @@
         "description": "fastapi.middleware.cors",
         "isExtraImport": true,
         "detail": "fastapi.middleware.cors",
+        "documentation": {}
+    },
+    {
+        "label": "contextlib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "contextlib",
+        "description": "contextlib",
+        "detail": "contextlib",
         "documentation": {}
     },
     {
@@ -3933,6 +4439,22 @@
         "documentation": {}
     },
     {
+        "label": "settings",
+        "importPath": "app.settings",
+        "description": "app.settings",
+        "isExtraImport": true,
+        "detail": "app.settings",
+        "documentation": {}
+    },
+    {
+        "label": "settings",
+        "importPath": "app.settings",
+        "description": "app.settings",
+        "isExtraImport": true,
+        "detail": "app.settings",
+        "documentation": {}
+    },
+    {
         "label": "SecurityHeadersMiddleware",
         "importPath": "app.middleware",
         "description": "app.middleware",
@@ -4006,6 +4528,30 @@
     },
     {
         "label": "flashcards",
+        "importPath": "routers",
+        "description": "routers",
+        "isExtraImport": true,
+        "detail": "routers",
+        "documentation": {}
+    },
+    {
+        "label": "quiz",
+        "importPath": "routers",
+        "description": "routers",
+        "isExtraImport": true,
+        "detail": "routers",
+        "documentation": {}
+    },
+    {
+        "label": "infographic",
+        "importPath": "routers",
+        "description": "routers",
+        "isExtraImport": true,
+        "detail": "routers",
+        "documentation": {}
+    },
+    {
+        "label": "slide_deck",
         "importPath": "routers",
         "description": "routers",
         "isExtraImport": true,
@@ -4406,6 +4952,30 @@
         "documentation": {}
     },
     {
+        "label": "timezone",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
         "label": "datetime",
         "importPath": "datetime",
         "description": "datetime",
@@ -4423,6 +4993,46 @@
     },
     {
         "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timezone",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "datetime",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timezone",
+        "importPath": "datetime",
+        "description": "datetime",
+        "isExtraImport": true,
+        "detail": "datetime",
+        "documentation": {}
+    },
+    {
+        "label": "timedelta",
         "importPath": "datetime",
         "description": "datetime",
         "isExtraImport": true,
@@ -4687,6 +5297,14 @@
         "documentation": {}
     },
     {
+        "label": "lru_cache",
+        "importPath": "functools",
+        "description": "functools",
+        "isExtraImport": true,
+        "detail": "functools",
+        "documentation": {}
+    },
+    {
         "label": "base64",
         "kind": 6,
         "isExtraImport": true,
@@ -4761,7 +5379,55 @@
         "documentation": {}
     },
     {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
         "label": "model_validator",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Field",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "Field",
         "importPath": "pydantic",
         "description": "pydantic",
         "isExtraImport": true,
@@ -5574,6 +6240,86 @@
         "documentation": {}
     },
     {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
         "label": "httpx",
         "kind": 6,
         "isExtraImport": true,
@@ -5708,6 +6454,22 @@
     },
     {
         "label": "get_llm_agno",
+        "importPath": "clients.ultimate_llm",
+        "description": "clients.ultimate_llm",
+        "isExtraImport": true,
+        "detail": "clients.ultimate_llm",
+        "documentation": {}
+    },
+    {
+        "label": "get_llm",
+        "importPath": "clients.ultimate_llm",
+        "description": "clients.ultimate_llm",
+        "isExtraImport": true,
+        "detail": "clients.ultimate_llm",
+        "documentation": {}
+    },
+    {
+        "label": "get_llm",
         "importPath": "clients.ultimate_llm",
         "description": "clients.ultimate_llm",
         "isExtraImport": true,
@@ -5944,6 +6706,14 @@
         "documentation": {}
     },
     {
+        "label": "OpenAIChat",
+        "importPath": "agno.models.openai",
+        "description": "agno.models.openai",
+        "isExtraImport": true,
+        "detail": "agno.models.openai",
+        "documentation": {}
+    },
+    {
         "label": "UnstructuredClient",
         "importPath": "unstructured_client",
         "description": "unstructured_client",
@@ -6056,6 +6826,22 @@
         "description": "clients.video_aligner",
         "isExtraImport": true,
         "detail": "clients.video_aligner",
+        "documentation": {}
+    },
+    {
+        "label": "get_idrivee2_client",
+        "importPath": "clients.idrivee2_client",
+        "description": "clients.idrivee2_client",
+        "isExtraImport": true,
+        "detail": "clients.idrivee2_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_idrivee2_client",
+        "importPath": "clients.idrivee2_client",
+        "description": "clients.idrivee2_client",
+        "isExtraImport": true,
+        "detail": "clients.idrivee2_client",
         "documentation": {}
     },
     {
@@ -6428,6 +7214,293 @@
         "documentation": {}
     },
     {
+        "label": "posixpath",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "posixpath",
+        "description": "posixpath",
+        "detail": "posixpath",
+        "documentation": {}
+    },
+    {
+        "label": "defusedxml.minidom",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "defusedxml.minidom",
+        "description": "defusedxml.minidom",
+        "detail": "defusedxml.minidom",
+        "documentation": {}
+    },
+    {
+        "label": "lxml.etree",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "lxml.etree",
+        "description": "lxml.etree",
+        "detail": "lxml.etree",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "opc_target",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "rels_source_part",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "rendered_text",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "OOXML_FAMILY",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "rezip",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "helpers",
+        "description": "helpers",
+        "isExtraImport": true,
+        "detail": "helpers",
+        "documentation": {}
+    },
+    {
+        "label": "subprocess",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "subprocess",
+        "description": "subprocess",
+        "detail": "subprocess",
+        "documentation": {}
+    },
+    {
+        "label": "defusedxml.ElementTree",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "defusedxml.ElementTree",
+        "description": "defusedxml.ElementTree",
+        "detail": "defusedxml.ElementTree",
+        "documentation": {}
+    },
+    {
+        "label": "DefusedXmlException",
+        "importPath": "defusedxml.common",
+        "description": "defusedxml.common",
+        "isExtraImport": true,
+        "detail": "defusedxml.common",
+        "documentation": {}
+    },
+    {
+        "label": "DefusedXmlException",
+        "importPath": "defusedxml.common",
+        "description": "defusedxml.common",
+        "isExtraImport": true,
+        "detail": "defusedxml.common",
+        "documentation": {}
+    },
+    {
+        "label": "socket",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "socket",
+        "description": "socket",
+        "detail": "socket",
+        "documentation": {}
+    },
+    {
+        "label": "DOCXSchemaValidator",
+        "importPath": "validators",
+        "description": "validators",
+        "isExtraImport": true,
+        "detail": "validators",
+        "documentation": {}
+    },
+    {
+        "label": "PPTXSchemaValidator",
+        "importPath": "validators",
+        "description": "validators",
+        "isExtraImport": true,
+        "detail": "validators",
+        "documentation": {}
+    },
+    {
+        "label": "RedliningValidator",
+        "importPath": "validators",
+        "description": "validators",
+        "isExtraImport": true,
+        "detail": "validators",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
+        "documentation": {}
+    },
+    {
+        "label": "rezip",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "safe_extract",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_REL_TYPE",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "opc_target",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "rels_source_part",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_REL_TYPE",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "opc_target",
+        "importPath": "office.helpers",
+        "description": "office.helpers",
+        "isExtraImport": true,
+        "detail": "office.helpers",
+        "documentation": {}
+    },
+    {
+        "label": "ElementTree",
+        "importPath": "defusedxml",
+        "description": "defusedxml",
+        "isExtraImport": true,
+        "detail": "defusedxml",
+        "documentation": {}
+    },
+    {
+        "label": "run_soffice",
+        "importPath": "office.soffice",
+        "description": "office.soffice",
+        "isExtraImport": true,
+        "detail": "office.soffice",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "ImageDraw",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "ImageFont",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
         "label": "require_org_admin",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
@@ -6461,6 +7534,14 @@
     },
     {
         "label": "require_uploader",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
         "isExtraImport": true,
@@ -6540,7 +7621,23 @@
         "documentation": {}
     },
     {
+        "label": "get_current_context",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
         "label": "require_uploader",
+        "importPath": "orgs.dependencies",
+        "description": "orgs.dependencies",
+        "isExtraImport": true,
+        "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_current_context",
         "importPath": "orgs.dependencies",
         "description": "orgs.dependencies",
         "isExtraImport": true,
@@ -6569,6 +7666,30 @@
         "description": "orgs.dependencies",
         "isExtraImport": true,
         "detail": "orgs.dependencies",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
+        "documentation": {}
+    },
+    {
+        "label": "get_postgres_client",
+        "importPath": "clients.postgres_client",
+        "description": "clients.postgres_client",
+        "isExtraImport": true,
+        "detail": "clients.postgres_client",
         "documentation": {}
     },
     {
@@ -6900,6 +8021,78 @@
         "documentation": {}
     },
     {
+        "label": "GenerateInfographicRequest",
+        "importPath": "models.infographic_models",
+        "description": "models.infographic_models",
+        "isExtraImport": true,
+        "detail": "models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "DocDigest",
+        "importPath": "models.infographic_models",
+        "description": "models.infographic_models",
+        "isExtraImport": true,
+        "detail": "models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "InfographicSpec",
+        "importPath": "models.infographic_models",
+        "description": "models.infographic_models",
+        "isExtraImport": true,
+        "detail": "models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "ASPECT_RATIOS",
+        "importPath": "models.infographic_models",
+        "description": "models.infographic_models",
+        "isExtraImport": true,
+        "detail": "models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "DETAIL_BUDGETS",
+        "importPath": "models.infographic_models",
+        "description": "models.infographic_models",
+        "isExtraImport": true,
+        "detail": "models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "get_infographic_generator_service",
+        "importPath": "services.infographic_generator",
+        "description": "services.infographic_generator",
+        "isExtraImport": true,
+        "detail": "services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "STYLE_PROMPTS",
+        "importPath": "services.infographic_generator",
+        "description": "services.infographic_generator",
+        "isExtraImport": true,
+        "detail": "services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_infographic_generator_service",
+        "importPath": "services.infographic_generator",
+        "description": "services.infographic_generator",
+        "isExtraImport": true,
+        "detail": "services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "_numbers_grounded",
+        "importPath": "services.infographic_generator",
+        "description": "services.infographic_generator",
+        "isExtraImport": true,
+        "detail": "services.infographic_generator",
+        "documentation": {}
+    },
+    {
         "label": "MindMapRequest",
         "importPath": "models.mindmap",
         "description": "models.mindmap",
@@ -6945,6 +8138,38 @@
         "description": "services.podcast_service",
         "isExtraImport": true,
         "detail": "services.podcast_service",
+        "documentation": {}
+    },
+    {
+        "label": "GenerateQuizRequest",
+        "importPath": "models.quiz_models",
+        "description": "models.quiz_models",
+        "isExtraImport": true,
+        "detail": "models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "Quiz",
+        "importPath": "models.quiz_models",
+        "description": "models.quiz_models",
+        "isExtraImport": true,
+        "detail": "models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "QUESTION_COUNTS",
+        "importPath": "models.quiz_models",
+        "description": "models.quiz_models",
+        "isExtraImport": true,
+        "detail": "models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "get_quiz_generator_service",
+        "importPath": "services.quiz_generator",
+        "description": "services.quiz_generator",
+        "isExtraImport": true,
+        "detail": "services.quiz_generator",
         "documentation": {}
     },
     {
@@ -7052,11 +8277,35 @@
         "documentation": {}
     },
     {
+        "label": "Agent",
+        "importPath": "agno.agent",
+        "description": "agno.agent",
+        "isExtraImport": true,
+        "detail": "agno.agent",
+        "documentation": {}
+    },
+    {
         "label": "RunEvent",
         "importPath": "agno.agent",
         "description": "agno.agent",
         "isExtraImport": true,
         "detail": "agno.agent",
+        "documentation": {}
+    },
+    {
+        "label": "GenerateSlideDeckRequest",
+        "importPath": "models.slide_deck_models",
+        "description": "models.slide_deck_models",
+        "isExtraImport": true,
+        "detail": "models.slide_deck_models",
+        "documentation": {}
+    },
+    {
+        "label": "get_slide_deck_generator_service",
+        "importPath": "services.slide_deck_generator",
+        "description": "services.slide_deck_generator",
+        "isExtraImport": true,
+        "detail": "services.slide_deck_generator",
         "documentation": {}
     },
     {
@@ -7213,6 +8462,54 @@
         "documentation": {}
     },
     {
+        "label": "normalize_text",
+        "importPath": "utils.text_match",
+        "description": "utils.text_match",
+        "isExtraImport": true,
+        "detail": "utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "normalize_text",
+        "importPath": "utils.text_match",
+        "description": "utils.text_match",
+        "isExtraImport": true,
+        "detail": "utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "quote_in_text",
+        "importPath": "utils.text_match",
+        "description": "utils.text_match",
+        "isExtraImport": true,
+        "detail": "utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "generate_image",
+        "importPath": "utils.image_gen",
+        "description": "utils.image_gen",
+        "isExtraImport": true,
+        "detail": "utils.image_gen",
+        "documentation": {}
+    },
+    {
+        "label": "IMAGE_MODEL",
+        "importPath": "utils.image_gen",
+        "description": "utils.image_gen",
+        "isExtraImport": true,
+        "detail": "utils.image_gen",
+        "documentation": {}
+    },
+    {
+        "label": "generate_image",
+        "importPath": "utils.image_gen",
+        "description": "utils.image_gen",
+        "isExtraImport": true,
+        "detail": "utils.image_gen",
+        "documentation": {}
+    },
+    {
         "label": "get_kg_pipeline",
         "importPath": "clients.kg.pipeline",
         "description": "clients.kg.pipeline",
@@ -7242,6 +8539,54 @@
         "description": "models.podcast",
         "isExtraImport": true,
         "detail": "models.podcast",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "agno.media",
+        "description": "agno.media",
+        "isExtraImport": true,
+        "detail": "agno.media",
+        "documentation": {}
+    },
+    {
+        "label": "Skills",
+        "importPath": "agno.skills",
+        "description": "agno.skills",
+        "isExtraImport": true,
+        "detail": "agno.skills",
+        "documentation": {}
+    },
+    {
+        "label": "LocalSkills",
+        "importPath": "agno.skills",
+        "description": "agno.skills",
+        "isExtraImport": true,
+        "detail": "agno.skills",
+        "documentation": {}
+    },
+    {
+        "label": "ToolResult",
+        "importPath": "agno.tools.function",
+        "description": "agno.tools.function",
+        "isExtraImport": true,
+        "detail": "agno.tools.function",
+        "documentation": {}
+    },
+    {
+        "label": "CodeSandbox",
+        "importPath": "utils.code_sandbox",
+        "description": "utils.code_sandbox",
+        "isExtraImport": true,
+        "detail": "utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "PPTX_SKILL_DIR",
+        "importPath": "utils.code_sandbox",
+        "description": "utils.code_sandbox",
+        "isExtraImport": true,
+        "detail": "utils.code_sandbox",
         "documentation": {}
     },
     {
@@ -7389,15 +8734,6 @@
         "importPath": "parse_tfm",
         "description": "parse_tfm",
         "detail": "parse_tfm",
-        "documentation": {}
-    },
-    {
-        "label": "subprocess",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "subprocess",
-        "description": "subprocess",
-        "detail": "subprocess",
         "documentation": {}
     },
     {
@@ -9543,6 +10879,123 @@
         "documentation": {}
     },
     {
+        "label": "GenerateInfographicRequest",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class GenerateInfographicRequest(BaseModel):\n    \"\"\"Request to generate an infographic from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the infographic from\")\n    orientation: Orientation = Field(default=\"portrait\")\n    detail_level: DetailLevel = Field(default=\"standard\")\n    style: Style = Field(default=\"auto\")\n    focus: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus / custom instructions\")\n    # user_id and organization_id are extracted from JWT token by backend\n# ---------------------------------------------------------------------------\n# MAP phase: per-document ranked digest",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "Insight",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class Insight(BaseModel):\n    \"\"\"A candidate piece of content for the infographic\"\"\"\n    claim: str = Field(description=\"Short, self-contained statement of the insight\")\n    kind: InsightKind = Field(description=\"What kind of content this is\")\n    value: Optional[str] = Field(default=None, description=\"The key number/date/quantity if any, e.g. '72 hrs', '3 of 5 units'\")\n    quote: str = Field(description=\"The supporting sentence copied EXACTLY, word for word, from the document\")\n    importance: int = Field(description=\"Importance from 1 (minor detail) to 5 (central to the document's purpose)\")\n    why: str = Field(description=\"One line on why this matters\")\nclass DocDigest(BaseModel):\n    \"\"\"Ranked digest of one document\"\"\"",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "DocDigest",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class DocDigest(BaseModel):\n    \"\"\"Ranked digest of one document\"\"\"\n    main_point: str = Field(description=\"The document's single most important takeaway, in one sentence\")\n    insights: List[Insight] = Field(description=\"Up to 15 candidate insights, most important first\")\n# ---------------------------------------------------------------------------\n# REDUCE phase: the infographic spec\n# ---------------------------------------------------------------------------\nSectionKind = Literal[\"stats\", \"list\", \"steps\", \"comparison\", \"timeline\"]\nclass SpecItem(BaseModel):\n    \"\"\"A single item within a section\"\"\"",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "SpecItem",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class SpecItem(BaseModel):\n    \"\"\"A single item within a section\"\"\"\n    label: str = Field(description=\"Short label (2-6 words)\")\n    value: Optional[str] = Field(default=None, description=\"Headline number/date if any, copied exactly from the source\")\n    description: Optional[str] = Field(default=None, description=\"Optional one short line of supporting text\")\n    icon_hint: str = Field(description=\"A simple icon concept for this item, e.g. 'fuel can', 'clock', 'shield'\")\n    source: str = Field(description=\"Filename of the document this item comes from\")\nclass SpecSection(BaseModel):\n    \"\"\"A section of the infographic\"\"\"\n    heading: str = Field(description=\"Section heading (2-5 words)\")",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "SpecSection",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class SpecSection(BaseModel):\n    \"\"\"A section of the infographic\"\"\"\n    heading: str = Field(description=\"Section heading (2-5 words)\")\n    kind: SectionKind = Field(description=\"How the section should be visualized\")\n    items: List[SpecItem] = Field(description=\"Items in this section\")\nclass InfographicSpec(BaseModel):\n    \"\"\"Complete infographic content plan\"\"\"\n    title: str = Field(description=\"Infographic title (max ~8 words), states the headline takeaway\")\n    subtitle: str = Field(description=\"One-line subtitle giving context\")\n    sections: List[SpecSection] = Field(description=\"Sections in reading order\")",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "InfographicSpec",
+        "kind": 6,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "class InfographicSpec(BaseModel):\n    \"\"\"Complete infographic content plan\"\"\"\n    title: str = Field(description=\"Infographic title (max ~8 words), states the headline takeaway\")\n    subtitle: str = Field(description=\"One-line subtitle giving context\")\n    sections: List[SpecSection] = Field(description=\"Sections in reading order\")\n    takeaway: Optional[str] = Field(default=None, description=\"Optional bottom-line sentence for the footer banner\")",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "Orientation",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "Orientation = Literal[\"portrait\", \"landscape\", \"square\"]\nDetailLevel = Literal[\"concise\", \"standard\", \"detailed\"]\nStyle = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\n# Image aspect ratio per orientation\nASPECT_RATIOS = {\"portrait\": \"3:4\", \"landscape\": \"16:9\", \"square\": \"1:1\"}\n# Content budget per detail level\nDETAIL_BUDGETS = {\n    \"concise\": {\"sections\": \"3-4\", \"items\": \"about 6\", \"words\": 60},\n    \"standard\": {\"sections\": \"4-5\", \"items\": \"about 10\", \"words\": 120},\n    \"detailed\": {\"sections\": \"6-7\", \"items\": \"about 15\", \"words\": 200},",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "DetailLevel",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "DetailLevel = Literal[\"concise\", \"standard\", \"detailed\"]\nStyle = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\n# Image aspect ratio per orientation\nASPECT_RATIOS = {\"portrait\": \"3:4\", \"landscape\": \"16:9\", \"square\": \"1:1\"}\n# Content budget per detail level\nDETAIL_BUDGETS = {\n    \"concise\": {\"sections\": \"3-4\", \"items\": \"about 6\", \"words\": 60},\n    \"standard\": {\"sections\": \"4-5\", \"items\": \"about 10\", \"words\": 120},\n    \"detailed\": {\"sections\": \"6-7\", \"items\": \"about 15\", \"words\": 200},\n}",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "Style",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "Style = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\n# Image aspect ratio per orientation\nASPECT_RATIOS = {\"portrait\": \"3:4\", \"landscape\": \"16:9\", \"square\": \"1:1\"}\n# Content budget per detail level\nDETAIL_BUDGETS = {\n    \"concise\": {\"sections\": \"3-4\", \"items\": \"about 6\", \"words\": 60},\n    \"standard\": {\"sections\": \"4-5\", \"items\": \"about 10\", \"words\": 120},\n    \"detailed\": {\"sections\": \"6-7\", \"items\": \"about 15\", \"words\": 200},\n}\nclass GenerateInfographicRequest(BaseModel):",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "ASPECT_RATIOS",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "ASPECT_RATIOS = {\"portrait\": \"3:4\", \"landscape\": \"16:9\", \"square\": \"1:1\"}\n# Content budget per detail level\nDETAIL_BUDGETS = {\n    \"concise\": {\"sections\": \"3-4\", \"items\": \"about 6\", \"words\": 60},\n    \"standard\": {\"sections\": \"4-5\", \"items\": \"about 10\", \"words\": 120},\n    \"detailed\": {\"sections\": \"6-7\", \"items\": \"about 15\", \"words\": 200},\n}\nclass GenerateInfographicRequest(BaseModel):\n    \"\"\"Request to generate an infographic from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the infographic from\")",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "DETAIL_BUDGETS",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "DETAIL_BUDGETS = {\n    \"concise\": {\"sections\": \"3-4\", \"items\": \"about 6\", \"words\": 60},\n    \"standard\": {\"sections\": \"4-5\", \"items\": \"about 10\", \"words\": 120},\n    \"detailed\": {\"sections\": \"6-7\", \"items\": \"about 15\", \"words\": 200},\n}\nclass GenerateInfographicRequest(BaseModel):\n    \"\"\"Request to generate an infographic from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the infographic from\")\n    orientation: Orientation = Field(default=\"portrait\")\n    detail_level: DetailLevel = Field(default=\"standard\")",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "InsightKind",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "InsightKind = Literal[\"stat\", \"step\", \"comparison\", \"timeline\", \"risk\", \"recommendation\", \"definition\"]\nclass Insight(BaseModel):\n    \"\"\"A candidate piece of content for the infographic\"\"\"\n    claim: str = Field(description=\"Short, self-contained statement of the insight\")\n    kind: InsightKind = Field(description=\"What kind of content this is\")\n    value: Optional[str] = Field(default=None, description=\"The key number/date/quantity if any, e.g. '72 hrs', '3 of 5 units'\")\n    quote: str = Field(description=\"The supporting sentence copied EXACTLY, word for word, from the document\")\n    importance: int = Field(description=\"Importance from 1 (minor detail) to 5 (central to the document's purpose)\")\n    why: str = Field(description=\"One line on why this matters\")\nclass DocDigest(BaseModel):",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
+        "label": "SectionKind",
+        "kind": 5,
+        "importPath": "backend.models.infographic_models",
+        "description": "backend.models.infographic_models",
+        "peekOfCode": "SectionKind = Literal[\"stats\", \"list\", \"steps\", \"comparison\", \"timeline\"]\nclass SpecItem(BaseModel):\n    \"\"\"A single item within a section\"\"\"\n    label: str = Field(description=\"Short label (2-6 words)\")\n    value: Optional[str] = Field(default=None, description=\"Headline number/date if any, copied exactly from the source\")\n    description: Optional[str] = Field(default=None, description=\"Optional one short line of supporting text\")\n    icon_hint: str = Field(description=\"A simple icon concept for this item, e.g. 'fuel can', 'clock', 'shield'\")\n    source: str = Field(description=\"Filename of the document this item comes from\")\nclass SpecSection(BaseModel):\n    \"\"\"A section of the infographic\"\"\"",
+        "detail": "backend.models.infographic_models",
+        "documentation": {}
+    },
+    {
         "label": "Node",
         "kind": 6,
         "importPath": "backend.models.mindmap",
@@ -9615,6 +11068,69 @@
         "documentation": {}
     },
     {
+        "label": "GenerateQuizRequest",
+        "kind": 6,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "class GenerateQuizRequest(BaseModel):\n    \"\"\"Request to generate a quiz from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the quiz from\")\n    question_count: QuestionCount = Field(default=\"standard\", description=\"Number of questions\")\n    difficulty: Difficulty = Field(default=\"medium\", description=\"Question difficulty\")\n    topic: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus topic\")\n    # user_id and organization_id are extracted from JWT token by backend\nclass AnswerOption(BaseModel):\n    \"\"\"A single multiple-choice option\"\"\"\n    text: str = Field(description=\"The answer option text\")",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "AnswerOption",
+        "kind": 6,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "class AnswerOption(BaseModel):\n    \"\"\"A single multiple-choice option\"\"\"\n    text: str = Field(description=\"The answer option text\")\n    is_correct: bool = Field(description=\"True for the single correct option\")\n    rationale: str = Field(\n        description=\"1-2 sentences explaining why this option is correct or incorrect, grounded in the source\"\n    )\nclass QuizQuestion(BaseModel):\n    \"\"\"A multiple-choice question with exactly one correct answer\"\"\"\n    question: str = Field(description=\"The question text\")",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "QuizQuestion",
+        "kind": 6,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "class QuizQuestion(BaseModel):\n    \"\"\"A multiple-choice question with exactly one correct answer\"\"\"\n    question: str = Field(description=\"The question text\")\n    options: List[AnswerOption] = Field(description=\"Exactly 4 answer options\")\n    hint: str = Field(description=\"A short hint that nudges toward the answer without giving it away\")\n    source: str = Field(description=\"Filename of the source document the question is based on\")\n    evidence: str = Field(\n        description=\"A short verbatim quote (one sentence) copied exactly from the source material that supports the correct answer\"\n    )\nclass Quiz(BaseModel):",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "Quiz",
+        "kind": 6,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "class Quiz(BaseModel):\n    \"\"\"Complete quiz produced by the LLM\"\"\"\n    title: str = Field(description=\"Short descriptive title for the quiz, e.g. 'Supply Chain Logistics Quiz'\")\n    questions: List[QuizQuestion] = Field(description=\"The quiz questions\")",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "QuestionCount",
+        "kind": 5,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "QuestionCount = Literal[\"fewer\", \"standard\", \"more\"]\nDifficulty = Literal[\"easy\", \"medium\", \"hard\"]\n# How many questions each count option maps to\nQUESTION_COUNTS = {\"fewer\": 5, \"standard\": 10, \"more\": 20}\nclass GenerateQuizRequest(BaseModel):\n    \"\"\"Request to generate a quiz from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the quiz from\")\n    question_count: QuestionCount = Field(default=\"standard\", description=\"Number of questions\")\n    difficulty: Difficulty = Field(default=\"medium\", description=\"Question difficulty\")\n    topic: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus topic\")",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "Difficulty",
+        "kind": 5,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "Difficulty = Literal[\"easy\", \"medium\", \"hard\"]\n# How many questions each count option maps to\nQUESTION_COUNTS = {\"fewer\": 5, \"standard\": 10, \"more\": 20}\nclass GenerateQuizRequest(BaseModel):\n    \"\"\"Request to generate a quiz from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the quiz from\")\n    question_count: QuestionCount = Field(default=\"standard\", description=\"Number of questions\")\n    difficulty: Difficulty = Field(default=\"medium\", description=\"Question difficulty\")\n    topic: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus topic\")\n    # user_id and organization_id are extracted from JWT token by backend",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
+        "label": "QUESTION_COUNTS",
+        "kind": 5,
+        "importPath": "backend.models.quiz_models",
+        "description": "backend.models.quiz_models",
+        "peekOfCode": "QUESTION_COUNTS = {\"fewer\": 5, \"standard\": 10, \"more\": 20}\nclass GenerateQuizRequest(BaseModel):\n    \"\"\"Request to generate a quiz from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to generate the quiz from\")\n    question_count: QuestionCount = Field(default=\"standard\", description=\"Number of questions\")\n    difficulty: Difficulty = Field(default=\"medium\", description=\"Question difficulty\")\n    topic: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus topic\")\n    # user_id and organization_id are extracted from JWT token by backend\nclass AnswerOption(BaseModel):\n    \"\"\"A single multiple-choice option\"\"\"",
+        "detail": "backend.models.quiz_models",
+        "documentation": {}
+    },
+    {
         "label": "SuggestFormatsRequest",
         "kind": 6,
         "importPath": "backend.models.report_models",
@@ -9630,6 +11146,42 @@
         "description": "backend.models.report_models",
         "peekOfCode": "class GenerateReportRequest(BaseModel):\n    \"\"\"Request to generate a report\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to include in report\")\n    prompt: str = Field(..., description=\"Report generation prompt from frontend\")\n    # user_id and organization_id are extracted from JWT token by backend",
         "detail": "backend.models.report_models",
+        "documentation": {}
+    },
+    {
+        "label": "GenerateSlideDeckRequest",
+        "kind": 6,
+        "importPath": "backend.models.slide_deck_models",
+        "description": "backend.models.slide_deck_models",
+        "peekOfCode": "class GenerateSlideDeckRequest(BaseModel):\n    \"\"\"Request to generate a slide deck from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to build the deck from\")\n    format: DeckFormat = Field(default=\"detailed\")\n    length: DeckLength = Field(default=\"default\")\n    style: DeckStyle = Field(default=\"auto\")\n    focus: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus / custom instructions\")\n    # user_id and organization_id are extracted from JWT token by backend",
+        "detail": "backend.models.slide_deck_models",
+        "documentation": {}
+    },
+    {
+        "label": "DeckFormat",
+        "kind": 5,
+        "importPath": "backend.models.slide_deck_models",
+        "description": "backend.models.slide_deck_models",
+        "peekOfCode": "DeckFormat = Literal[\"detailed\", \"presenter\"]\nDeckLength = Literal[\"short\", \"default\", \"long\"]\nDeckStyle = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\nclass GenerateSlideDeckRequest(BaseModel):\n    \"\"\"Request to generate a slide deck from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to build the deck from\")\n    format: DeckFormat = Field(default=\"detailed\")\n    length: DeckLength = Field(default=\"default\")\n    style: DeckStyle = Field(default=\"auto\")\n    focus: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus / custom instructions\")",
+        "detail": "backend.models.slide_deck_models",
+        "documentation": {}
+    },
+    {
+        "label": "DeckLength",
+        "kind": 5,
+        "importPath": "backend.models.slide_deck_models",
+        "description": "backend.models.slide_deck_models",
+        "peekOfCode": "DeckLength = Literal[\"short\", \"default\", \"long\"]\nDeckStyle = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\nclass GenerateSlideDeckRequest(BaseModel):\n    \"\"\"Request to generate a slide deck from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to build the deck from\")\n    format: DeckFormat = Field(default=\"detailed\")\n    length: DeckLength = Field(default=\"default\")\n    style: DeckStyle = Field(default=\"auto\")\n    focus: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus / custom instructions\")\n    # user_id and organization_id are extracted from JWT token by backend",
+        "detail": "backend.models.slide_deck_models",
+        "documentation": {}
+    },
+    {
+        "label": "DeckStyle",
+        "kind": 5,
+        "importPath": "backend.models.slide_deck_models",
+        "description": "backend.models.slide_deck_models",
+        "peekOfCode": "DeckStyle = Literal[\"auto\", \"professional\", \"tactical\", \"editorial\", \"instructional\", \"sketch\"]\nclass GenerateSlideDeckRequest(BaseModel):\n    \"\"\"Request to generate a slide deck from documents\"\"\"\n    document_ids: List[str] = Field(..., description=\"Document IDs to build the deck from\")\n    format: DeckFormat = Field(default=\"detailed\")\n    length: DeckLength = Field(default=\"default\")\n    style: DeckStyle = Field(default=\"auto\")\n    focus: Optional[str] = Field(default=None, max_length=500, description=\"Optional focus / custom instructions\")\n    # user_id and organization_id are extracted from JWT token by backend",
+        "detail": "backend.models.slide_deck_models",
         "documentation": {}
     },
     {
@@ -9765,6 +11317,690 @@
         "description": "backend.orgs.models",
         "peekOfCode": "VALID_ROLES = {\"admin\", \"user\"}\n# ----------------------------------------------------------------------------\n# Organizations\n# ----------------------------------------------------------------------------\nclass OrganizationResponse(BaseModel):\n    id: str\n    name: str\n    slug: str\n    owner_user_id: str\n    created_at: Optional[datetime] = None",
         "detail": "backend.orgs.models",
+        "documentation": {}
+    },
+    {
+        "label": "find_chart_problems",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "def find_chart_problems(files: Mapping[str, bytes]) -> list[str]:\n    problems: list[str] = []\n    for part in sorted(n for n in files if _CHART_PART_RE.fullmatch(n)):\n        xml = part_text(files[part])\n        for check in CHART_CHECKS:\n            problems.extend(check(part, xml))\n    return problems",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_CHART_PART_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_CHART_PART_RE = re.compile(r\"ppt/charts/chart\\d+\\.xml\")\n_GROUPING_RE = re.compile(r\"\"\"<c:grouping\\b[^>]*?\\bval=[\"'](\\w+)[\"']\"\"\")\n_DLBL_POS_RE = re.compile(r\"\"\"<c:dLblPos\\b[^>]*?\\bval=[\"'](\\w+)[\"']\"\"\")\ndef _strip_ext_lst(text: str) -> str:\n    out, cursor = [], 0\n    for lo, hi in _ext_lst_spans(text):\n        out.append(text[cursor:lo])\n        cursor = hi\n    out.append(text[cursor:])\n    return \"\".join(out)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_GROUPING_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_GROUPING_RE = re.compile(r\"\"\"<c:grouping\\b[^>]*?\\bval=[\"'](\\w+)[\"']\"\"\")\n_DLBL_POS_RE = re.compile(r\"\"\"<c:dLblPos\\b[^>]*?\\bval=[\"'](\\w+)[\"']\"\"\")\ndef _strip_ext_lst(text: str) -> str:\n    out, cursor = [], 0\n    for lo, hi in _ext_lst_spans(text):\n        out.append(text[cursor:lo])\n        cursor = hi\n    out.append(text[cursor:])\n    return \"\".join(out)\n_BAR_GROUP_RE = re.compile(r\"<c:(bar3DChart|barChart)\\b[^>]*(?<!/)>.*?</c:\\1\\s*>\", re.DOTALL)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_DLBL_POS_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_DLBL_POS_RE = re.compile(r\"\"\"<c:dLblPos\\b[^>]*?\\bval=[\"'](\\w+)[\"']\"\"\")\ndef _strip_ext_lst(text: str) -> str:\n    out, cursor = [], 0\n    for lo, hi in _ext_lst_spans(text):\n        out.append(text[cursor:lo])\n        cursor = hi\n    out.append(text[cursor:])\n    return \"\".join(out)\n_BAR_GROUP_RE = re.compile(r\"<c:(bar3DChart|barChart)\\b[^>]*(?<!/)>.*?</c:\\1\\s*>\", re.DOTALL)\nSTACKED_GROUPINGS = frozenset({\"stacked\", \"percentStacked\"})",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_BAR_GROUP_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_BAR_GROUP_RE = re.compile(r\"<c:(bar3DChart|barChart)\\b[^>]*(?<!/)>.*?</c:\\1\\s*>\", re.DOTALL)\nSTACKED_GROUPINGS = frozenset({\"stacked\", \"percentStacked\"})\nILLEGAL_ON_STACKED = frozenset({\"outEnd\"})\nLEGAL_ON_STACKED = (\"ctr\", \"inEnd\", \"inBase\")\ndef _check_stacked_label_positions(part: str, xml: str) -> list[str]:\n    problems: list[str] = []\n    for match in _BAR_GROUP_RE.finditer(xml):\n        block = _strip_ext_lst(match.group(0))\n        group = match.group(1)\n        grouping = _GROUPING_RE.search(block)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "STACKED_GROUPINGS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "STACKED_GROUPINGS = frozenset({\"stacked\", \"percentStacked\"})\nILLEGAL_ON_STACKED = frozenset({\"outEnd\"})\nLEGAL_ON_STACKED = (\"ctr\", \"inEnd\", \"inBase\")\ndef _check_stacked_label_positions(part: str, xml: str) -> list[str]:\n    problems: list[str] = []\n    for match in _BAR_GROUP_RE.finditer(xml):\n        block = _strip_ext_lst(match.group(0))\n        group = match.group(1)\n        grouping = _GROUPING_RE.search(block)\n        if grouping is None or grouping.group(1) not in STACKED_GROUPINGS:",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "ILLEGAL_ON_STACKED",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "ILLEGAL_ON_STACKED = frozenset({\"outEnd\"})\nLEGAL_ON_STACKED = (\"ctr\", \"inEnd\", \"inBase\")\ndef _check_stacked_label_positions(part: str, xml: str) -> list[str]:\n    problems: list[str] = []\n    for match in _BAR_GROUP_RE.finditer(xml):\n        block = _strip_ext_lst(match.group(0))\n        group = match.group(1)\n        grouping = _GROUPING_RE.search(block)\n        if grouping is None or grouping.group(1) not in STACKED_GROUPINGS:\n            continue",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "LEGAL_ON_STACKED",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "LEGAL_ON_STACKED = (\"ctr\", \"inEnd\", \"inBase\")\ndef _check_stacked_label_positions(part: str, xml: str) -> list[str]:\n    problems: list[str] = []\n    for match in _BAR_GROUP_RE.finditer(xml):\n        block = _strip_ext_lst(match.group(0))\n        group = match.group(1)\n        grouping = _GROUPING_RE.search(block)\n        if grouping is None or grouping.group(1) not in STACKED_GROUPINGS:\n            continue\n        bad = [p for p in _DLBL_POS_RE.findall(block) if p in ILLEGAL_ON_STACKED]",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_ANY_CHART_GROUP_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_ANY_CHART_GROUP_RE = re.compile(r\"<c:(\\w+Chart)\\b[^>]*(?<!/)>.*?</c:\\1\\s*>\", re.DOTALL)\n_AXID_RE = re.compile(\n    r\"\"\"\\s*<c:axId\\b[^>]*?\\bval=[\"'](-?\\d+)[\"']\\s*(?:/>|>\\s*</c:axId\\s*>)\"\"\"\n)\n_AXIS_DECL_RE = re.compile(\n    r\"\"\"<c:(catAx|valAx|serAx|dateAx)\\b[^>]*(?<!/)>\\s*<c:axId\\b[^>]*?\\bval=[\"'](-?\\d+)[\"']\"\"\"\n)\nAXID_LIMIT = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_AXID_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_AXID_RE = re.compile(\n    r\"\"\"\\s*<c:axId\\b[^>]*?\\bval=[\"'](-?\\d+)[\"']\\s*(?:/>|>\\s*</c:axId\\s*>)\"\"\"\n)\n_AXIS_DECL_RE = re.compile(\n    r\"\"\"<c:(catAx|valAx|serAx|dateAx)\\b[^>]*(?<!/)>\\s*<c:axId\\b[^>]*?\\bval=[\"'](-?\\d+)[\"']\"\"\"\n)\nAXID_LIMIT = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,\n    \"bar3DChart\": 3, \"line3DChart\": 3, \"area3DChart\": 3,",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "_AXIS_DECL_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "_AXIS_DECL_RE = re.compile(\n    r\"\"\"<c:(catAx|valAx|serAx|dateAx)\\b[^>]*(?<!/)>\\s*<c:axId\\b[^>]*?\\bval=[\"'](-?\\d+)[\"']\"\"\"\n)\nAXID_LIMIT = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,\n    \"bar3DChart\": 3, \"line3DChart\": 3, \"area3DChart\": 3,\n    \"surfaceChart\": 3, \"surface3DChart\": 3,\n}\nAXID_MINIMUM = {",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "AXID_LIMIT",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "AXID_LIMIT = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,\n    \"bar3DChart\": 3, \"line3DChart\": 3, \"area3DChart\": 3,\n    \"surfaceChart\": 3, \"surface3DChart\": 3,\n}\nAXID_MINIMUM = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,\n    \"bar3DChart\": 2, \"area3DChart\": 2, \"surfaceChart\": 2,",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "AXID_MINIMUM",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "AXID_MINIMUM = {\n    \"barChart\": 2, \"lineChart\": 2, \"areaChart\": 2, \"scatterChart\": 2,\n    \"bubbleChart\": 2, \"radarChart\": 2, \"stockChart\": 2,\n    \"bar3DChart\": 2, \"area3DChart\": 2, \"surfaceChart\": 2,\n    \"line3DChart\": 3, \"surface3DChart\": 3,\n}\ndef _declared_axes(xml: str) -> dict[str, list[str]]:\n    axes: dict[str, list[str]] = {}\n    for kind, axid in _AXIS_DECL_RE.findall(xml):\n        axes.setdefault(kind, []).append(axid)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "CHART_CHECKS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "description": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "peekOfCode": "CHART_CHECKS = (_check_stacked_label_positions, _check_chart_axis_references)\ndef find_chart_problems(files: Mapping[str, bytes]) -> list[str]:\n    problems: list[str] = []\n    for part in sorted(n for n in files if _CHART_PART_RE.fullmatch(n)):\n        xml = part_text(files[part])\n        for check in CHART_CHECKS:\n            problems.extend(check(part, xml))\n    return problems",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_chart",
+        "documentation": {}
+    },
+    {
+        "label": "is_schema_verdict",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "description": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "peekOfCode": "def is_schema_verdict(error: str) -> bool:\n    return error.startswith(\"Element \")\ndef fatal_slide_errors(errors: set[str]) -> list[str]:\n    out = []\n    for error in sorted(errors):\n        for pattern, meaning in FATAL_SLIDE_ERRORS:\n            if pattern.search(error):\n                out.append(f\"{meaning}: {error}\")\n                break\n    return out",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "documentation": {}
+    },
+    {
+        "label": "fatal_slide_errors",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "description": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "peekOfCode": "def fatal_slide_errors(errors: set[str]) -> list[str]:\n    out = []\n    for error in sorted(errors):\n        for pattern, meaning in FATAL_SLIDE_ERRORS:\n            if pattern.search(error):\n                out.append(f\"{meaning}: {error}\")\n                break\n    return out",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_PART_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "description": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "peekOfCode": "SLIDE_PART_RE = re.compile(\n    r\"ppt/(slides|slideLayouts|slideMasters|notesSlides|notesMasters|handoutMasters)\"\n    r\"/[^/]+\\.xml\"\n)\nFATAL_SLIDE_ERRORS: tuple[tuple[re.Pattern[str], str], ...] = (\n    (\n        re.compile(r\"\\}tableStyleId': This element is not expected\"),\n        \"two <a:tableStyleId> in one <a:tblPr> (the schema allows one)\",\n    ),\n    (",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_slide",
+        "documentation": {}
+    },
+    {
+        "label": "find_shared_master_themes",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "def find_shared_master_themes(files: Mapping[str, bytes]) -> list[str]:\n    return [\n        f\"{master} shares {theme} with {first}\"\n        for master, _, _, theme, first in _shares(files)\n    ]\ndef live_shared_master_themes(files: Mapping[str, bytes]) -> list[str]:\n    inert_notes = _notes_master_share_is_inert(files)\n    return [\n        f\"{master} shares {theme} with {first}\"\n        for master, _, _, theme, first in _shares(files)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "live_shared_master_themes",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "def live_shared_master_themes(files: Mapping[str, bytes]) -> list[str]:\n    inert_notes = _notes_master_share_is_inert(files)\n    return [\n        f\"{master} shares {theme} with {first}\"\n        for master, _, _, theme, first in _shares(files)\n        if not _is_inert(master, inert_notes)\n    ]",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "THEME_REL_TYPE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "THEME_REL_TYPE = \"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\"\n_MASTER_RE = re.compile(\n    r\"^ppt/(?P<group>slideMasters|notesMasters|handoutMasters)/\"\n    r\"(?:slide|notes|handout)Master(?P<num>\\d+)\\.xml$\"\n)\n_GROUP_ORDER = {\"slideMasters\": 0, \"notesMasters\": 1, \"handoutMasters\": 2}\n_RELATIONSHIP_RE = re.compile(\n    r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL\n)\ndef _sort_key(name: str) -> tuple[int, int]:",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_MASTER_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_MASTER_RE = re.compile(\n    r\"^ppt/(?P<group>slideMasters|notesMasters|handoutMasters)/\"\n    r\"(?:slide|notes|handout)Master(?P<num>\\d+)\\.xml$\"\n)\n_GROUP_ORDER = {\"slideMasters\": 0, \"notesMasters\": 1, \"handoutMasters\": 2}\n_RELATIONSHIP_RE = re.compile(\n    r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL\n)\ndef _sort_key(name: str) -> tuple[int, int]:\n    m = _MASTER_RE.match(name)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_GROUP_ORDER",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_GROUP_ORDER = {\"slideMasters\": 0, \"notesMasters\": 1, \"handoutMasters\": 2}\n_RELATIONSHIP_RE = re.compile(\n    r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL\n)\ndef _sort_key(name: str) -> tuple[int, int]:\n    m = _MASTER_RE.match(name)\n    assert m is not None\n    return (_GROUP_ORDER[m.group(\"group\")], int(m.group(\"num\")))\ndef _rels_path(part: str) -> str:\n    directory, base = posixpath.split(part)",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_RELATIONSHIP_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_RELATIONSHIP_RE = re.compile(\n    r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL\n)\ndef _sort_key(name: str) -> tuple[int, int]:\n    m = _MASTER_RE.match(name)\n    assert m is not None\n    return (_GROUP_ORDER[m.group(\"group\")], int(m.group(\"num\")))\ndef _rels_path(part: str) -> str:\n    directory, base = posixpath.split(part)\n    return f\"{directory}/_rels/{base}.rels\"",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_PRESENTATION",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_PRESENTATION = \"ppt/presentation.xml\"\n_NOTES_MASTERS = \"ppt/notesMasters/\"\n_IGNORABLE_RE = re.compile(r\"<!--.*?-->|<\\?.*?\\?>\", re.DOTALL)\n_AFTER_SLDIDLST_RE = re.compile(\n    r\"<p:sldIdLst\\b(?:[^>]*/>|[^>]*>.*?</p:sldIdLst\\s*>)\\s*(<[^>\\s/]+)\", re.DOTALL\n)\ndef _notes_master_share_is_inert(files: Mapping[str, bytes]) -> bool:\n    data = files.get(_PRESENTATION)\n    if data is None:\n        return False",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_NOTES_MASTERS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_NOTES_MASTERS = \"ppt/notesMasters/\"\n_IGNORABLE_RE = re.compile(r\"<!--.*?-->|<\\?.*?\\?>\", re.DOTALL)\n_AFTER_SLDIDLST_RE = re.compile(\n    r\"<p:sldIdLst\\b(?:[^>]*/>|[^>]*>.*?</p:sldIdLst\\s*>)\\s*(<[^>\\s/]+)\", re.DOTALL\n)\ndef _notes_master_share_is_inert(files: Mapping[str, bytes]) -> bool:\n    data = files.get(_PRESENTATION)\n    if data is None:\n        return False\n    match = _AFTER_SLDIDLST_RE.search(_IGNORABLE_RE.sub(\"\", part_text(data)))",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_IGNORABLE_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_IGNORABLE_RE = re.compile(r\"<!--.*?-->|<\\?.*?\\?>\", re.DOTALL)\n_AFTER_SLDIDLST_RE = re.compile(\n    r\"<p:sldIdLst\\b(?:[^>]*/>|[^>]*>.*?</p:sldIdLst\\s*>)\\s*(<[^>\\s/]+)\", re.DOTALL\n)\ndef _notes_master_share_is_inert(files: Mapping[str, bytes]) -> bool:\n    data = files.get(_PRESENTATION)\n    if data is None:\n        return False\n    match = _AFTER_SLDIDLST_RE.search(_IGNORABLE_RE.sub(\"\", part_text(data)))\n    return match is not None and match.group(1) == \"<p:notesMasterIdLst\"",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "_AFTER_SLDIDLST_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "description": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "peekOfCode": "_AFTER_SLDIDLST_RE = re.compile(\n    r\"<p:sldIdLst\\b(?:[^>]*/>|[^>]*>.*?</p:sldIdLst\\s*>)\\s*(<[^>\\s/]+)\", re.DOTALL\n)\ndef _notes_master_share_is_inert(files: Mapping[str, bytes]) -> bool:\n    data = files.get(_PRESENTATION)\n    if data is None:\n        return False\n    match = _AFTER_SLDIDLST_RE.search(_IGNORABLE_RE.sub(\"\", part_text(data)))\n    return match is not None and match.group(1) == \"<p:notesMasterIdLst\"\ndef _shares(files: Mapping[str, bytes]):",
+        "detail": "backend.pptx.scripts.office.helpers.pptx_theme",
+        "documentation": {}
+    },
+    {
+        "label": "BaseSchemaValidator",
+        "kind": 6,
+        "importPath": "backend.pptx.scripts.office.validators.base",
+        "description": "backend.pptx.scripts.office.validators.base",
+        "peekOfCode": "class BaseSchemaValidator:\n    IGNORED_VALIDATION_ERRORS = [\n        \"hyphenationZone\",\n        \"purl.org/dc/terms\",\n    ]\n    UNIQUE_ID_REQUIREMENTS = {\n        \"comment\": (\"id\", \"file\"),  \n        \"commentrangestart\": (\"id\", \"file\"),  \n        \"commentrangeend\": (\"id\", \"file\"),  \n        \"bookmarkstart\": (\"id\", \"file\"),  ",
+        "detail": "backend.pptx.scripts.office.validators.base",
+        "documentation": {}
+    },
+    {
+        "label": "DOCXSchemaValidator",
+        "kind": 6,
+        "importPath": "backend.pptx.scripts.office.validators.docx",
+        "description": "backend.pptx.scripts.office.validators.docx",
+        "peekOfCode": "class DOCXSchemaValidator(BaseSchemaValidator):\n    WORD_2006_NAMESPACE = \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\n    W14_NAMESPACE = \"http://schemas.microsoft.com/office/word/2010/wordml\"\n    W16CID_NAMESPACE = \"http://schemas.microsoft.com/office/word/2016/wordml/cid\"\n    ELEMENT_RELATIONSHIP_TYPES = {}\n    def validate(self):\n        if not self.validate_xml():\n            return False\n        all_valid = True\n        if not self.validate_namespaces():",
+        "detail": "backend.pptx.scripts.office.validators.docx",
+        "documentation": {}
+    },
+    {
+        "label": "PPTXSchemaValidator",
+        "kind": 6,
+        "importPath": "backend.pptx.scripts.office.validators.pptx",
+        "description": "backend.pptx.scripts.office.validators.pptx",
+        "peekOfCode": "class PPTXSchemaValidator(BaseSchemaValidator):\n    PRESENTATIONML_NAMESPACE = (\n        \"http://schemas.openxmlformats.org/presentationml/2006/main\"\n    )\n    ELEMENT_RELATIONSHIP_TYPES = {\n        \"sldid\": \"slide\",\n        \"sldmasterid\": \"slidemaster\",\n        \"notesmasterid\": \"notesmaster\",\n        \"sldlayoutid\": \"slidelayout\",\n        \"themeid\": \"theme\",",
+        "detail": "backend.pptx.scripts.office.validators.pptx",
+        "documentation": {}
+    },
+    {
+        "label": "RedliningValidator",
+        "kind": 6,
+        "importPath": "backend.pptx.scripts.office.validators.redlining",
+        "description": "backend.pptx.scripts.office.validators.redlining",
+        "peekOfCode": "class RedliningValidator:\n    def __init__(self, unpacked_dir, original_docx, verbose=False):\n        self.unpacked_dir = Path(unpacked_dir)\n        self.original_docx = Path(original_docx)\n        self.verbose = verbose\n        self.namespaces = {\n            \"w\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\n        }\n    def repair(self) -> int:\n        return 0",
+        "detail": "backend.pptx.scripts.office.validators.redlining",
+        "documentation": {}
+    },
+    {
+        "label": "XML_ERRORS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.validators.redlining",
+        "description": "backend.pptx.scripts.office.validators.redlining",
+        "peekOfCode": "XML_ERRORS = (ET.ParseError, DefusedXmlException, LookupError, ValueError)\nclass RedliningValidator:\n    def __init__(self, unpacked_dir, original_docx, verbose=False):\n        self.unpacked_dir = Path(unpacked_dir)\n        self.original_docx = Path(original_docx)\n        self.verbose = verbose\n        self.namespaces = {\n            \"w\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\n        }\n    def repair(self) -> int:",
+        "detail": "backend.pptx.scripts.office.validators.redlining",
+        "documentation": {}
+    },
+    {
+        "label": "get_soffice_env",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.soffice",
+        "description": "backend.pptx.scripts.office.soffice",
+        "peekOfCode": "def get_soffice_env() -> dict:\n    env = os.environ.copy()\n    env[\"SAL_USE_VCLPLUGIN\"] = \"svp\"\n    if _needs_shim():\n        shim = _ensure_shim()\n        env[\"LD_PRELOAD\"] = str(shim)\n    return env\ndef run_soffice(args: Iterable[str], **kwargs) -> subprocess.CompletedProcess:\n    args = list(args)\n    with contextlib.ExitStack() as stack:",
+        "detail": "backend.pptx.scripts.office.soffice",
+        "documentation": {}
+    },
+    {
+        "label": "run_soffice",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.soffice",
+        "description": "backend.pptx.scripts.office.soffice",
+        "peekOfCode": "def run_soffice(args: Iterable[str], **kwargs) -> subprocess.CompletedProcess:\n    args = list(args)\n    with contextlib.ExitStack() as stack:\n        if not any(str(a).startswith(\"-env:UserInstallation\") for a in args):\n            profile = stack.enter_context(\n                tempfile.TemporaryDirectory(prefix=\"lo_profile_\", ignore_cleanup_errors=True)\n            )\n            args = [f\"-env:UserInstallation={Path(profile).as_uri()}\"] + args\n        return subprocess.run([\"soffice\"] + args, env=get_soffice_env(), **kwargs)\n_SHIM_SO = Path(tempfile.gettempdir()) / \"lo_socket_shim.so\"",
+        "detail": "backend.pptx.scripts.office.soffice",
+        "documentation": {}
+    },
+    {
+        "label": "_SHIM_SO",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.soffice",
+        "description": "backend.pptx.scripts.office.soffice",
+        "peekOfCode": "_SHIM_SO = Path(tempfile.gettempdir()) / \"lo_socket_shim.so\"\ndef _needs_shim() -> bool:\n    try:\n        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)\n        s.close()\n        return False\n    except OSError:\n        return True\ndef _ensure_shim() -> Path:\n    if _SHIM_SO.exists():",
+        "detail": "backend.pptx.scripts.office.soffice",
+        "documentation": {}
+    },
+    {
+        "label": "_SHIM_SOURCE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.soffice",
+        "description": "backend.pptx.scripts.office.soffice",
+        "peekOfCode": "_SHIM_SOURCE = r\"\"\"\n#define _GNU_SOURCE\n#include <dlfcn.h>\n#include <errno.h>\n#include <signal.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <sys/socket.h>\n#include <unistd.h>\nstatic int (*real_socket)(int, int, int);",
+        "detail": "backend.pptx.scripts.office.soffice",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.office.validate",
+        "description": "backend.pptx.scripts.office.validate",
+        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(description=\"Validate Office document XML files\")\n    parser.add_argument(\n        \"path\",\n        help=\"Path to unpacked directory or packed Office file (.docx/.pptx/.xlsx or .dotx/.potx/.xltx)\",\n    )\n    parser.add_argument(\n        \"--original\",\n        required=False,\n        default=None,",
+        "detail": "backend.pptx.scripts.office.validate",
+        "documentation": {}
+    },
+    {
+        "label": "WORD_NS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.office.validate",
+        "description": "backend.pptx.scripts.office.validate",
+        "peekOfCode": "WORD_NS = \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\ndef _fail(message: str):\n    print(f\"Error: {message}\", file=sys.stderr)\n    sys.exit(2)\ndef _has_tracked_changes(unpacked_dir: Path) -> bool:\n    document = unpacked_dir / \"word\" / \"document.xml\"\n    if not document.is_file():\n        return False\n    try:\n        root = ET.parse(document).getroot()",
+        "detail": "backend.pptx.scripts.office.validate",
+        "documentation": {}
+    },
+    {
+        "label": "get_next_slide_number",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")\n                if (m := re.match(r\"slide(\\d+)\\.xml\", f.name))]\n    return max(existing) + 1 if existing else 1\ndef parse_source(source: str) -> tuple[str, str | None]:\n    if source.startswith(\"slideLayout\") and source.endswith(\".xml\"):\n        return (\"layout\", source)\n    return (\"slide\", None)\ndef create_slide_from_layout(unpacked_dir: Path, layout_file: str, after: str | None = None) -> str:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "parse_source",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def parse_source(source: str) -> tuple[str, str | None]:\n    if source.startswith(\"slideLayout\") and source.endswith(\".xml\"):\n        return (\"layout\", source)\n    return (\"slide\", None)\ndef create_slide_from_layout(unpacked_dir: Path, layout_file: str, after: str | None = None) -> str:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"\n    rels_dir = slides_dir / \"_rels\"\n    layout_path = unpacked_dir / \"ppt\" / \"slideLayouts\" / layout_file\n    if not layout_path.exists():\n        _die(f\"{layout_path} not found\")",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "create_slide_from_layout",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def create_slide_from_layout(unpacked_dir: Path, layout_file: str, after: str | None = None) -> str:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"\n    rels_dir = slides_dir / \"_rels\"\n    layout_path = unpacked_dir / \"ppt\" / \"slideLayouts\" / layout_file\n    if not layout_path.exists():\n        _die(f\"{layout_path} not found\")\n    next_num = get_next_slide_number(slides_dir)\n    dest = f\"slide{next_num}.xml\"\n    after_rid = _precheck_registration(unpacked_dir, after, dest)\n    slides_dir.mkdir(parents=True, exist_ok=True)",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "duplicate_slide",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def duplicate_slide(unpacked_dir: Path, source: str, after: str | None = None) -> str:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"\n    rels_dir = slides_dir / \"_rels\"\n    source_slide = slides_dir / source\n    if not source_slide.exists():\n        _die(f\"{source_slide} not found\")\n    next_num = get_next_slide_number(slides_dir)\n    dest = f\"slide{next_num}.xml\"\n    after_rid = _precheck_registration(unpacked_dir, after, dest)\n    shutil.copy2(source_slide, slides_dir / dest)",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "add_slide",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def add_slide(unpacked_dir: Path, source: str, after: str | None = None) -> str:\n    source_type, layout_file = parse_source(source)\n    if source_type == \"layout\" and layout_file is not None:\n        return create_slide_from_layout(unpacked_dir, layout_file, after)\n    return duplicate_slide(unpacked_dir, source, after)\ndef add_slide_to_package(\n    package: Path, source: str, after: str | None = None, output: Path | None = None\n) -> str:\n    out = output or package\n    with tempfile.TemporaryDirectory() as tmp:",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "add_slide_to_package",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def add_slide_to_package(\n    package: Path, source: str, after: str | None = None, output: Path | None = None\n) -> str:\n    out = output or package\n    with tempfile.TemporaryDirectory() as tmp:\n        tmp_path = Path(tmp)\n        with zipfile.ZipFile(package) as zf:\n            safe_extract(zf, tmp_path)\n        dest = add_slide(tmp_path, source, after)\n        rezip(tmp_path, out)",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "def main() -> None:\n    parser = argparse.ArgumentParser(\n        description=\"Add a slide to a PPTX: duplicate a slide or instantiate a layout. \"\n        \"Registers content types, relationships, and <p:sldIdLst>.\"\n    )\n    parser.add_argument(\"target\", help=\"Unpacked PPTX directory OR a .pptx/.potx file\")\n    parser.add_argument(\n        \"source\",\n        help=\"slideN.xml to duplicate, or slideLayoutN.xml to create from a layout \"\n        \"(list layouts with: ls <dir>/ppt/slideLayouts/)\",",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "MINIMAL_SLIDE_XML",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "MINIMAL_SLIDE_XML = '''<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<p:sld xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:p=\"http://schemas.openxmlformats.org/presentationml/2006/main\">\n  <p:cSld>\n    <p:spTree>\n      <p:nvGrpSpPr>\n        <p:cNvPr id=\"1\" name=\"\"/>\n        <p:cNvGrpSpPr/>\n        <p:nvPr/>\n      </p:nvGrpSpPr>\n      <p:grpSpPr>",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "SHARED_PART_TYPES",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "SHARED_PART_TYPES = (\"chart\", \"diagramData\", \"oleObject\", \"package\")\nNOTES_SLIDE_TYPE_RE = re.compile(r\"\"\"Type=[\"'][^\"']*/relationships/notesSlide[\"']\"\"\")\nRELATIONSHIP_RE = re.compile(r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL)\nSLIDE_ID_MIN = 256\nSLIDE_ID_MAX = 2147483647\ndef _die(msg: str) -> NoReturn:\n    print(f\"Error: {msg}\", file=sys.stderr)\n    sys.exit(1)\ndef get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "NOTES_SLIDE_TYPE_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "NOTES_SLIDE_TYPE_RE = re.compile(r\"\"\"Type=[\"'][^\"']*/relationships/notesSlide[\"']\"\"\")\nRELATIONSHIP_RE = re.compile(r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL)\nSLIDE_ID_MIN = 256\nSLIDE_ID_MAX = 2147483647\ndef _die(msg: str) -> NoReturn:\n    print(f\"Error: {msg}\", file=sys.stderr)\n    sys.exit(1)\ndef get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")\n                if (m := re.match(r\"slide(\\d+)\\.xml\", f.name))]",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "RELATIONSHIP_RE",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "RELATIONSHIP_RE = re.compile(r\"<Relationship\\b[^>]*?(?:/>|>.*?</Relationship\\s*>)\", re.DOTALL)\nSLIDE_ID_MIN = 256\nSLIDE_ID_MAX = 2147483647\ndef _die(msg: str) -> NoReturn:\n    print(f\"Error: {msg}\", file=sys.stderr)\n    sys.exit(1)\ndef get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")\n                if (m := re.match(r\"slide(\\d+)\\.xml\", f.name))]\n    return max(existing) + 1 if existing else 1",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_ID_MIN",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "SLIDE_ID_MIN = 256\nSLIDE_ID_MAX = 2147483647\ndef _die(msg: str) -> NoReturn:\n    print(f\"Error: {msg}\", file=sys.stderr)\n    sys.exit(1)\ndef get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")\n                if (m := re.match(r\"slide(\\d+)\\.xml\", f.name))]\n    return max(existing) + 1 if existing else 1\ndef parse_source(source: str) -> tuple[str, str | None]:",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_ID_MAX",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.add_slide",
+        "description": "backend.pptx.scripts.add_slide",
+        "peekOfCode": "SLIDE_ID_MAX = 2147483647\ndef _die(msg: str) -> NoReturn:\n    print(f\"Error: {msg}\", file=sys.stderr)\n    sys.exit(1)\ndef get_next_slide_number(slides_dir: Path) -> int:\n    existing = [int(m.group(1)) for f in slides_dir.glob(\"slide*.xml\")\n                if (m := re.match(r\"slide(\\d+)\\.xml\", f.name))]\n    return max(existing) + 1 if existing else 1\ndef parse_source(source: str) -> tuple[str, str | None]:\n    if source.startswith(\"slideLayout\") and source.endswith(\".xml\"):",
+        "detail": "backend.pptx.scripts.add_slide",
+        "documentation": {}
+    },
+    {
+        "label": "RefusedToClean",
+        "kind": 6,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "class RefusedToClean(Exception):\n    \"\"\"The package does not look the way a readable package should.\"\"\"\ndef remove_orphaned_slides(unpacked_dir: Path) -> list[str]:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"\n    slides_rels_dir = slides_dir / \"_rels\"\n    pres_rels_path = unpacked_dir / \"ppt\" / \"_rels\" / \"presentation.xml.rels\"\n    if not slides_dir.exists():\n        return []\n    referenced_slides = get_slides_in_sldidlst(unpacked_dir)\n    on_disk = sorted(slides_dir.glob(\"slide*.xml\"))",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "get_slides_in_sldidlst",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def get_slides_in_sldidlst(unpacked_dir: Path) -> set[str]:\n    pres_path = unpacked_dir / \"ppt\" / \"presentation.xml\"\n    pres_rels_path = unpacked_dir / \"ppt\" / \"_rels\" / \"presentation.xml.rels\"\n    if not pres_path.exists() or not pres_rels_path.exists():\n        return set()\n    rid_to_slide = _slide_rids(pres_rels_path, unpacked_dir)\n    pres_content = pres_path.read_text(encoding=\"utf-8\")\n    referenced_rids = set(re.findall(r'<p:sldId[^>]*r:id=\"([^\"]+)\"', pres_content))\n    return {\n        posixpath.basename(rid_to_slide[rid])",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "remove_orphaned_slides",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def remove_orphaned_slides(unpacked_dir: Path) -> list[str]:\n    slides_dir = unpacked_dir / \"ppt\" / \"slides\"\n    slides_rels_dir = slides_dir / \"_rels\"\n    pres_rels_path = unpacked_dir / \"ppt\" / \"_rels\" / \"presentation.xml.rels\"\n    if not slides_dir.exists():\n        return []\n    referenced_slides = get_slides_in_sldidlst(unpacked_dir)\n    on_disk = sorted(slides_dir.glob(\"slide*.xml\"))\n    if on_disk and not any(s.name in referenced_slides for s in on_disk):\n        listed = re.findall(",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "remove_trash_directory",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def remove_trash_directory(unpacked_dir: Path) -> list[str]:\n    trash_dir = unpacked_dir / \"[trash]\"\n    removed = []\n    if trash_dir.exists() and trash_dir.is_dir():\n        for file_path in trash_dir.iterdir():\n            if file_path.is_file():\n                rel_path = file_path.relative_to(unpacked_dir)\n                removed.append(str(rel_path))\n                file_path.unlink()\n        trash_dir.rmdir()",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "remove_orphaned_rels_files",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def remove_orphaned_rels_files(unpacked_dir: Path) -> list[str]:\n    resource_dirs = [\"charts\", \"diagrams\", \"drawings\"]\n    removed = []\n    for dir_name in resource_dirs:\n        rels_dir = unpacked_dir / \"ppt\" / dir_name / \"_rels\"\n        if not rels_dir.exists():\n            continue\n        for rels_file in rels_dir.glob(\"*.rels\"):\n            resource_file = rels_dir.parent / rels_file.name.replace(\".rels\", \"\")\n            if not resource_file.exists():",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "get_referenced_files",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def get_referenced_files(unpacked_dir: Path) -> set:\n    return _referenced_by(sorted(unpacked_dir.rglob(\"*.rels\")), unpacked_dir)\ndef remove_orphaned_files(unpacked_dir: Path, referenced: set) -> list[str]:\n    resource_dirs = [\"media\", \"embeddings\", \"charts\", \"diagrams\", \"tags\", \"drawings\", \"ink\"]\n    removed = []\n    for dir_name in resource_dirs:\n        dir_path = unpacked_dir / \"ppt\" / dir_name\n        if not dir_path.exists():\n            continue\n        for file_path in dir_path.glob(\"*\"):",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "remove_orphaned_files",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def remove_orphaned_files(unpacked_dir: Path, referenced: set) -> list[str]:\n    resource_dirs = [\"media\", \"embeddings\", \"charts\", \"diagrams\", \"tags\", \"drawings\", \"ink\"]\n    removed = []\n    for dir_name in resource_dirs:\n        dir_path = unpacked_dir / \"ppt\" / dir_name\n        if not dir_path.exists():\n            continue\n        for file_path in dir_path.glob(\"*\"):\n            if not file_path.is_file():\n                continue",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "update_content_types",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def update_content_types(unpacked_dir: Path, removed_files: list[str]) -> None:\n    ct_path = unpacked_dir / \"[Content_Types].xml\"\n    if not ct_path.exists():\n        return\n    dom = defusedxml.minidom.parse(str(ct_path))\n    changed = False\n    for override in list(dom.getElementsByTagName(\"Override\")):\n        part_name = override.getAttribute(\"PartName\").lstrip(\"/\")\n        if part_name in removed_files:\n            if override.parentNode:",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "clean_unused_files",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.clean",
+        "description": "backend.pptx.scripts.clean",
+        "peekOfCode": "def clean_unused_files(unpacked_dir: Path) -> list[str]:\n    all_removed = []\n    if list(unpacked_dir.rglob(\"*.rels\")) and not get_referenced_files(unpacked_dir):\n        raise RefusedToClean(\n            \"no relationship in this package names a part we can resolve. \"\n            \"Refusing to treat every file as unreferenced.\"\n        )\n    slides_removed = remove_orphaned_slides(unpacked_dir)\n    all_removed.extend(slides_removed)\n    trash_removed = remove_trash_directory(unpacked_dir)",
+        "detail": "backend.pptx.scripts.clean",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")\n    parser.add_argument(\n        \"output_prefix\",\n        nargs=\"?\",\n        default=\"thumbnails\",\n        help=\"Output prefix for image files (default: thumbnails)\",",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "get_slide_info",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def get_slide_info(pptx_path: Path) -> list[dict]:\n    with zipfile.ZipFile(pptx_path, \"r\") as zf:\n        rels_content = zf.read(\"ppt/_rels/presentation.xml.rels\").decode(\"utf-8\")\n        rels_dom = defusedxml.minidom.parseString(rels_content)\n        rid_to_part = {}\n        for rel in rels_dom.getElementsByTagName(\"Relationship\"):\n            if rel.getAttribute(\"Type\") != SLIDE_REL_TYPE:\n                continue\n            part = opc_target(\n                rel.getAttribute(\"Target\"),",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "build_slide_list",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def build_slide_list(\n    slide_info: list[dict],\n    visible_images: list[Path],\n    temp_dir: Path,\n) -> list[tuple[Path, str]]:\n    visible_count = sum(1 for info in slide_info if not info[\"hidden\"])\n    rendered_hidden = len(visible_images) == len(slide_info) != visible_count\n    if not rendered_hidden and visible_count != len(visible_images):\n        raise ValueError(\n            f\"LibreOffice rendered {len(visible_images)} page(s) for {visible_count} \"",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "create_hidden_placeholder",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def create_hidden_placeholder(size: tuple[int, int]) -> Image.Image:\n    img = Image.new(\"RGB\", size, color=\"#F0F0F0\")\n    draw = ImageDraw.Draw(img)\n    line_width = max(5, min(size) // 100)\n    draw.line([(0, 0), size], fill=\"#CCCCCC\", width=line_width)\n    draw.line([(size[0], 0), (0, size[1])], fill=\"#CCCCCC\", width=line_width)\n    return img\ndef convert_to_images(pptx_path: Path, temp_dir: Path) -> list[Path]:\n    pdf_path = temp_dir / f\"{pptx_path.stem}.pdf\"\n    result = run_soffice(",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "convert_to_images",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def convert_to_images(pptx_path: Path, temp_dir: Path) -> list[Path]:\n    pdf_path = temp_dir / f\"{pptx_path.stem}.pdf\"\n    result = run_soffice(\n        [\"--headless\", \"--convert-to\", \"pdf\", \"--outdir\", str(temp_dir), str(pptx_path)],\n        capture_output=True,\n        text=True,\n    )\n    if result.returncode != 0 or not pdf_path.exists():\n        detail = (result.stderr or result.stdout or \"\").strip()\n        raise RuntimeError(f\"PDF conversion failed: {detail}\" if detail else \"PDF conversion failed\")",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "create_grids",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def create_grids(\n    slides: list[tuple[Path, str]],\n    cols: int,\n    width: int,\n    output_path: Path,\n) -> list[str]:\n    max_per_grid = cols * (cols + 1)\n    grid_files = []\n    for chunk_idx, start_idx in enumerate(range(0, len(slides), max_per_grid)):\n        end_idx = min(start_idx + max_per_grid, len(slides))",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "create_grid",
+        "kind": 2,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "def create_grid(\n    slides: list[tuple[Path, str]],\n    cols: int,\n    width: int,\n) -> Image.Image:\n    font_size = int(width * FONT_SIZE_RATIO)\n    label_padding = int(font_size * LABEL_PADDING_RATIO)\n    with Image.open(slides[0][0]) as img:\n        aspect = img.height / img.width\n    height = int(width * aspect)",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "THUMBNAIL_WIDTH",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "THUMBNAIL_WIDTH = 300\nCONVERSION_DPI = 100\nMAX_COLS = 6\nDEFAULT_COLS = 3\nJPEG_QUALITY = 95\nGRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "CONVERSION_DPI",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "CONVERSION_DPI = 100\nMAX_COLS = 6\nDEFAULT_COLS = 3\nJPEG_QUALITY = 95\nGRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_COLS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "MAX_COLS = 6\nDEFAULT_COLS = 3\nJPEG_QUALITY = 95\nGRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_COLS",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "DEFAULT_COLS = 3\nJPEG_QUALITY = 95\nGRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "JPEG_QUALITY",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "JPEG_QUALITY = 95\nGRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "GRID_PADDING",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "GRID_PADDING = 20\nBORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")\n    parser.add_argument(",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "BORDER_WIDTH",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "BORDER_WIDTH = 2\nFONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")\n    parser.add_argument(\n        \"output_prefix\",",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "FONT_SIZE_RATIO",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "FONT_SIZE_RATIO = 0.10\nLABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")\n    parser.add_argument(\n        \"output_prefix\",\n        nargs=\"?\",",
+        "detail": "backend.pptx.scripts.thumbnail",
+        "documentation": {}
+    },
+    {
+        "label": "LABEL_PADDING_RATIO",
+        "kind": 5,
+        "importPath": "backend.pptx.scripts.thumbnail",
+        "description": "backend.pptx.scripts.thumbnail",
+        "peekOfCode": "LABEL_PADDING_RATIO = 0.4\ndef main():\n    parser = argparse.ArgumentParser(\n        description=\"Create thumbnail grids from PowerPoint slides.\"\n    )\n    parser.add_argument(\"input\", help=\"Input PowerPoint file (.pptx)\")\n    parser.add_argument(\n        \"output_prefix\",\n        nargs=\"?\",\n        default=\"thumbnails\",",
+        "detail": "backend.pptx.scripts.thumbnail",
         "documentation": {}
     },
     {
@@ -9966,6 +12202,15 @@
         "documentation": {}
     },
     {
+        "label": "router",
+        "kind": 5,
+        "importPath": "backend.routers.infographic",
+        "description": "backend.routers.infographic",
+        "peekOfCode": "router = APIRouter(prefix=\"/infographic\", tags=[\"infographic\"])\ndef _validate_uuid(value: str, name: str) -> None:\n    try:\n        uuid.UUID(value)\n    except ValueError:\n        raise HTTPException(status_code=400, detail=f\"Invalid {name}: {value}\")\nasync def _start_generation(\n    document_ids: List[str],\n    options: Dict[str, Any],\n    current_user: dict,",
+        "detail": "backend.routers.infographic",
+        "documentation": {}
+    },
+    {
         "label": "InviteRequest",
         "kind": 6,
         "importPath": "backend.routers.invitations",
@@ -10103,6 +12348,15 @@
     {
         "label": "router",
         "kind": 5,
+        "importPath": "backend.routers.quiz",
+        "description": "backend.routers.quiz",
+        "peekOfCode": "router = APIRouter(prefix=\"/quiz\", tags=[\"quiz\"])\n@router.post(\"/generate\")\nasync def generate_quiz(request: GenerateQuizRequest, current_user: dict = Depends(get_current_context)) -> Dict[str, Any]:\n    \"\"\"\n    Generate a multiple-choice quiz from documents using Map-Reduce\n    Args:\n        request: Quiz generation request with document IDs and options\n    Returns:\n        Dict with quiz data (title, questions, workflow_id)\n    \"\"\"",
+        "detail": "backend.routers.quiz",
+        "documentation": {}
+    },
+    {
+        "label": "router",
+        "kind": 5,
         "importPath": "backend.routers.report_suggestions",
         "description": "backend.routers.report_suggestions",
         "peekOfCode": "router = APIRouter(prefix=\"/report-suggestions\", tags=[\"report-suggestions\"])\n@router.post(\"/suggest-formats\")\nasync def suggest_formats(request: SuggestFormatsRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(get_current_context)):\n    \"\"\"\n    Trigger background task to generate format suggestions\n    This endpoint:\n    1. Checks if suggestions already exist for these documents\n    2. If yes, returns existing workflow_id\n    3. If no, creates new workflow and triggers background task\n    Frontend should poll /report-suggestions/get-suggestions with document_ids to check status",
@@ -10170,6 +12424,15 @@
         "description": "backend.routers.simple_chat",
         "peekOfCode": "router = APIRouter(tags=[\"simple-chat\"])\nclass SimpleQuery(BaseModel):\n    \"\"\"Request model for simple chat\"\"\"\n    query: str\n    model: Optional[str] = \"google/gemini-2.5-pro\"\n@router.post(\"/simple-chat\")\nasync def simple_chat(request: SimpleQuery):\n    \"\"\"\n    Simple chat endpoint - takes a query and returns a streaming LLM response\n    Args:",
         "detail": "backend.routers.simple_chat",
+        "documentation": {}
+    },
+    {
+        "label": "router",
+        "kind": 5,
+        "importPath": "backend.routers.slide_deck",
+        "description": "backend.routers.slide_deck",
+        "peekOfCode": "router = APIRouter(prefix=\"/slide-deck\", tags=[\"slide-deck\"])\ndef _validate_uuid(value: str, name: str) -> None:\n    try:\n        uuid.UUID(value)\n    except ValueError:\n        raise HTTPException(status_code=400, detail=f\"Invalid {name}: {value}\")\nasync def _start_generation(\n    document_ids: List[str],\n    options: Dict[str, Any],\n    current_user: dict,",
+        "detail": "backend.routers.slide_deck",
         "documentation": {}
     },
     {
@@ -10857,6 +13120,96 @@
         "documentation": {}
     },
     {
+        "label": "InfographicGeneratorService",
+        "kind": 6,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "class InfographicGeneratorService:\n    \"\"\"Service for generating infographics\"\"\"\n    def __init__(self):\n        \"\"\"Initialize infographic generator service\"\"\"\n        self.postgres_client = get_postgres_client()\n        self.idrive = get_idrivee2_client()\n        self.llm = get_llm(model=TEXT_MODEL, provider=\"openrouter\")\n        self.digest_llm = self.llm.with_structured_output(DocDigest)\n        self.spec_llm = self.llm.with_structured_output(InfographicSpec)\n    # ------------------------------------------------------------------",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_infographic_generator_service",
+        "kind": 2,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "def get_infographic_generator_service() -> InfographicGeneratorService:\n    \"\"\"Get or create infographic generator service singleton\"\"\"\n    global _infographic_generator_service\n    if _infographic_generator_service is None:\n        _infographic_generator_service = InfographicGeneratorService()\n    return _infographic_generator_service",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "TEXT_MODEL",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "TEXT_MODEL = \"google/gemini-3-flash-preview\"\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=10)\n# Art direction per style. Written as prose briefs (palette as name + hex, type described by\n# character + a reference family, layout motifs, iconography, finish), per Google's Nano Banana\n# prompting guides and published infographic skills: prose beats keyword lists for image models.\nSTYLE_FORMATS = {\n    \"auto\": \"clean information-design poster\",\n    \"professional\": \"board-briefing one-pager\",\n    \"tactical\": \"military operations briefing board\",",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "STALE_AFTER",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "STALE_AFTER = timedelta(minutes=10)\n# Art direction per style. Written as prose briefs (palette as name + hex, type described by\n# character + a reference family, layout motifs, iconography, finish), per Google's Nano Banana\n# prompting guides and published infographic skills: prose beats keyword lists for image models.\nSTYLE_FORMATS = {\n    \"auto\": \"clean information-design poster\",\n    \"professional\": \"board-briefing one-pager\",\n    \"tactical\": \"military operations briefing board\",\n    \"editorial\": \"editorial magazine infographic\",\n    \"instructional\": \"field-manual instruction plate\",",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "STYLE_FORMATS",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "STYLE_FORMATS = {\n    \"auto\": \"clean information-design poster\",\n    \"professional\": \"board-briefing one-pager\",\n    \"tactical\": \"military operations briefing board\",\n    \"editorial\": \"editorial magazine infographic\",\n    \"instructional\": \"field-manual instruction plate\",\n    \"sketch\": \"hand-drawn sketchnote page\",\n}\nSTYLE_PROMPTS = {\n    \"auto\": (",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "STYLE_PROMPTS",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "STYLE_PROMPTS = {\n    \"auto\": (\n        \"A clean, contemporary information-design poster on a pure white (#FFFFFF) field with soft cool-gray panels (#EEF2F5). \"\n        \"Deep ink (#16202A) for text, deep teal (#0E6E6E) for primary shapes, and a single warm amber accent (#F2A541) reserved for the single highlighted value. \"\n        \"Typography is a neutral geometric grotesque in the spirit of Inter: heavy, tightly tracked title; semibold headings; regular body. \"\n        \"Flat single-weight teal line icons and a crisp vector finish.\"\n    ),\n    \"professional\": (\n        \"A restrained corporate board-briefing one-pager on white (#FFFFFF) with pale slate bands (#EDF1F6). \"\n        \"Navy (#13294B) headings, slate (#5B6B7F) secondary text, and a muted gold accent (#B8962E) only on the single highlighted value. \"",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "SECTION_VISUALS",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "SECTION_VISUALS = {\n    \"stats\": \"oversized bold numerals (3-4x the label size) on a shared baseline, each with a short thin rule and a small label beneath, separated by hairline vertical dividers rather than boxed cards\",\n    \"list\": \"a left-aligned column of consistent line icons, each beside a bold label and a one-line muted description, with hairline separators\",\n    \"steps\": \"large numerals in open circles joined by one continuous connector line with small arrowheads, evenly spaced, with a bold label and short description under each node\",\n    \"comparison\": \"two mirrored columns with contrasting header chips, rows aligned across a shared center spine, both sides of equal visual weight\",\n    \"timeline\": \"a single continuous spine with dot markers and tick marks, bold time values on the spine and event labels alternating sides\",\n}\n# How the canvas is organised per orientation\nORIENTATION_COMPOSITION = {\n    \"portrait\": \"a full-width header band across the top ~15% of the canvas, then sections stacked vertically in reading order\",",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "ORIENTATION_COMPOSITION",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "ORIENTATION_COMPOSITION = {\n    \"portrait\": \"a full-width header band across the top ~15% of the canvas, then sections stacked vertically in reading order\",\n    \"landscape\": \"a header band across the top, then sections arranged left to right in columns, reading left to right and top to bottom; columns may hold different numbers of items, so leave whitespace at the bottom of shorter columns rather than filling them\",\n    \"square\": \"a compact header across the top, then sections arranged in a two-column grid; sections may differ in size, so leave whitespace rather than filling gaps\",\n}\nDESIGN_RULES = \"\"\"- Build on a strict 12-column grid with outer margins of 6-8% of the canvas on every side; align every element to shared column edges and baselines, and left-align text blocks.\n- One dominant focal point: the title and the single highlighted value. Everything else is quieter and subordinate.\n- Three levels of hierarchy only: title about 3x the section-heading size, headings about 1.5x body text. At most two type families and two weights each; tabular lining figures for numbers.\n- Group with whitespace rather than boxes: related items sit close together, sections are separated by generous space and thin hairline rules. Be generous with whitespace.\n- Restrained palette in roughly 60/30/10 proportions (neutral ground, primary ink, single accent); the accent appears only on the single highlighted value. Text contrast at least 4.5:1.",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "DESIGN_RULES",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "DESIGN_RULES = \"\"\"- Build on a strict 12-column grid with outer margins of 6-8% of the canvas on every side; align every element to shared column edges and baselines, and left-align text blocks.\n- One dominant focal point: the title and the single highlighted value. Everything else is quieter and subordinate.\n- Three levels of hierarchy only: title about 3x the section-heading size, headings about 1.5x body text. At most two type families and two weights each; tabular lining figures for numbers.\n- Group with whitespace rather than boxes: related items sit close together, sections are separated by generous space and thin hairline rules. Be generous with whitespace.\n- Restrained palette in roughly 60/30/10 proportions (neutral ground, primary ink, single accent); the accent appears only on the single highlighted value. Text contrast at least 4.5:1.\n- One icon family throughout: same stroke weight, corner style, size and single color; each icon literally depicts its concept.\n- Numbers are the heroes: large, flat, no 3D, gradients or shadows on data.\n- A calm solid background and crisp flat vector rendering with consistent corner radii; no gradient washes, glow, glassmorphism, clip-art, stock 3D people, emoji or mascots, and no kit of identical rounded cards with drop shadows.\n- The page should look meticulously composed by a senior information designer, with nothing overlapping or crowded.\"\"\"\ndef _number_tokens(text: str) -> List[str]:",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
+        "label": "_infographic_generator_service",
+        "kind": 5,
+        "importPath": "backend.services.infographic_generator",
+        "description": "backend.services.infographic_generator",
+        "peekOfCode": "_infographic_generator_service = None\ndef get_infographic_generator_service() -> InfographicGeneratorService:\n    \"\"\"Get or create infographic generator service singleton\"\"\"\n    global _infographic_generator_service\n    if _infographic_generator_service is None:\n        _infographic_generator_service = InfographicGeneratorService()\n    return _infographic_generator_service",
+        "detail": "backend.services.infographic_generator",
+        "documentation": {}
+    },
+    {
         "label": "IngestionService",
         "kind": 6,
         "importPath": "backend.services.ingestion_service",
@@ -10956,6 +13309,42 @@
         "documentation": {}
     },
     {
+        "label": "QuizGeneratorService",
+        "kind": 6,
+        "importPath": "backend.services.quiz_generator",
+        "description": "backend.services.quiz_generator",
+        "peekOfCode": "class QuizGeneratorService:\n    \"\"\"Service for generating quizzes using Map-Reduce\"\"\"\n    def __init__(self):\n        \"\"\"Initialize quiz generator service\"\"\"\n        self.postgres_client = get_postgres_client()\n        self.llm = get_llm(model=\"google/gemini-3-flash-preview\", provider=\"openrouter\")\n        self.structured_llm = self.llm.with_structured_output(Quiz)\n    async def generate_quiz(\n        self,\n        document_ids: List[str],",
+        "detail": "backend.services.quiz_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_quiz_generator_service",
+        "kind": 2,
+        "importPath": "backend.services.quiz_generator",
+        "description": "backend.services.quiz_generator",
+        "peekOfCode": "def get_quiz_generator_service() -> QuizGeneratorService:\n    \"\"\"Get or create quiz generator service singleton\"\"\"\n    global _quiz_generator_service\n    if _quiz_generator_service is None:\n        _quiz_generator_service = QuizGeneratorService()\n    return _quiz_generator_service",
+        "detail": "backend.services.quiz_generator",
+        "documentation": {}
+    },
+    {
+        "label": "DIFFICULTY_GUIDANCE",
+        "kind": 5,
+        "importPath": "backend.services.quiz_generator",
+        "description": "backend.services.quiz_generator",
+        "peekOfCode": "DIFFICULTY_GUIDANCE = {\n    \"easy\": \"Test recall of explicitly stated facts, definitions and key terms. Wrong options should be clearly wrong to someone who read the material.\",\n    \"medium\": \"Mix recall with comprehension: ask why/how things work and how concepts relate. Wrong options should be plausible and drawn from the same domain.\",\n    \"hard\": \"Test application, analysis and synthesis across concepts (scenarios, implications, comparisons). Wrong options should be highly plausible and reflect common misconceptions.\",\n}\nclass QuizGeneratorService:\n    \"\"\"Service for generating quizzes using Map-Reduce\"\"\"\n    def __init__(self):\n        \"\"\"Initialize quiz generator service\"\"\"\n        self.postgres_client = get_postgres_client()",
+        "detail": "backend.services.quiz_generator",
+        "documentation": {}
+    },
+    {
+        "label": "_quiz_generator_service",
+        "kind": 5,
+        "importPath": "backend.services.quiz_generator",
+        "description": "backend.services.quiz_generator",
+        "peekOfCode": "_quiz_generator_service = None\ndef get_quiz_generator_service() -> QuizGeneratorService:\n    \"\"\"Get or create quiz generator service singleton\"\"\"\n    global _quiz_generator_service\n    if _quiz_generator_service is None:\n        _quiz_generator_service = QuizGeneratorService()\n    return _quiz_generator_service",
+        "detail": "backend.services.quiz_generator",
+        "documentation": {}
+    },
+    {
         "label": "ReportGeneratorService",
         "kind": 6,
         "importPath": "backend.services.report_generator",
@@ -10980,6 +13369,114 @@
         "description": "backend.services.report_generator",
         "peekOfCode": "_report_generator_service = None\ndef get_report_generator_service() -> ReportGeneratorService:\n    \"\"\"Get or create ReportGeneratorService singleton\"\"\"\n    global _report_generator_service\n    if _report_generator_service is None:\n        _report_generator_service = ReportGeneratorService()\n    return _report_generator_service",
         "detail": "backend.services.report_generator",
+        "documentation": {}
+    },
+    {
+        "label": "SlideDeckGeneratorService",
+        "kind": 6,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "class SlideDeckGeneratorService:\n    \"\"\"Service for generating slide decks with a code-writing agent\"\"\"\n    def __init__(self):\n        self.postgres_client = get_postgres_client()\n        self.idrive = get_idrivee2_client()\n        self.model = OpenAIChat(\n            id=AGENT_MODEL,\n            api_key=settings.OPENROUTER_API_KEY,\n            base_url=\"https://openrouter.ai/api/v1\",\n            max_tokens=32000,  # a full pptxgenjs build script is long",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "get_slide_deck_generator_service",
+        "kind": 2,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "def get_slide_deck_generator_service() -> SlideDeckGeneratorService:\n    \"\"\"Get or create slide deck generator service singleton\"\"\"\n    global _slide_deck_generator_service\n    if _slide_deck_generator_service is None:\n        _slide_deck_generator_service = SlideDeckGeneratorService()\n    return _slide_deck_generator_service",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_MODEL",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "AGENT_MODEL = \"google/gemini-3.8-flash\"\nAGENT_TIMEOUT_S = 20 * 60\nAGENT_TOOL_CALL_LIMIT = 60\nMAX_ILLUSTRATIONS = 6\nPREVIEW_WIDTH_PX = 1600\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_TIMEOUT_S",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "AGENT_TIMEOUT_S = 20 * 60\nAGENT_TOOL_CALL_LIMIT = 60\nMAX_ILLUSTRATIONS = 6\nPREVIEW_WIDTH_PX = 1600\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "AGENT_TOOL_CALL_LIMIT",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "AGENT_TOOL_CALL_LIMIT = 60\nMAX_ILLUSTRATIONS = 6\nPREVIEW_WIDTH_PX = 1600\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_ILLUSTRATIONS",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "MAX_ILLUSTRATIONS = 6\nPREVIEW_WIDTH_PX = 1600\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"\n    ),",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "PREVIEW_WIDTH_PX",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "PREVIEW_WIDTH_PX = 1600\n# A \"processing\" row older than this is treated as failed (e.g. server restarted mid-generation)\nSTALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"\n    ),\n    \"presenter\": (",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "STALE_AFTER",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "STALE_AFTER = timedelta(minutes=30)\nSLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"\n    ),\n    \"presenter\": (\n        \"PRESENTER SLIDES: minimal on-slide text (a headline plus a few short phrases or one big number). \"\n        \"Let visuals carry the slide; put the full talking points in the speaker notes.\"",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "SLIDE_COUNTS",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "SLIDE_COUNTS = {\"short\": \"6-8\", \"default\": \"10-12\", \"long\": \"15-18\"}\nFORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"\n    ),\n    \"presenter\": (\n        \"PRESENTER SLIDES: minimal on-slide text (a headline plus a few short phrases or one big number). \"\n        \"Let visuals carry the slide; put the full talking points in the speaker notes.\"\n    ),",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "FORMAT_GUIDANCE",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "FORMAT_GUIDANCE = {\n    \"detailed\": (\n        \"DETAILED DECK: each slide must stand on its own when read without a presenter. \"\n        \"Use complete, specific statements (still concise: roughly 25-60 words of body text per slide).\"\n    ),\n    \"presenter\": (\n        \"PRESENTER SLIDES: minimal on-slide text (a headline plus a few short phrases or one big number). \"\n        \"Let visuals carry the slide; put the full talking points in the speaker notes.\"\n    ),\n}",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "ILLUSTRATION_STYLES",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "ILLUSTRATION_STYLES = {\n    \"auto\": \"isometric technical line illustration, fine charcoal ink linework on a warm off-white background, deep teal (#0E6E6E) as the single accent color used sparingly, subtle blueprint grid and dimension marks\",\n    \"professional\": \"clean isometric line illustration, navy (#13294B) linework on white, a muted gold accent (#B8962E) used sparingly, precise and corporate\",\n    \"tactical\": \"isometric technical line illustration of military equipment and operations, sand-khaki (#CBBE94) linework on dark gunmetal charcoal (#1E2226), signal-amber (#E3A72F) accent, faint coordinate grid, restrained and non-violent\",\n    \"editorial\": \"bold flat editorial illustration with strong shapes, ink black and cobalt (#2340B8) with a touch of ochre, on paper white\",\n    \"instructional\": \"technical field-manual line drawing, uniform black 2-pt strokes on off-white, safety orange (#F26A1B) highlights, no shading\",\n    \"sketch\": \"hand-drawn fineliner doodle illustration on cream paper, black ink with lemon and aqua highlighter accents\",\n}\ndef _extract_text_per_slide(pptx_path) -> List[Dict[str, Any]]:\n    \"\"\"Title, all text and speaker notes per slide (python-pptx)\"\"\"",
+        "detail": "backend.services.slide_deck_generator",
+        "documentation": {}
+    },
+    {
+        "label": "_slide_deck_generator_service",
+        "kind": 5,
+        "importPath": "backend.services.slide_deck_generator",
+        "description": "backend.services.slide_deck_generator",
+        "peekOfCode": "_slide_deck_generator_service = None\ndef get_slide_deck_generator_service() -> SlideDeckGeneratorService:\n    \"\"\"Get or create slide deck generator service singleton\"\"\"\n    global _slide_deck_generator_service\n    if _slide_deck_generator_service is None:\n        _slide_deck_generator_service = SlideDeckGeneratorService()\n    return _slide_deck_generator_service",
+        "detail": "backend.services.slide_deck_generator",
         "documentation": {}
     },
     {
@@ -11064,6 +13561,69 @@
         "documentation": {}
     },
     {
+        "label": "CodeSandbox",
+        "kind": 6,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "class CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):\n        self.job_id = job_id\n        # resolve(): on macOS the temp dir sits behind a /var -> /private/var symlink\n        self.dir = Path(tempfile.mkdtemp(prefix=f\"sandbox_{job_id[:8]}_\")).resolve()\n        self._scripts_dir = self.dir / \".scripts\"\n        self._scripts_dir.mkdir()\n        logger.info(f\"🧪 Sandbox for job {job_id} at {self.dir}\")\n    # ------------------------------------------------------------------",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "BACKEND_ROOT",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "BACKEND_ROOT = Path(__file__).resolve().parent.parent\nPPTX_SKILL_DIR = BACKEND_ROOT / \"pptx\"\nNODE_MODULES_DIR = BACKEND_ROOT / \"pptx_runtime\" / \"node_modules\"\nDEFAULT_TIMEOUT_S = int(os.getenv(\"CODE_SANDBOX_TIMEOUT_S\", \"240\"))\nSTDOUT_TAIL = 6000\nSTDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "PPTX_SKILL_DIR",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "PPTX_SKILL_DIR = BACKEND_ROOT / \"pptx\"\nNODE_MODULES_DIR = BACKEND_ROOT / \"pptx_runtime\" / \"node_modules\"\nDEFAULT_TIMEOUT_S = int(os.getenv(\"CODE_SANDBOX_TIMEOUT_S\", \"240\"))\nSTDOUT_TAIL = 6000\nSTDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "NODE_MODULES_DIR",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "NODE_MODULES_DIR = BACKEND_ROOT / \"pptx_runtime\" / \"node_modules\"\nDEFAULT_TIMEOUT_S = int(os.getenv(\"CODE_SANDBOX_TIMEOUT_S\", \"240\"))\nSTDOUT_TAIL = 6000\nSTDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):\n        self.job_id = job_id",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_TIMEOUT_S",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "DEFAULT_TIMEOUT_S = int(os.getenv(\"CODE_SANDBOX_TIMEOUT_S\", \"240\"))\nSTDOUT_TAIL = 6000\nSTDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):\n        self.job_id = job_id\n        # resolve(): on macOS the temp dir sits behind a /var -> /private/var symlink",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "STDOUT_TAIL",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "STDOUT_TAIL = 6000\nSTDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):\n        self.job_id = job_id\n        # resolve(): on macOS the temp dir sits behind a /var -> /private/var symlink\n        self.dir = Path(tempfile.mkdtemp(prefix=f\"sandbox_{job_id[:8]}_\")).resolve()",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
+        "label": "STDERR_TAIL",
+        "kind": 5,
+        "importPath": "backend.utils.code_sandbox",
+        "description": "backend.utils.code_sandbox",
+        "peekOfCode": "STDERR_TAIL = 3000\ndef _tail(text: str, limit: int) -> str:\n    return text if len(text) <= limit else \"…(truncated)…\\n\" + text[-limit:]\nclass CodeSandbox:\n    \"\"\"A private working directory plus helpers to run Python / shell inside it\"\"\"\n    def __init__(self, job_id: str):\n        self.job_id = job_id\n        # resolve(): on macOS the temp dir sits behind a /var -> /private/var symlink\n        self.dir = Path(tempfile.mkdtemp(prefix=f\"sandbox_{job_id[:8]}_\")).resolve()\n        self._scripts_dir = self.dir / \".scripts\"",
+        "detail": "backend.utils.code_sandbox",
+        "documentation": {}
+    },
+    {
         "label": "get_file_extension",
         "kind": 2,
         "importPath": "backend.utils.file_utils",
@@ -11136,6 +13696,33 @@
         "documentation": {}
     },
     {
+        "label": "IMAGE_MODEL",
+        "kind": 5,
+        "importPath": "backend.utils.image_gen",
+        "description": "backend.utils.image_gen",
+        "peekOfCode": "IMAGE_MODEL = \"google/gemini-3.1-flash-image\"\nOPENROUTER_IMAGES_URL = \"https://openrouter.ai/api/v1/images\"\nRENDER_TIMEOUT_SECONDS = 180\nasync def generate_image(\n    prompt: str,\n    aspect_ratio: str = \"16:9\",\n    model: str = IMAGE_MODEL,\n    attempts: int = 2,\n) -> Tuple[bytes, Optional[float]]:\n    \"\"\"Render one image; retries on failure. Returns (png_bytes, cost_usd)\"\"\"",
+        "detail": "backend.utils.image_gen",
+        "documentation": {}
+    },
+    {
+        "label": "OPENROUTER_IMAGES_URL",
+        "kind": 5,
+        "importPath": "backend.utils.image_gen",
+        "description": "backend.utils.image_gen",
+        "peekOfCode": "OPENROUTER_IMAGES_URL = \"https://openrouter.ai/api/v1/images\"\nRENDER_TIMEOUT_SECONDS = 180\nasync def generate_image(\n    prompt: str,\n    aspect_ratio: str = \"16:9\",\n    model: str = IMAGE_MODEL,\n    attempts: int = 2,\n) -> Tuple[bytes, Optional[float]]:\n    \"\"\"Render one image; retries on failure. Returns (png_bytes, cost_usd)\"\"\"\n    last_error: Optional[Exception] = None",
+        "detail": "backend.utils.image_gen",
+        "documentation": {}
+    },
+    {
+        "label": "RENDER_TIMEOUT_SECONDS",
+        "kind": 5,
+        "importPath": "backend.utils.image_gen",
+        "description": "backend.utils.image_gen",
+        "peekOfCode": "RENDER_TIMEOUT_SECONDS = 180\nasync def generate_image(\n    prompt: str,\n    aspect_ratio: str = \"16:9\",\n    model: str = IMAGE_MODEL,\n    attempts: int = 2,\n) -> Tuple[bytes, Optional[float]]:\n    \"\"\"Render one image; retries on failure. Returns (png_bytes, cost_usd)\"\"\"\n    last_error: Optional[Exception] = None\n    for attempt in range(attempts):",
+        "detail": "backend.utils.image_gen",
+        "documentation": {}
+    },
+    {
         "label": "create_sse_event_stream",
         "kind": 2,
         "importPath": "backend.utils.streaming",
@@ -11187,6 +13774,42 @@
         "description": "backend.utils.tak_tools",
         "peekOfCode": "DEFAULT_TAK_PORT = 8087\nasync def _send_cot_async(\n    cot_xml: str,\n    tak_host: str,\n    tak_port: int,\n    tak_username: Optional[str] = None,\n    tak_password: Optional[str] = None\n) -> bool:\n    \"\"\"\n    Helper function to send a single CoT message to TAK server.",
         "detail": "backend.utils.tak_tools",
+        "documentation": {}
+    },
+    {
+        "label": "normalize_text",
+        "kind": 2,
+        "importPath": "backend.utils.text_match",
+        "description": "backend.utils.text_match",
+        "peekOfCode": "def normalize_text(text: str) -> str:\n    \"\"\"Lowercase, strip punctuation and collapse whitespace for fuzzy quote matching\"\"\"\n    return \" \".join(re.sub(r\"[^\\w]+\", \" \", text.lower()).split())\ndef quote_in_text(quote: str, normalized_text: str) -> bool:\n    \"\"\"Check that a quote appears (near-)verbatim in already-normalized source text\"\"\"\n    normalized_quote = normalize_text(quote)\n    if not normalized_quote:\n        return False\n    if normalized_quote in normalized_text:\n        return True",
+        "detail": "backend.utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "quote_in_text",
+        "kind": 2,
+        "importPath": "backend.utils.text_match",
+        "description": "backend.utils.text_match",
+        "peekOfCode": "def quote_in_text(quote: str, normalized_text: str) -> bool:\n    \"\"\"Check that a quote appears (near-)verbatim in already-normalized source text\"\"\"\n    normalized_quote = normalize_text(quote)\n    if not normalized_quote:\n        return False\n    if normalized_quote in normalized_text:\n        return True\n    words = normalized_quote.split()\n    if len(words) < SHINGLE_SIZE:\n        return False",
+        "detail": "backend.utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "SHINGLE_SIZE",
+        "kind": 5,
+        "importPath": "backend.utils.text_match",
+        "description": "backend.utils.text_match",
+        "peekOfCode": "SHINGLE_SIZE = 3\nSHINGLE_MATCH_THRESHOLD = 0.7\ndef normalize_text(text: str) -> str:\n    \"\"\"Lowercase, strip punctuation and collapse whitespace for fuzzy quote matching\"\"\"\n    return \" \".join(re.sub(r\"[^\\w]+\", \" \", text.lower()).split())\ndef quote_in_text(quote: str, normalized_text: str) -> bool:\n    \"\"\"Check that a quote appears (near-)verbatim in already-normalized source text\"\"\"\n    normalized_quote = normalize_text(quote)\n    if not normalized_quote:\n        return False",
+        "detail": "backend.utils.text_match",
+        "documentation": {}
+    },
+    {
+        "label": "SHINGLE_MATCH_THRESHOLD",
+        "kind": 5,
+        "importPath": "backend.utils.text_match",
+        "description": "backend.utils.text_match",
+        "peekOfCode": "SHINGLE_MATCH_THRESHOLD = 0.7\ndef normalize_text(text: str) -> str:\n    \"\"\"Lowercase, strip punctuation and collapse whitespace for fuzzy quote matching\"\"\"\n    return \" \".join(re.sub(r\"[^\\w]+\", \" \", text.lower()).split())\ndef quote_in_text(quote: str, normalized_text: str) -> bool:\n    \"\"\"Check that a quote appears (near-)verbatim in already-normalized source text\"\"\"\n    normalized_quote = normalize_text(quote)\n    if not normalized_quote:\n        return False\n    if normalized_quote in normalized_text:",
+        "detail": "backend.utils.text_match",
         "documentation": {}
     },
     {
