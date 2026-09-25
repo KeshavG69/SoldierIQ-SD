@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.settings import settings
 from app.middleware import  SecurityHeadersMiddleware
 from app.logger import logger
-from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests
+from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests
 
 
 def _prewarm_clients():
@@ -109,6 +109,7 @@ app.include_router(flashcards.router, prefix="/api")
 app.include_router(quiz.router, prefix="/api")
 app.include_router(infographic.router, prefix="/api")
 app.include_router(slide_deck.router, prefix="/api")
+app.include_router(video_overview.router, prefix="/api")
 app.include_router(podcast.router, prefix="/api")
 app.include_router(tak.router, prefix="/api")
 app.include_router(google_drive.router, prefix="/api")
