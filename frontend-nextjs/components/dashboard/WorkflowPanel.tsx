@@ -8,6 +8,7 @@ import { flashcardsApi, FlashcardData } from "@/lib/api/flashcards";
 import { quizApi, QuizData, QuizOptions } from "@/lib/api/quiz";
 import { infographicApi, InfographicOptions } from "@/lib/api/infographic";
 import { slideDeckApi, SlideDeckOptions } from "@/lib/api/slideDeck";
+import { videoOverviewApi, VideoOptions } from "@/lib/api/videoOverview";
 import { useQueryClient } from "@tanstack/react-query";
 import MindMapViewer from "./MindMapViewer";
 import ReportStudio from "./ReportStudio";
@@ -18,6 +19,8 @@ import InfographicSetupDialog from "./InfographicSetupDialog";
 import InfographicViewer from "./InfographicViewer";
 import SlideDeckSetupDialog from "./SlideDeckSetupDialog";
 import SlideDeckViewer from "./SlideDeckViewer";
+import VideoOverviewSetupDialog from "./VideoOverviewSetupDialog";
+import VideoOverviewViewer from "./VideoOverviewViewer";
 import PodcastGenerator from "../PodcastGenerator";
 
 interface WorkflowOption {
@@ -50,6 +53,8 @@ export default function WorkflowPanel({
   const [infographicViewId, setInfographicViewId] = useState<string | null>(null);
   const [showSlideDeckSetup, setShowSlideDeckSetup] = useState(false);
   const [slideDeckViewId, setSlideDeckViewId] = useState<string | null>(null);
+  const [showVideoSetup, setShowVideoSetup] = useState(false);
+  const [videoViewId, setVideoViewId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
   const { selectedDocs } = useDocumentStore();
@@ -94,7 +99,7 @@ export default function WorkflowPanel({
     {
       id: "video-overview",
       title: "Video overview",
-      available: false,
+      available: true,
       description: "Create a video summary with visuals.",
       icon: icon(
         <>
@@ -242,6 +247,11 @@ export default function WorkflowPanel({
       setShowSlideDeckSetup(true);
     }
 
+    if (workflow.id === "video-overview") {
+      // Opens even with no selection so saved videos can be reopened
+      setShowVideoSetup(true);
+    }
+
     if (workflow.id === "audio-overview") {
       if (selectedDocs.size === 0) {
         setError("Select at least one document to generate an audio overview.");
@@ -344,6 +354,31 @@ export default function WorkflowPanel({
   };
   const handleCloseSlideDeck = () => {
     setSlideDeckViewId(null);
+    setSelectedWorkflow(null);
+  };
+  const handleGenerateVideo = async (options: VideoOptions) => {
+    setShowVideoSetup(false);
+    try {
+      // Generation runs in the background; the viewer polls until the video is ready
+      const { workflow_id } = await videoOverviewApi.generate(Array.from(selectedDocs), options);
+      queryClient.invalidateQueries({ queryKey: ["videoOverviews"] });
+      setVideoViewId(workflow_id);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Failed to start video overview generation.");
+      setTimeout(() => setError(null), 5000);
+      setSelectedWorkflow(null);
+    }
+  };
+  const handleOpenSavedVideo = (workflowId: string) => {
+    setShowVideoSetup(false);
+    setVideoViewId(workflowId);
+  };
+  const handleCloseVideoSetup = () => {
+    setShowVideoSetup(false);
+    setSelectedWorkflow(null);
+  };
+  const handleCloseVideo = () => {
+    setVideoViewId(null);
     setSelectedWorkflow(null);
   };
   const handleCloseReportStudio = () => {
@@ -538,6 +573,21 @@ export default function WorkflowPanel({
         onGenerate={handleGenerateInfographic}
         onOpenInfographic={handleOpenSavedInfographic}
       />
+      <VideoOverviewSetupDialog
+        open={showVideoSetup}
+        documentCount={selectedDocs.size}
+        onClose={handleCloseVideoSetup}
+        onGenerate={handleGenerateVideo}
+        onOpenVideo={handleOpenSavedVideo}
+      />
+      {videoViewId && (
+        <VideoOverviewViewer
+          key={videoViewId}
+          workflowId={videoViewId}
+          onClose={handleCloseVideo}
+          onSwitch={setVideoViewId}
+        />
+      )}
       <SlideDeckSetupDialog
         open={showSlideDeckSetup}
         documentCount={selectedDocs.size}
