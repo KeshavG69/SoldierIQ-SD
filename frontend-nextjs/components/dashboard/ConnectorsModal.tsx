@@ -177,7 +177,7 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
             <div className="flex items-center gap-3">
               {data && (
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${
                     atLimit ? "bg-amber-500/15 text-amber-500" : "bg-secondary text-muted-foreground"
                   }`}
                 >
@@ -309,13 +309,13 @@ function ConnectorRow({
 
   return (
     <div>
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 px-4 py-3">
         <ConnectorLogo c={c} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-foreground truncate">{c.name}</span>
             {c.category && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-secondary text-muted-foreground">
+              <span className="hidden sm:inline px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-secondary text-muted-foreground">
                 {c.category}
               </span>
             )}
@@ -334,7 +334,14 @@ function ConnectorRow({
         </div>
 
         {c.connected ? (
-          <>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => onDisconnect(c)}
+              disabled={busy}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground border border-border hover:text-red-500 hover:border-red-500/40 disabled:opacity-50 transition-colors"
+            >
+              {busy ? "Disconnecting…" : "Disconnect"}
+            </button>
             <Toggle checked={c.enabled} onChange={(v) => onToggleTool(c, v)} label={`Enable ${c.name}`} />
             <button
               onClick={onExpand}
@@ -349,7 +356,7 @@ function ConnectorRow({
                 <path d="M6 9l6 6 6-6" />
               </svg>
             </button>
-          </>
+          </div>
         ) : (
           <button
             onClick={() => onConnect(c)}
@@ -389,15 +396,6 @@ function ConnectorRow({
                 />
               </div>
             ))}
-          </div>
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={() => onDisconnect(c)}
-              disabled={busy}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground border border-border hover:text-red-500 hover:border-red-500/40 disabled:opacity-50 transition-colors"
-            >
-              {busy ? "Disconnecting…" : `Disconnect ${c.name}`}
-            </button>
           </div>
         </div>
       )}
