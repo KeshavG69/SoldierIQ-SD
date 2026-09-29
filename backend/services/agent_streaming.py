@@ -8,6 +8,7 @@ from typing import Any, AsyncGenerator, Dict, Optional
 from agno.agent import Agent
 from agno.run.agent import RunEvent, RunOutput, RunOutputEvent
 from app.logger import logger
+from services.tool_display import describe_tool
 
 
 def extract_text(content: Any) -> Optional[str]:
@@ -153,24 +154,34 @@ async def stream_agent_response(
                     }
                 continue
 
+            # Tool events carry an id + display metadata so the chat can render
+            # a live timeline of steps (services/tool_display.py).
             if agno_event == RunEvent.tool_call_started.value:
                 tool = payload.get("tool") or {}
                 yield {
                     "event": "tool.started",
                     "data": {
+                        "tool_call_id": tool.get("tool_call_id"),
                         "tool_name": tool.get("tool_name"),
                         "tool_args": tool.get("tool_args"),
+                        "display": await describe_tool(tool.get("tool_name"), tool.get("tool_args")),
                     }
                 }
                 continue
 
             if agno_event == RunEvent.tool_call_completed.value:
                 tool = payload.get("tool") or {}
+                metrics = tool.get("metrics") or {}
                 yield {
                     "event": "tool.completed",
                     "data": {
+                        "tool_call_id": tool.get("tool_call_id"),
                         "tool_name": tool.get("tool_name"),
+                        "tool_args": tool.get("tool_args"),
                         "result": tool.get("result"),
+                        "error": bool(tool.get("tool_call_error")),
+                        "duration": metrics.get("duration") if isinstance(metrics, dict) else None,
+                        "display": await describe_tool(tool.get("tool_name"), tool.get("tool_args")),
                     }
                 }
                 continue

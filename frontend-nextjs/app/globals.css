@@ -814,3 +814,28 @@
   .iqx .iq-live { animation: none; }
   .iqx .iq-btn, .iqx .iq-btn-ghost { transition: none; }
 }
+
+/* Tool-call timeline: shimmering label on the step that's running
+   (components/dashboard/chat/ToolCallTimeline.tsx). */
+@keyframes tool-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+.tool-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted-foreground) 0%,
+    var(--muted-foreground) 40%,
+    var(--foreground) 50%,
+    var(--muted-foreground) 60%,
+    var(--muted-foreground) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: tool-shimmer 1.6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tool-shimmer { animation: none; color: var(--muted-foreground); background: none; }
+}

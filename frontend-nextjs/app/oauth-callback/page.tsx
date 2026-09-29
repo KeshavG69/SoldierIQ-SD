@@ -1,7 +1,12 @@
 "use client";
 
 /**
- * OAuth callback landing page for Composio-managed connectors (SharePoint).
+ * OAuth callback landing page for Composio-managed connectors (SharePoint,
+ * Google Drive, and the agent app connectors from ConnectorsModal).
+ *
+ * App connectors arrive with `?connector=<service>` (set by us) plus Composio's
+ * `connected_account_id` / `connectedAccountId`; for those we confirm with the
+ * backend (marks the connection ACTIVE in our DB) before messaging the opener.
  *
  * Composio runs the hosted OAuth flow in a popup and redirects here only AFTER
  * it finishes — so simply arriving here (without an `error` query param) means
@@ -12,36 +17,53 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { connectorsApi } from "@/lib/api/connectors";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function CallbackInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const [msg, setMsg] = useState("Finishing the SharePoint connection…");
+  const [msg, setMsg] = useState("Finishing the connection…");
 
   useEffect(() => {
-    const connected = !params.get("error");
-    setMsg(connected ? "Connected!" : "Connection was not completed.");
-
-    if (window.opener) {
-      try {
-        window.opener.postMessage(
-          { type: "sharepoint-oauth-result", connected },
-          window.location.origin
-        );
-      } catch {
-        /* ignore */
-      }
-      window.close();
-      // Some browsers block close() for non-script-opened windows.
-      setMsg("You can close this window.");
-      return;
-    }
-
-    // Full-page fallback (popup was blocked): bounce back to the dashboard.
     let cancelled = false;
+    const connector = params.get("connector");
+    const accountId = params.get("connected_account_id") || params.get("connectedAccountId");
+
     (async () => {
+      let connected = !params.get("error");
+      if (connector) {
+        setMsg("Finishing the connection…");
+        if (accountId) {
+          try {
+            connected = (await connectorsApi.confirm(accountId)).connected;
+          } catch {
+            connected = false;
+          }
+        }
+      }
+      if (cancelled) return;
+      setMsg(connected ? "Connected!" : "Connection was not completed.");
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage(
+            connector
+              ? { type: "connector-oauth-result", connector, connected }
+              : { type: "sharepoint-oauth-result", connected },
+            window.location.origin
+          );
+        } catch {
+          /* ignore */
+        }
+        window.close();
+        // Some browsers block close() for non-script-opened windows.
+        setMsg("You can close this window.");
+        return;
+      }
+
+      // Full-page fallback (popup was blocked): bounce back to the dashboard.
       await sleep(800);
       if (!cancelled) router.replace("/dashboard");
     })();

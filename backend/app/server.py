@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.settings import settings
 from app.middleware import  SecurityHeadersMiddleware
 from app.logger import logger
-from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests
+from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests, connectors
 
 
 def _prewarm_clients():
@@ -41,6 +41,12 @@ async def lifespan(app: FastAPI):
 
     # Pre-warm heavy clients in background so first dashboard load is fast
     _prewarm_clients()
+
+    try:
+        from clients.composio_connectors import ensure_tables
+        await ensure_tables()
+    except Exception as e:
+        logger.warning(f"⚠️ connector tables setup failed (non-fatal): {e}")
 
     yield
 
@@ -114,6 +120,7 @@ app.include_router(podcast.router, prefix="/api")
 app.include_router(tak.router, prefix="/api")
 app.include_router(google_drive.router, prefix="/api")
 app.include_router(sharepoint.router, prefix="/api")
+app.include_router(connectors.router, prefix="/api")
 app.include_router(workspace.router, prefix="/api")
 app.include_router(invitations.router, prefix="/api")
 app.include_router(organizations.router, prefix="/api")

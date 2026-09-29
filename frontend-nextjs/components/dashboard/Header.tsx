@@ -11,6 +11,7 @@ import SessionDropdown from "./SessionDropdown";
 import TicketCreationModal from "../TicketCreationModal";
 import TAKSettingsModal from "./TAKSettingsModal";
 import TeamModal from "./TeamModal";
+import ConnectorsModal from "./ConnectorsModal";
 import { Z_INDEX } from "@/lib/constants/zIndex";
 
 export default function Header() {
@@ -21,6 +22,7 @@ export default function Header() {
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showTAKSettings, setShowTAKSettings] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
+  const [showConnectors, setShowConnectors] = useState(false);
   const [comingSoonDialog, setComingSoonDialog] = useState<{ show: boolean; feature: string }>({
     show: false,
     feature: "",
@@ -183,6 +185,18 @@ export default function Header() {
                   <button
                     onClick={() => {
                       setShowMenu(false);
+                      setShowConnectors(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-2 text-left text-sm text-muted-foreground dark:text-foreground hover:bg-secondary dark:hover:bg-accent rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8z" />
+                    </svg>
+                    Connectors
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
                       setShowTAKSettings(true);
                     }}
                     className="w-full flex items-center gap-2 px-2.5 py-2 text-left text-sm text-muted-foreground dark:text-foreground hover:bg-secondary dark:hover:bg-accent rounded-lg transition-colors"
@@ -252,6 +266,7 @@ export default function Header() {
       {showTicketModal && <TicketCreationModal onClose={() => setShowTicketModal(false)} />}
       <TAKSettingsModal isOpen={showTAKSettings} onClose={() => setShowTAKSettings(false)} />
       {showTeam && <TeamModal onClose={() => setShowTeam(false)} />}
+      {showConnectors && <ConnectorsModal onClose={() => setShowConnectors(false)} />}
     </header>
   );
 }

@@ -5,6 +5,8 @@ import { ChatMessage } from "@/types";
 import { DocumentSource } from "@/lib/stores/chatStore";
 import MarkdownContent from "./MarkdownContent";
 import SmoothStreamingText from "./SmoothStreamingText";
+import ComposioAuthCard from "./ComposioAuthCard";
+import ToolCallTimeline from "./ToolCallTimeline";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -84,6 +86,10 @@ const MessageBubble = React.memo(function MessageBubble({
         </div>
 
         <div className="pl-8">
+          {message.toolCalls && message.toolCalls.length > 0 && (
+            <ToolCallTimeline steps={message.toolCalls} isStreaming={isStreaming} />
+          )}
+
           {message.content ? (
             isStreaming ? (
               <SmoothStreamingText text={message.content} />
@@ -99,12 +105,14 @@ const MessageBubble = React.memo(function MessageBubble({
                 }}
               />
             )
-          ) : (
+          ) : message.toolCalls?.some((c) => c.status === "running") ? null : (
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <div className="w-3.5 h-3.5 border-2 border-border border-t-border dark:border-border dark:border-t-border rounded-full animate-spin" />
               Thinking…
             </div>
           )}
+
+          {message.composioAuth && <ComposioAuthCard info={message.composioAuth} />}
 
           {hasGraph && !isStreaming && onOpenGraph && (
             <button

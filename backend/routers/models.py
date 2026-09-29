@@ -22,8 +22,8 @@ async def list_models(current_user: dict = Depends(get_current_user_keycloak)) -
 
     models = [
         {
-            "id": "anthropic/claude-sonnet-4.5",
-            "name": "Claude Sonnet 4.5"
+            "id": "anthropic/claude-sonnet-5.5",
+            "name": "Claude Sonnet 5.5"
         },
         {
             "id": "google/gemini-3.1-pro-preview",

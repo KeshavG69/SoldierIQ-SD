@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useChatStore, DocumentSource } from "@/lib/stores/chatStore";
+import { summarizeToolResult } from "@/lib/chat/toolResult";
 import type { ChatMessage, KnowledgeGraph } from "@/types";
 import { useDocumentStore } from "@/lib/stores/documentStore";
 import { chatApi, TAKCredentials } from "@/lib/api/documents";
@@ -28,6 +29,8 @@ export default function ChatArea() {
     setInputMessage,
     addMessage,
     updateLastMessage,
+    setLastMessageComposioAuth,
+    upsertLastMessageToolCall,
     endStreaming,
     setLoading,
     setTAKCredentials,
@@ -266,6 +269,7 @@ export default function ChatArea() {
         let accumulatedSources: DocumentSource[] = [];
         let accumulatedGraph: KnowledgeGraph | undefined = undefined;
         let buffer = "";
+        const runningToolIds: { id: string; name: string }[] = [];
 
         while (true) {
           const { done, value } = await reader.read();
@@ -315,10 +319,67 @@ export default function ChatArea() {
                   }
                   break;
 
-                case "tool.started":
+                case "tool.started": {
+                  const d = parsed.data || {};
+                  const id = d.tool_call_id || `${d.tool_name}-${Date.now()}`;
+                  runningToolIds.push({ id, name: d.tool_name });
+                  upsertLastMessageToolCall({
+                    id,
+                    name: d.tool_name,
+                    status: "running",
+                    label: d.display?.label || d.tool_name,
+                    doneLabel: d.display?.done_label || d.display?.label || d.tool_name,
+                    detail: d.display?.detail,
+                    app: d.display?.app,
+                    logo: d.display?.logo,
+                    icon: d.display?.icon,
+                    args: d.tool_args || undefined,
+                    startedAt: Date.now(),
+                  });
                   break;
+                }
 
-                case "tool.completed":
+                case "tool.completed": {
+                  // Timeline step: match by id, else the oldest running call of this tool.
+                  const d = parsed.data || {};
+                  const idx = runningToolIds.findIndex((t) =>
+                    d.tool_call_id ? t.id === d.tool_call_id : t.name === d.tool_name
+                  );
+                  const id = idx >= 0 ? runningToolIds.splice(idx, 1)[0].id : d.tool_call_id || `${d.tool_name}-${Date.now()}`;
+                  upsertLastMessageToolCall({
+                    id,
+                    name: d.tool_name,
+                    status: d.error ? "error" : "done",
+                    ...(d.display && {
+                      label: d.display.label,
+                      doneLabel: d.display.done_label || d.display.label,
+                      detail: d.display.detail,
+                      app: d.display.app,
+                      logo: d.display.logo,
+                      icon: d.display.icon,
+                    }),
+                    ...(typeof d.duration === "number" && { duration: d.duration }),
+                    resultPreview: summarizeToolResult(d.tool_name, d.result),
+                  });
+                }
+                  // setup_composio_service → "Connect <app>" card under the reply.
+                  if (parsed.data?.tool_name === "setup_composio_service" && parsed.data?.result) {
+                    try {
+                      const r = JSON.parse(parsed.data.result);
+                      if (r?.service && !r.error) {
+                        setLastMessageComposioAuth({
+                          service: r.service,
+                          service_title: r.service_title || r.service,
+                          logo: r.logo,
+                          already_connected: !!r.already_connected,
+                          actions_added: r.actions_added || [],
+                        });
+                      }
+                    } catch {
+                      // Not JSON — ignore
+                    }
+                    break;
+                  }
                   if (
                     parsed.data?.tool_name === "search_knowledge_base" &&
                     parsed.data?.result

@@ -55,6 +55,34 @@ export interface ChatMessage {
   isStreaming?: boolean;
   sources?: any[]; // Sources specific to this message
   graph?: KnowledgeGraph; // GraphRAG retrieval graph (entities + triples + chunks)
+  composioAuth?: ComposioAuthInfo; // setup_composio_service result → "Connect <app>" card
+  toolCalls?: ToolCallStep[]; // live timeline of the agent's tool calls
+}
+
+// One tool call in an assistant message's step timeline
+export interface ToolCallStep {
+  id: string;
+  name: string;
+  status: 'running' | 'done' | 'error';
+  label: string; // shown while running, e.g. "Searching your documents"
+  doneLabel: string; // shown when finished, e.g. "Searched your documents"
+  detail?: string | null; // short argument summary, e.g. the search query
+  app?: string | null; // app title for Composio tools, e.g. "Gmail"
+  logo?: string | null;
+  icon?: string | null; // built-in icon key: search | map | message | route | plug | app | tool
+  args?: Record<string, unknown>;
+  resultPreview?: string; // truncated result, kept small for localStorage
+  startedAt: number;
+  duration?: number; // seconds
+}
+
+// Result of the agent's setup_composio_service tool, rendered as a connect card
+export interface ComposioAuthInfo {
+  service: string;
+  service_title: string;
+  logo?: string | null;
+  already_connected: boolean;
+  actions_added: string[];
 }
 
 // Knowledge-graph payload returned by the GraphRAG search tool
