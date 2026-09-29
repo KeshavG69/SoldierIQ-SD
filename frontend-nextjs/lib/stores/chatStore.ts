@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ChatMessage, SourceReference, KnowledgeGraph } from '@/types';
+import { ChatMessage, SourceReference, KnowledgeGraph, ComposioAuthInfo, ToolCallStep } from '@/types';
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -47,6 +47,8 @@ interface ChatState {
     sources?: DocumentSource[],
     graph?: KnowledgeGraph
   ) => void;
+  setLastMessageComposioAuth: (info: ComposioAuthInfo) => void;
+  upsertLastMessageToolCall: (step: Partial<ToolCallStep> & { id: string }) => void;
   endStreaming: () => void;
   setLoading: (loading: boolean) => void;
   setLoadingSession: (loading: boolean) => void;
@@ -65,7 +67,7 @@ export const useChatStore = create<ChatState>()(
   isLoading: false,
   isLoadingSession: false,
   inputMessage: '',
-  selectedModel: 'anthropic/claude-sonnet-4.5', // Default model
+  selectedModel: 'anthropic/claude-sonnet-5.5', // Default model
   takCredentials: null,
   takEnabled: false,
 
@@ -90,13 +92,49 @@ export const useChatStore = create<ChatState>()(
       return { messages };
     }),
 
+  setLastMessageComposioAuth: (info) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        messages[messages.length - 1] = { ...messages[messages.length - 1], composioAuth: info };
+      }
+      return { messages };
+    }),
+
+  upsertLastMessageToolCall: (step) =>
+    set((state) => {
+      const messages = [...state.messages];
+      const last = messages[messages.length - 1];
+      if (!last) return { messages };
+      const calls = [...(last.toolCalls || [])];
+      const i = calls.findIndex((c) => c.id === step.id);
+      if (i >= 0) {
+        const merged = { ...calls[i], ...step };
+        // Fall back to client-side timing when the backend sent no duration.
+        if (merged.status !== "running" && merged.duration == null && merged.startedAt) {
+          merged.duration = (Date.now() - merged.startedAt) / 1000;
+        }
+        calls[i] = merged;
+      }
+      else calls.push(step as ToolCallStep);
+      messages[messages.length - 1] = { ...last, toolCalls: calls };
+      return { messages };
+    }),
+
   endStreaming: () =>
     set((state) => {
       const messages = [...state.messages];
       if (messages.length > 0) {
+        const last = messages[messages.length - 1];
         messages[messages.length - 1] = {
-          ...messages[messages.length - 1],
+          ...last,
           isStreaming: false,
+          // A step still "running" when the stream ends never finished.
+          ...(last.toolCalls && {
+            toolCalls: last.toolCalls.map((c) =>
+              c.status === "running" ? { ...c, status: "error" as const } : c
+            ),
+          }),
         };
       }
       return { messages };
@@ -121,7 +159,14 @@ export const useChatStore = create<ChatState>()(
       // session history survives a refresh without re-fetching from the backend.
       name: 'soldieriq-chat-session',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      // v2: Sonnet 4.5 was replaced by Sonnet 5.5 — move saved selections over.
+      migrate: (persisted: any, version) => {
+        if (version < 2 && persisted?.selectedModel === 'anthropic/claude-sonnet-4.5') {
+          persisted.selectedModel = 'anthropic/claude-sonnet-5.5';
+        }
+        return persisted;
+      },
       // Persist only the conversation + model. NOT transient flags (loading,
       // input draft) and NOT takCredentials (contains a password).
       partialize: (state) => ({

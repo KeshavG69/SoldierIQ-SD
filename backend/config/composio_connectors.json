@@ -1,0 +1,2321 @@
+{
+  "gmail": {
+    "name": "Gmail",
+    "toolkit": "gmail",
+    "category": "Email",
+    "description": "Read, search, draft and send email",
+    "logo": "/connectors/gmail.svg",
+    "actions": [
+      {
+        "code": "GMAIL_SEND_EMAIL",
+        "title": "Send Email",
+        "description": "Sends an email via Gmail API using the authenticated user's Google profile display name.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_DELETE_DRAFT",
+        "title": "Delete Draft",
+        "description": "Permanently deletes a specific Gmail draft using its ID with no recovery possible; verify the correct `draft_id` and obtain explicit user confirmation before calling.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_DELETE_MESSAGE",
+        "title": "Delete message",
+        "description": "Permanently deletes a specific email message by its ID from a Gmail mailbox; for `user_id`, use 'me' for the authenticated user or an email address to which the authenticated user has delegated access.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_FETCH_EMAILS",
+        "title": "Fetch emails",
+        "description": "Fetches a list of email messages from a Gmail account, supporting filtering, pagination, and optional full content retrieval.",
+        "type": "read"
+      },
+      {
+        "code": "GMAIL_FETCH_MESSAGE_BY_MESSAGE_ID",
+        "title": "Fetch message by message ID",
+        "description": "Fetches a specific email message by its ID, provided the `message_id` exists and is accessible to the authenticated `user_id`.",
+        "type": "read"
+      },
+      {
+        "code": "GMAIL_GET_ATTACHMENT",
+        "title": "Get Gmail attachment",
+        "description": "Retrieves a specific attachment by ID from a message in a user's Gmail mailbox, requiring valid message and attachment IDs.",
+        "type": "read"
+      },
+      {
+        "code": "GMAIL_MOVE_TO_TRASH",
+        "title": "Move to Trash",
+        "description": "Moves an existing, non-deleted email message to the trash for the specified user.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_REPLY_TO_THREAD",
+        "title": "Reply to email thread",
+        "description": "Sends a reply within a specific Gmail thread using the original thread's subject; do not provide a custom subject as it will start a new conversation instead of replying in-thread.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_SEARCH_PEOPLE",
+        "title": "Search People",
+        "description": "Searches contacts by matching the query against names, nicknames, emails, phone numbers, and organizations, optionally including 'Other Contacts'.",
+        "type": "read"
+      },
+      {
+        "code": "GMAIL_SEND_DRAFT",
+        "title": "Send Draft",
+        "description": "Sends an existing draft email AS-IS to recipients already defined within the draft.",
+        "type": "write"
+      },
+      {
+        "code": "GMAIL_CREATE_EMAIL_DRAFT",
+        "title": "Create email draft",
+        "description": "Creates a Gmail email draft.",
+        "type": "write"
+      }
+    ]
+  },
+  "googlecalendar": {
+    "name": "Google Calendar",
+    "toolkit": "googlecalendar",
+    "category": "Calendar",
+    "description": "Find, create and update events",
+    "logo": "/connectors/googlecalendar.svg",
+    "actions": [
+      {
+        "code": "GOOGLECALENDAR_PATCH_EVENT",
+        "title": "Patch Event",
+        "description": "Update specified fields of an existing event in a Google Calendar using patch semantics (array fields like `attendees` are fully replaced if provided); ensure the `calendar_id` and `event_id` are valid and the user has write access to the calendar.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_CREATE_EVENT",
+        "title": "Create Event",
+        "description": "Creates an event in a selected calendar using start_datetime and either end_datetime or duration fields.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_DELETE_EVENT",
+        "title": "Delete event",
+        "description": "Deletes a specified event by `event_id` from a Google Calendar (`calendar_id`); idempotent \u2014 a 404 for an already-deleted event is a no-op.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_DUPLICATE_CALENDAR",
+        "title": "Create a calendar",
+        "description": "Creates a new, empty Google Calendar with the specified title (summary).",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_EVENTS_LIST",
+        "title": "List Events",
+        "description": "Lists or incrementally synchronizes events from one calendar, defaulting to the connected user's primary calendar.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLECALENDAR_EVENTS_MOVE",
+        "title": "Move Event",
+        "description": "Moves an event to another calendar, i.e., changes an event's organizer.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_FIND_EVENT",
+        "title": "Find event",
+        "description": "Finds events in a specified Google Calendar using text query, time ranges (event start/end, last modification), and event types.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLECALENDAR_FREE_BUSY_QUERY",
+        "title": "Query Calendar Availability",
+        "description": "Queries raw busy intervals for one or more calendars or groups over an exact time range.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLECALENDAR_PATCH_CALENDAR",
+        "title": "Patch Calendar",
+        "description": "Partially updates (PATCHes) an existing Google Calendar, modifying only the fields provided.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_QUICK_ADD",
+        "title": "Quick Add Event",
+        "description": "Parses natural language text to quickly create a basic Google Calendar event with its title, date, and time, suitable for simple scheduling; does not support direct attendee addition or recurring events, and `calendar_id` must be valid if not 'primary'.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_REMOVE_ATTENDEE",
+        "title": "Remove attendee from event",
+        "description": "Removes an attendee from a specified event in a Google Calendar; the calendar and event must exist.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLECALENDAR_UPDATE_EVENT",
+        "title": "Update Google event",
+        "description": "Updates an existing event in Google Calendar.",
+        "type": "write"
+      }
+    ]
+  },
+  "googlemeet": {
+    "name": "Google Meet",
+    "toolkit": "googlemeet",
+    "category": "Meetings",
+    "description": "Create and look up meetings",
+    "logo": "/connectors/googlemeet.svg",
+    "actions": [
+      {
+        "code": "GOOGLEMEET_CREATE_MEET",
+        "title": "Create Google Meet Space",
+        "description": "Creates a new Google Meet space with optional configuration.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEMEET_GET_MEET",
+        "title": "Get Meet details",
+        "description": "Retrieve details of a Google Meet space using its unique identifier.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLEMEET_GET_RECORDINGS_BY_CONFERENCE_RECORD_ID",
+        "title": "Get recordings by conference record ID",
+        "description": "Retrieves recordings from Google Meet for a given conference record ID.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLEMEET_UPDATE_SPACE",
+        "title": "Update Google Meet Space",
+        "description": "Updates the settings of an existing Google Meet space.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEMEET_GET_TRANSCRIPTS_BY_CONFERENCE_RECORD_ID",
+        "title": "Get transcripts by conference record ID",
+        "description": "Retrieves all transcripts for a specific Google Meet conference using its conference_record_id.",
+        "type": "read"
+      }
+    ]
+  },
+  "googlesheets": {
+    "name": "Google Sheets",
+    "toolkit": "googlesheets",
+    "category": "Docs",
+    "description": "Read and write spreadsheets",
+    "logo": "/connectors/googlesheets.svg",
+    "actions": [
+      {
+        "code": "GOOGLESHEETS_ADD_SHEET",
+        "title": "Add Sheet to Existing Spreadsheet",
+        "description": "Adds a new sheet to a spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_APPEND_DIMENSION",
+        "title": "Append Dimension",
+        "description": "Tool to append new rows or columns to a sheet, increasing its size.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_BATCH_UPDATE",
+        "title": "Batch update spreadsheet (Deprecated)",
+        "description": "DEPRECATED: Use GOOGLESHEETS_VALUES_UPDATE instead.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_CLEAR_BASIC_FILTER",
+        "title": "Clear Basic Filter",
+        "description": "Tool to clear the basic filter from a sheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_DELETE_DIMENSION",
+        "title": "Delete Dimension (Rows/Columns)",
+        "description": "Tool to delete specified rows or columns from a sheet in a Google Spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_DELETE_SHEET",
+        "title": "Delete Sheet",
+        "description": "Tool to delete a sheet (worksheet) from a spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_GET_SPREADSHEET_BY_DATA_FILTER",
+        "title": "Get Spreadsheet by Data Filter",
+        "description": "Returns the spreadsheet at the given ID, filtered by the specified data filters.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_GET_SPREADSHEET_INFO",
+        "title": "Get spreadsheet info",
+        "description": "Retrieves metadata for a Google Spreadsheet using its ID.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_INSERT_DIMENSION",
+        "title": "Insert Dimension in Google Sheet",
+        "description": "Tool to insert new rows or columns into a sheet at a specified location.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_SET_BASIC_FILTER",
+        "title": "Set Basic Filter",
+        "description": "Tool to set a basic filter on a sheet in a Google Spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_SPREADSHEETS_SHEETS_COPY_TO",
+        "title": "Copy Sheet to Another Spreadsheet",
+        "description": "Tool to copy a single sheet from a spreadsheet to another spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_SPREADSHEETS_VALUES_APPEND",
+        "title": "Append Values to Spreadsheet",
+        "description": "Tool to append values to a spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_SPREADSHEETS_VALUES_BATCH_CLEAR",
+        "title": "Batch Clear Spreadsheet Values",
+        "description": "Tool to clear one or more ranges of values from a spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_SPREADSHEETS_VALUES_BATCH_GET_BY_DATA_FILTER",
+        "title": "Batch Get Spreadsheet Values by Data Filter",
+        "description": "Tool to return one or more ranges of values from a spreadsheet that match the specified data filters.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_AGGREGATE_COLUMN_DATA",
+        "title": "Aggregate Column Data",
+        "description": "Searches for rows where a specific column matches a value and performs mathematical operations on data from another column.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_BATCH_GET",
+        "title": "Batch get spreadsheet",
+        "description": "Retrieves data from specified cell ranges in a Google Spreadsheet.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_CLEAR_VALUES",
+        "title": "Clear spreadsheet values",
+        "description": "Clears cell content (preserving formatting and notes) from a specified A1 notation range in a Google Spreadsheet; the range must correspond to an existing sheet and cells.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_CREATE_GOOGLE_SHEET1",
+        "title": "Create a Google Sheet",
+        "description": "Creates a new Google Spreadsheet in Google Drive.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_CREATE_SPREADSHEET_COLUMN",
+        "title": "Create spreadsheet column",
+        "description": "Creates a new column in a Google Spreadsheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_CREATE_SPREADSHEET_ROW",
+        "title": "Create spreadsheet row",
+        "description": "Inserts a new, empty row into a specified sheet of a Google Spreadsheet at a given index, optionally inheriting formatting from the row above.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_FIND_WORKSHEET_BY_TITLE",
+        "title": "Find worksheet by title (Deprecated)",
+        "description": "DEPRECATED: Use GetSpreadsheetInfo instead.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_FORMAT_CELL",
+        "title": "Format cell",
+        "description": "Applies text and background cell formatting to a specified range in a Google Sheets worksheet.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLESHEETS_GET_SHEET_NAMES",
+        "title": "Get sheet names",
+        "description": "Lists all worksheet names from a specified Google Spreadsheet (which must exist), useful for discovering sheets before further operations.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_LOOKUP_SPREADSHEET_ROW",
+        "title": "Look up spreadsheet row",
+        "description": "Finds the first row in a Google Spreadsheet where a cell's entire content exactly matches the query string, searching within a specified A1 notation range or the first sheet by default.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_SEARCH_SPREADSHEETS",
+        "title": "Search Spreadsheets",
+        "description": "Search for Google Spreadsheets using various filters including name, content, date ranges, and more.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLESHEETS_SHEET_FROM_JSON",
+        "title": "Create sheet from JSON",
+        "description": "DEPRECATED: Use GOOGLESHEETS_CREATE_GOOGLE_SHEET1 + GOOGLESHEETS_UPDATE_VALUES_BATCH (or GOOGLESHEETS_VALUES_UPDATE / GOOGLESHEETS_SPREADSHEETS_VALUES_APPEND) instead.",
+        "type": "write"
+      }
+    ]
+  },
+  "googledocs": {
+    "name": "Google Docs",
+    "toolkit": "googledocs",
+    "category": "Docs",
+    "description": "Create, read and edit documents",
+    "logo": "/connectors/googledocs.svg",
+    "actions": [
+      {
+        "code": "GOOGLEDOCS_COPY_DOCUMENT",
+        "title": "Copy Google Document",
+        "description": "Tool to create a copy of an existing Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_FOOTER",
+        "title": "Create Footer",
+        "description": "Tool to create a new footer in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_FOOTNOTE",
+        "title": "Create Footnote",
+        "description": "Tool to create a new footnote in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_HEADER",
+        "title": "Create Header",
+        "description": "Tool to create a new header in a Google Document, optionally with text content.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_NAMED_RANGE",
+        "title": "Create Named Range",
+        "description": "Tool to create a new named range in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_PARAGRAPH_BULLETS",
+        "title": "Create Paragraph Bullets",
+        "description": "Tool to add bullets to paragraphs within a specified range in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_CONTENT_RANGE",
+        "title": "Delete Content Range in Document",
+        "description": "Tool to delete a range of content from a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_FOOTER",
+        "title": "Delete Footer",
+        "description": "Tool to delete a footer from a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_HEADER",
+        "title": "Delete Header",
+        "description": "Deletes the header from the specified section or the default header if no section is specified.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_NAMED_RANGE",
+        "title": "Delete Named Range",
+        "description": "Tool to delete a named range from a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_PARAGRAPH_BULLETS",
+        "title": "Delete Paragraph Bullets",
+        "description": "Tool to remove bullets from paragraphs within a specified range in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_TABLE_COLUMN",
+        "title": "Delete Table Column",
+        "description": "Tool to delete a column from a table in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_DELETE_TABLE_ROW",
+        "title": "Delete Table Row",
+        "description": "Tool to delete a row from a table in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_LIST_SPREADSHEET_CHARTS",
+        "title": "Get Charts from Spreadsheet",
+        "description": "Tool to retrieve a list of all charts from a specified Google Sheets spreadsheet.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLEDOCS_INSERT_INLINE_IMAGE",
+        "title": "Insert Inline Image",
+        "description": "Tool to insert an image from a given URI at a specified location in a Google Document as an inline image.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_INSERT_PAGE_BREAK",
+        "title": "Insert Page Break",
+        "description": "Tool to insert a page break into a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_INSERT_TABLE_ACTION",
+        "title": "Insert Table in Google Doc",
+        "description": "Tool to insert a table into a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_INSERT_TABLE_COLUMN",
+        "title": "Insert Table Column",
+        "description": "Tool to insert a new column into a table in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_INSERT_TEXT_ACTION",
+        "title": "Insert Text into Document",
+        "description": "Tool to insert a string of text at a specified location within a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_REPLACE_ALL_TEXT",
+        "title": "Replace All Text in Document",
+        "description": "Tool to replace all occurrences of a specified text string with another text string throughout a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_REPLACE_IMAGE",
+        "title": "Replace Image in Document",
+        "description": "Tool to replace a specific image in a document with a new image from a URI.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_UNMERGE_TABLE_CELLS",
+        "title": "Unmerge Table Cells",
+        "description": "Tool to unmerge previously merged cells in a table.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_UPDATE_DOCUMENT_STYLE",
+        "title": "Update Document Style",
+        "description": "Tool to update the overall document style, such as page size, margins, and default text direction.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_UPDATE_TABLE_ROW_STYLE",
+        "title": "Update Table Row Style",
+        "description": "Tool to update the style of a table row in a Google Document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_DOCUMENT",
+        "title": "Create a document",
+        "description": "Creates a new Google Docs document using the provided title as filename and inserts the initial text at the beginning if non-empty, returning the document's ID and metadata (excluding body content).",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_CREATE_DOCUMENT_MARKDOWN",
+        "title": "Create Document Markdown",
+        "description": "Creates a new Google Docs document, optionally initializing it with a title and content provided as Markdown text.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_GET_DOCUMENT_BY_ID",
+        "title": "Get document by id",
+        "description": "Retrieves an existing Google Document by its ID; will error if the document is not found.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLEDOCS_SEARCH_DOCUMENTS",
+        "title": "Search Documents",
+        "description": "Search for Google Documents using various filters including name, content, date ranges, and more.",
+        "type": "read"
+      },
+      {
+        "code": "GOOGLEDOCS_UPDATE_DOCUMENT_MARKDOWN",
+        "title": "Update Document Markdown",
+        "description": "Replaces the entire content of an existing Google Docs document with new Markdown text; requires edit permissions for the document.",
+        "type": "write"
+      },
+      {
+        "code": "GOOGLEDOCS_UPDATE_EXISTING_DOCUMENT",
+        "title": "Update existing document",
+        "description": "Applies programmatic edits, such as text insertion, deletion, or formatting, to a specified Google Doc using the `batchUpdate` API method.",
+        "type": "write"
+      }
+    ]
+  },
+  "outlook": {
+    "name": "Outlook",
+    "toolkit": "outlook",
+    "category": "Email",
+    "description": "Email and calendar in Microsoft 365",
+    "logo": "/connectors/outlook.svg",
+    "actions": [
+      {
+        "code": "OUTLOOK_DOWNLOAD_OUTLOOK_ATTACHMENT",
+        "title": "Download Outlook attachment",
+        "description": "Downloads a specific file attachment from an email message in a Microsoft Outlook mailbox; the attachment must contain 'contentBytes' (binary data) and not be a link or embedded item.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_CALENDAR_CREATE_EVENT",
+        "title": "Create Calendar Event",
+        "description": "Creates a new Outlook calendar event, ensuring `start_datetime` is chronologically before `end_datetime`.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_CREATE_CONTACT",
+        "title": "Create contact",
+        "description": "Creates a new contact in a Microsoft Outlook user's contacts folder.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_CREATE_DRAFT",
+        "title": "Create email draft",
+        "description": "Creates a new Outlook email draft with subject, body, recipients, and an optional attachment.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_LIST_CONTACTS",
+        "title": "List Outlook contacts (Deprecated)",
+        "description": "DEPRECATED: Use OUTLOOK_LIST_USER_CONTACTS instead.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_GET_EVENT",
+        "title": "Get calendar event",
+        "description": "Retrieves the full details of a specific calendar event by its ID from a user's Outlook calendar, provided the event exists.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_LIST_EVENTS",
+        "title": "List events",
+        "description": "Retrieves events from a user's Outlook calendar via Microsoft Graph API.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_LIST_MESSAGES",
+        "title": "List Messages",
+        "description": "List or query Outlook messages from one folder (Inbox by default) or mailbox-wide with folder='allfolders'.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_REPLY_EMAIL",
+        "title": "Reply to Email",
+        "description": "Sends a reply to an Outlook email message with optional HTML formatting, attachments, CC, and BCC recipients.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_UPDATE_EMAIL",
+        "title": "Update email message",
+        "description": "Updates specified properties of an existing email message; `message_id` must identify a valid message within the specified `user_id`'s mailbox.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_SEND_EMAIL",
+        "title": "Send email",
+        "description": "Sends an email with subject, body, recipients, and optional attachments via Microsoft Graph API.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_CREATE_DRAFT_REPLY",
+        "title": "Create a draft reply",
+        "description": "Creates a draft reply in the specified user's Outlook mailbox to an existing message (identified by a valid `message_id`), optionally including a `comment` and CC/BCC recipients.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_DELETE_EVENT",
+        "title": "Delete calendar event (Deprecated)",
+        "description": "DEPRECATED: Use OUTLOOK_DELETE_CALENDAR_EVENT instead.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_GET_MESSAGE",
+        "title": "Get email message",
+        "description": "Retrieves a specific email message by its ID from the specified user's Outlook mailbox.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_GET_SCHEDULE",
+        "title": "Get schedule",
+        "description": "Retrieves free/busy schedule information for specified email addresses within a defined time window.",
+        "type": "write"
+      },
+      {
+        "code": "OUTLOOK_SEARCH_MESSAGES",
+        "title": "Search Outlook messages",
+        "description": "Search Outlook messages using powerful KQL syntax.",
+        "type": "read"
+      },
+      {
+        "code": "OUTLOOK_UPDATE_CALENDAR_EVENT",
+        "title": "Update calendar event",
+        "description": "Updates specified fields of an existing Outlook calendar event.",
+        "type": "write"
+      }
+    ]
+  },
+  "microsoft_teams": {
+    "name": "Microsoft Teams",
+    "toolkit": "microsoft_teams",
+    "category": "Chat",
+    "description": "Send messages and read channels",
+    "logo": "/connectors/microsoft_teams.svg",
+    "actions": [
+      {
+        "code": "MICROSOFT_TEAMS_CREATE_MEETING",
+        "title": "Create online meeting",
+        "description": "Use to schedule a new standalone Microsoft Teams online meeting, i.e., one not linked to any calendar event.",
+        "type": "write"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_CREATE_CHAT",
+        "title": "Create Chat",
+        "description": "Creates a new chat; if a 'oneOnOne' chat with the specified members already exists, its details are returned, while 'group' chats are always newly created.",
+        "type": "write"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_CHATS_GET_ALL_CHATS",
+        "title": "Get all chats",
+        "description": "Lists a specified user's Microsoft Teams chats, supporting filtering and property selection.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_CHATS_GET_ALL_MESSAGES",
+        "title": "Get all chat messages (Deprecated)",
+        "description": "DEPRECATED: Use ListUserChatMessages instead.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_CREATE_CHANNEL",
+        "title": "Create a channel",
+        "description": "(DEPRECATED: use `MICROSOFT_TEAMS_CREATE_CHANNEL`) Tool to create a new standard, private, or shared channel within a Microsoft Teams team.",
+        "type": "write"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_GET_CHAT_MESSAGE",
+        "title": "Get chat message",
+        "description": "Tool to get a specific chat message.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_LIST",
+        "title": "List Teams",
+        "description": "Retrieves Microsoft Teams accessible by the authenticated user, allowing filtering, property selection, and pagination.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_LIST_CHANNELS",
+        "title": "List team channels",
+        "description": "Retrieves channels for a specified Microsoft Teams team ID (must be valid and for an existing team), with options to include shared channels, filter results, and select properties.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_LIST_CHAT_MESSAGES",
+        "title": "List chat messages (Deprecated)",
+        "description": "DEPRECATED: Use ListUserChatMessages instead.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_LIST_PEOPLE",
+        "title": "List People",
+        "description": "Retrieves a list of people relevant to a specified user from Microsoft Graph, noting the `search` parameter is only effective if `user_id` is 'me'.",
+        "type": "read"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_POST_CHANNEL_MESSAGE",
+        "title": "Send Channel Message",
+        "description": "Posts a new top-level message to a channel in Microsoft Teams (does NOT reply to an existing message).",
+        "type": "write"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_POST_CHAT_MESSAGE",
+        "title": "Send message to Teams chat",
+        "description": "Sends a non-empty message (text or HTML) to a specified, existing Microsoft Teams chat; content must be valid HTML if `content_type` is 'html'.",
+        "type": "write"
+      },
+      {
+        "code": "MICROSOFT_TEAMS_TEAMS_POST_MESSAGE_REPLY",
+        "title": "Reply to Teams channel message",
+        "description": "(DEPRECATED: use `MICROSOFT_TEAMS_POST_MESSAGE_REPLY`) Sends a reply to an existing message, identified by `message_id`, within a specific `channel_id` of a given `team_id` in Microsoft Teams.",
+        "type": "write"
+      }
+    ]
+  },
+  "one_drive": {
+    "name": "OneDrive",
+    "toolkit": "one_drive",
+    "category": "Files",
+    "description": "Find and manage OneDrive files",
+    "logo": "/connectors/one_drive.svg",
+    "actions": [
+      {
+        "code": "ONE_DRIVE_ONEDRIVE_LIST_ITEMS",
+        "title": "List OneDrive items",
+        "description": "Retrieves one page of files and folders as `driveItem` resources from the root of a specified user's OneDrive.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_SEARCH_ITEMS",
+        "title": "Search Items",
+        "description": "Search OneDrive for files and folders by keyword.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_GET_ITEM",
+        "title": "Get Item Metadata",
+        "description": "Retrieves the metadata of a DriveItem by its unique ID.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_ONEDRIVE_CREATE_FOLDER",
+        "title": "Create folder",
+        "description": "Creates a new folder in the user's OneDrive with configurable conflict behavior, optionally within a specified parent_folder (by ID or full path from root) which, if not the root, must exist and be accessible.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_ONEDRIVE_UPLOAD_FILE",
+        "title": "Upload file",
+        "description": "Uploads a file to a specified OneDrive folder, automatically creating the destination folder if it doesn't exist, renaming on conflict, and supporting large files via chunking.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_UPDATE_FILE_CONTENT",
+        "title": "Update File Content",
+        "description": "Tool to update an existing file's content in OneDrive.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_DOWNLOAD_FILE",
+        "title": "Download a file",
+        "description": "Downloads a file from a user's OneDrive using its item ID, which must refer to a file and not a folder.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_COPY_ITEM",
+        "title": "Copy Item",
+        "description": "Tool to copy a DriveItem (file or folder) to a new location asynchronously.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_MOVE_ITEM",
+        "title": "Move Item",
+        "description": "Tool to move a file or folder to a new parent folder in OneDrive.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_DELETE_ITEM",
+        "title": "Delete Item",
+        "description": "Tool to delete a DriveItem (file or folder) by its unique ID from the authenticated user's OneDrive.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_LIST_DRIVES",
+        "title": "List Drives",
+        "description": "Tool to retrieve a list of Drive resources available to the authenticated user, or for a specific user, group, or site.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_CREATE_LINK",
+        "title": "Create Sharing Link",
+        "description": "Tool to create a sharing link for a DriveItem (file or folder) by its unique ID.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_INVITE_USER_TO_ITEM",
+        "title": "Invite User to Drive Item",
+        "description": "Tool to invite users or grant permissions to a specific item in a OneDrive drive.",
+        "type": "write"
+      },
+      {
+        "code": "ONE_DRIVE_READ_WORKBOOK_RANGE",
+        "title": "Read Workbook Range",
+        "description": "Reads a range of cells from an Excel workbook worksheet stored in OneDrive or SharePoint using Microsoft Graph API.",
+        "type": "read"
+      },
+      {
+        "code": "ONE_DRIVE_UPDATE_WORKBOOK_RANGE",
+        "title": "Update Workbook Range",
+        "description": "Updates a range in a workbook worksheet using Microsoft Graph API.",
+        "type": "write"
+      }
+    ]
+  },
+  "slack": {
+    "name": "Slack",
+    "toolkit": "slack",
+    "category": "Chat",
+    "description": "Send messages and search channels",
+    "logo": "/connectors/slack.svg",
+    "actions": [
+      {
+        "code": "SLACK_SEND_MESSAGE",
+        "title": "Send message",
+        "description": "Posts a message to a Slack channel, DM, or private group.",
+        "type": "write"
+      },
+      {
+        "code": "SLACK_UPDATES_A_SLACK_MESSAGE",
+        "title": "Update a Slack message",
+        "description": "Updates a Slack message by timestamp.",
+        "type": "write"
+      },
+      {
+        "code": "SLACK_DELETES_A_MESSAGE_FROM_A_CHAT",
+        "title": "Delete a message from a chat",
+        "description": "Deletes a message, identified by its channel ID and timestamp, from a Slack channel, private group, or direct message conversation; the authenticated user or bot must be the original poster.",
+        "type": "write"
+      },
+      {
+        "code": "SLACK_SCHEDULE_MESSAGE",
+        "title": "Schedule message",
+        "description": "Schedules a message to a Slack channel, DM, or private group for a future time (`post_at`), requiring `text`, `blocks`, or `attachments` for content; scheduling is limited to 120 days in advance.",
+        "type": "write"
+      },
+      {
+        "code": "SLACK_ADD_REACTION_TO_AN_ITEM",
+        "title": "Add reaction to message",
+        "description": "Adds a specified emoji reaction to an existing message in a Slack channel, identified by its timestamp; does not remove or retrieve reactions.",
+        "type": "write"
+      },
+      {
+        "code": "SLACK_CREATE_CHANNEL",
+        "title": "Create channel",
+        "description": "Initiates a public or private channel-based conversation in a Slack workspace.",
+        "type": "write"
+      }
+    ]
+  },
+  "notion": {
+    "name": "Notion",
+    "toolkit": "notion",
+    "category": "Docs",
+    "description": "Search, create and update pages",
+    "logo": "/connectors/notion.svg",
+    "actions": [
+      {
+        "code": "NOTION_ADD_PAGE_CONTENT",
+        "title": "Add single content block to Notion page (Deprecated)",
+        "description": "DEPRECATED: Use 'add_multiple_page_content' for better performance.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_CREATE_COMMENT",
+        "title": "Create comment",
+        "description": "Adds a comment to a Notion page (via `parent_page_id`) OR to an existing discussion thread (via `discussion_id`); cannot create new discussion threads on specific blocks (inline comments).",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_CREATE_DATABASE",
+        "title": "Create Notion Database",
+        "description": "Creates a new Notion database as a subpage under a specified parent page with a defined properties schema.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_CREATE_NOTION_PAGE",
+        "title": "Create Notion page",
+        "description": "Creates a new page in a Notion workspace under a specified parent page or database.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_DELETE_BLOCK",
+        "title": "Delete a block",
+        "description": "Archives a Notion block, page, or database using its ID, which sets its 'archived' property to true (like moving to \"Trash\" in the UI) and allows it to be restored later.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_FETCH_COMMENTS",
+        "title": "Fetch comments",
+        "description": "Fetches unresolved comments for a specified Notion block or page ID.",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_FETCH_DATA",
+        "title": "Fetch Notion Data",
+        "description": "Fetches Notion items (pages and/or databases) from the Notion workspace, use this to get minimal data about the items in the workspace with a query or list all items in the workspace with minimal data",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_FETCH_DATABASE",
+        "title": "Fetch Database",
+        "description": "Fetches a Notion database's structural metadata (properties, title, etc.) via its `database_id`, not the data entries; `database_id` must reference an existing database.",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_FETCH_ROW",
+        "title": "Fetch database row",
+        "description": "Retrieves a Notion database row's properties and metadata; use fetch_block_contents for page content blocks.",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_GET_ABOUT_ME",
+        "title": "Get About Me (Deprecated)",
+        "description": "DEPRECATED: Use GetAboutUser instead.",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_QUERY_DATABASE",
+        "title": "Query database",
+        "description": "Queries a Notion database to retrieve pages (rows).",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_UPDATE_PAGE",
+        "title": "Update Page",
+        "description": "Update page properties, icon, cover, or archive status.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_UPDATE_ROW_DATABASE",
+        "title": "Update Database Row (Page)",
+        "description": "Updates a specific row/page within a Notion database by its page UUID (row_id).",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_UPDATE_SCHEMA_DATABASE",
+        "title": "Update database schema",
+        "description": "Updates an existing Notion database's schema including title, description, and/or properties (columns).",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_APPEND_BLOCK_CHILDREN",
+        "title": "Append raw Notion blocks (advanced API)",
+        "description": "DEPRECATED: Use NOTION_APPEND_TEXT_BLOCKS, NOTION_APPEND_TASK_BLOCKS, NOTION_APPEND_CODE_BLOCKS, NOTION_APPEND_MEDIA_BLOCKS, NOTION_APPEND_LAYOUT_BLOCKS, or NOTION_APPEND_TABLE_BLOCKS instead.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_ARCHIVE_NOTION_PAGE",
+        "title": "Archive Notion Page",
+        "description": "Archives (moves to trash) or unarchives (restores from trash) a specified Notion page.",
+        "type": "write"
+      },
+      {
+        "code": "NOTION_SEARCH_NOTION_PAGE",
+        "title": "Search Notion pages and databases",
+        "description": "Searches Notion pages and databases by title.",
+        "type": "read"
+      },
+      {
+        "code": "NOTION_UPDATE_BLOCK",
+        "title": "Update block",
+        "description": "Updates existing Notion block's text content.",
+        "type": "write"
+      }
+    ]
+  },
+  "jira": {
+    "name": "Jira",
+    "toolkit": "jira",
+    "category": "Projects",
+    "description": "Search, create and update issues",
+    "logo": "/connectors/jira.svg",
+    "actions": [
+      {
+        "code": "JIRA_GET_CURRENT_USER",
+        "title": "Get Current User",
+        "description": "Retrieves detailed information about the currently authenticated Jira user.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_SEARCH_FOR_ISSUES_USING_JQL_POST",
+        "title": "Search Issues Using JQL Enhanced (POST)",
+        "description": "DEPRECATED: Use JIRA_SEARCH_ISSUES instead.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_GET_ISSUE",
+        "title": "Get Issue",
+        "description": "Retrieves a Jira issue by ID or key with customizable fields and expansions.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_GET_ALL_PROJECTS",
+        "title": "Get all projects",
+        "description": "Retrieves all visible projects using the modern paginated Jira API with server-side filtering and pagination support.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_GET_ISSUE_TYPES",
+        "title": "Get issue types",
+        "description": "Retrieves all Jira issue types available to the user using the modern API v3 endpoint; results vary based on 'Administer Jira' global or 'Browse projects' project permissions.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_GET_ALL_STATUSES",
+        "title": "Get Issue Statuses",
+        "description": "Retrieves all issue statuses associated with workflows from Jira.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_GET_TRANSITIONS",
+        "title": "Get Transitions",
+        "description": "Retrieves available workflow transitions for a Jira issue.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_FIND_USERS",
+        "title": "Find Users (Deprecated)",
+        "description": "DEPRECATED: Use JIRA_FIND_USERS2 instead.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_LIST_BOARDS",
+        "title": "List Boards",
+        "description": "Retrieves paginated Jira boards with filtering and sorting options.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_LIST_SPRINTS",
+        "title": "List Sprints",
+        "description": "Retrieves paginated sprints from a Jira board with optional state filtering.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_CREATE_ISSUE",
+        "title": "Create Issue",
+        "description": "Creates a new Jira issue (e.g., bug, task, story) in a specified project.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_EDIT_ISSUE",
+        "title": "Edit Issue",
+        "description": "Updates an existing Jira issue with field values and operations.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_ASSIGN_ISSUE",
+        "title": "Assign Issue",
+        "description": "Assigns a Jira issue to a user, default assignee, or unassigns; supports email/name lookup.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_CREATE_ISSUE_LINK",
+        "title": "Link Issues",
+        "description": "Links two Jira issues using a specified link type with optional comment.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_ADD_ATTACHMENT",
+        "title": "Add Attachment",
+        "description": "Uploads and attaches a file to a Jira issue.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_LIST_ISSUE_COMMENTS",
+        "title": "List Issue Comments",
+        "description": "Retrieves paginated comments from a Jira issue with optional ordering.",
+        "type": "read"
+      },
+      {
+        "code": "JIRA_ADD_COMMENT",
+        "title": "Add Comment",
+        "description": "Adds a comment using Atlassian Document Format (ADF) for rich text to an existing Jira issue.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_UPDATE_COMMENT",
+        "title": "Update Comment",
+        "description": "Updates text content or visibility of an existing Jira comment.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_CREATE_SPRINT",
+        "title": "Create Sprint",
+        "description": "Creates a new sprint on a Jira board with optional start/end dates and goal.",
+        "type": "write"
+      },
+      {
+        "code": "JIRA_MOVE_ISSUE_TO_SPRINT",
+        "title": "Move Issues to Sprint",
+        "description": "Moves one or more Jira issues to a specified active sprint.",
+        "type": "write"
+      }
+    ]
+  },
+  "confluence": {
+    "name": "Confluence",
+    "toolkit": "confluence",
+    "category": "Docs",
+    "description": "Search and create pages",
+    "logo": "/connectors/confluence.svg",
+    "actions": [
+      {
+        "code": "CONFLUENCE_SEARCH_CONTENT",
+        "title": "Search Content",
+        "description": "Searches one page of content from the Confluence v2 API with intelligent title ranking.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_SPACES",
+        "title": "Get Spaces",
+        "description": "Tool to retrieve a paginated list of Confluence spaces with optional filtering.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_PAGES",
+        "title": "Get Pages",
+        "description": "Tool to retrieve a paginated list of Confluence pages.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_PAGE_BY_ID",
+        "title": "Get Page by ID",
+        "description": "Tool to retrieve a Confluence page by its ID.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_BLOG_POSTS",
+        "title": "Get Blog Posts",
+        "description": "Tool to retrieve a list of blog posts.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_LABELS",
+        "title": "Get Labels",
+        "description": "Tool to retrieve all labels in a Confluence site; use for label discovery when you need to list or page through labels.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_PAGE_VERSIONS",
+        "title": "Get Page Versions",
+        "description": "Tool to retrieve all versions of a specific Confluence page.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_GET_ATTACHMENTS",
+        "title": "Get Attachments",
+        "description": "Tool to retrieve attachments of a Confluence page.",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_SEARCH_USERS",
+        "title": "Search Users",
+        "description": "Searches for users using user-specific queries from the Confluence Query Language (CQL).",
+        "type": "read"
+      },
+      {
+        "code": "CONFLUENCE_CREATE_PAGE",
+        "title": "Create Page",
+        "description": "Tool to create a new Confluence page in a specified space.",
+        "type": "write"
+      },
+      {
+        "code": "CONFLUENCE_UPDATE_PAGE",
+        "title": "Update Page",
+        "description": "Tool to update an existing Confluence page, replacing the entire page content.",
+        "type": "write"
+      },
+      {
+        "code": "CONFLUENCE_DELETE_PAGE",
+        "title": "Delete Page",
+        "description": "Tool to delete a Confluence page.",
+        "type": "write"
+      },
+      {
+        "code": "CONFLUENCE_CREATE_SPACE",
+        "title": "Create Space",
+        "description": "Tool to create a new Confluence space.",
+        "type": "write"
+      },
+      {
+        "code": "CONFLUENCE_CREATE_WHITEBOARD",
+        "title": "Create Whiteboard",
+        "description": "Tool to create a new Confluence whiteboard.",
+        "type": "write"
+      }
+    ]
+  },
+  "linear": {
+    "name": "Linear",
+    "toolkit": "linear",
+    "category": "Projects",
+    "description": "Create and update issues",
+    "logo": "/connectors/linear.svg",
+    "actions": [
+      {
+        "code": "LINEAR_REMOVE_ISSUE_LABEL",
+        "title": "Remove label from Linear issue",
+        "description": "Removes a specified label from an existing Linear issue using their IDs; successful even if the label isn't on the issue.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_UPDATE_ISSUE",
+        "title": "Update issue",
+        "description": "Updates an existing Linear issue using its `issue_id`; requires at least one other attribute for modification, and all provided entity IDs (for state, assignee, labels, etc.) must be valid UUIDs \u2014 only `issueId` accepts key format (e.g., 'ENG-123').",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_CREATE_ATTACHMENT",
+        "title": "Create attachment",
+        "description": "Creates a new attachment and associates it with a specific, existing Linear issue.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_CREATE_LINEAR_COMMENT",
+        "title": "Create a comment",
+        "description": "Creates a new comment on a specified Linear issue.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_CREATE_LINEAR_ISSUE",
+        "title": "Create linear issue",
+        "description": "Creates a new issue in a specified Linear project and team, requiring team_id and title, and allowing optional properties like description, assignee, state, priority, cycle, and due date.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_CREATE_LINEAR_LABEL",
+        "title": "Create a label",
+        "description": "Creates a new label in Linear for a specified team, used to categorize and organize issues.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_DELETE_LINEAR_ISSUE",
+        "title": "Delete issue",
+        "description": "Archives an existing Linear issue by its ID, which is Linear's standard way of deleting issues; the operation is idempotent.",
+        "type": "write"
+      },
+      {
+        "code": "LINEAR_GET_ATTACHMENT",
+        "title": "Download issue files",
+        "description": "Downloads a Linear Attachment record or a private upload embedded in issue/comment Markdown; `file_name` must include the correct extension.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_GET_CYCLES_BY_TEAM_ID",
+        "title": "Get cycles by team ID",
+        "description": "Retrieves all cycles for a specified Linear team ID; cycles are time-boxed work periods (like sprints).",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_GET_LINEAR_ISSUE",
+        "title": "Get Linear issue",
+        "description": "Retrieves an existing Linear issue's comprehensive details, including id, identifier, title, description, timestamps, state, team, creator, attachments, comments (with user info and timestamps, use issue.comments.nodes for comment IDs), subscribers, and due date.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_LIST_LINEAR_CYCLES",
+        "title": "Get all cycles",
+        "description": "Retrieves all cycles (time-boxed sprint iterations) org-wide from the Linear account; no filters applied.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_LIST_LINEAR_ISSUES",
+        "title": "List Linear issues",
+        "description": "Lists non-archived Linear issues; if project_id is not specified, issues from all accessible projects are returned.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_LIST_LINEAR_LABELS",
+        "title": "Get labels",
+        "description": "Retrieves labels from Linear.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_LIST_LINEAR_STATES",
+        "title": "List Linear states",
+        "description": "Retrieves all workflow states for a specified team in Linear, representing the stages an issue progresses through in that team's workflow.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_LIST_LINEAR_TEAMS",
+        "title": "Get teams",
+        "description": "Retrieves all teams with their members and projects.",
+        "type": "read"
+      },
+      {
+        "code": "LINEAR_RUN_QUERY_OR_MUTATION",
+        "title": "Run Query or Mutation",
+        "description": "Execute any GraphQL query or mutation against Linear's API.",
+        "type": "read"
+      }
+    ]
+  },
+  "asana": {
+    "name": "Asana",
+    "toolkit": "asana",
+    "category": "Projects",
+    "description": "Manage tasks and projects",
+    "logo": "/connectors/asana.svg",
+    "actions": [
+      {
+        "code": "ASANA_CREATE_A_TASK",
+        "title": "Create task in asana with specific details",
+        "description": "Creates a new Asana task; requires 'workspace', 'parent', or 'projects' for association, and 'followers', 'projects', 'tags' are set only at creation.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_GET_A_TASK",
+        "title": "Get a task",
+        "description": "Retrieves full details for a specified task GID accessible by the user; use `opt_fields` to customize returned data.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_UPDATE_A_TASK",
+        "title": "Update a task",
+        "description": "Updates attributes of an existing Asana task identified by its task_gid.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_DELETE_TASK",
+        "title": "Delete a task",
+        "description": "Delete a task.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_GET_TASKS_FROM_A_PROJECT",
+        "title": "Retrieve tasks for project",
+        "description": "Retrieves tasks from a specified Asana project, allowing filtering by completion status and selection of optional fields for detailed responses.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_SEARCH_TASKS_IN_WORKSPACE",
+        "title": "Search Tasks in Workspace",
+        "description": "Tool to search tasks across a workspace with advanced filters.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_CREATE_SUBTASK",
+        "title": "Create subtask",
+        "description": "Creates a new Asana subtask under an existing parent task (`task_gid`); `due_on` and `due_at` are mutually exclusive and cannot be set simultaneously.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_CREATE_TASK_COMMENT",
+        "title": "Create task comment",
+        "description": "Adds a new text comment (story) to an existing Asana task, appearing in its activity feed.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_GET_STORIES_FOR_TASK",
+        "title": "Get Stories for Task",
+        "description": "Tool to get stories (comments, status updates, etc.) for a task.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_CREATE_ATTACHMENT_FOR_TASK",
+        "title": "Create Attachment for Task",
+        "description": "Tool to upload an attachment to a task.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_CREATE_A_PROJECT",
+        "title": "Create a project",
+        "description": "Creates a new Asana project in the specified workspace.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_GET_A_PROJECT",
+        "title": "Get a project",
+        "description": "Retrieves a specific Asana project by its `project_gid`, with an option to include additional fields for comprehensive details using `opt_fields`; this action does not return tasks within the project.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_GET_MULTIPLE_PROJECTS",
+        "title": "Get multiple projects",
+        "description": "Returns a list of projects filtered by workspace or team (one required), with optional archived status filter, supporting pagination for large datasets.",
+        "type": "read"
+      },
+      {
+        "code": "ASANA_CREATE_SECTION_IN_PROJECT",
+        "title": "Create a section in a project",
+        "description": "Creates a new SECTION (not a task) in a project.",
+        "type": "write"
+      },
+      {
+        "code": "ASANA_GET_CURRENT_USER",
+        "title": "Get current user",
+        "description": "Retrieves the authenticated user's full record, including accessible workspaces, often used as an initial call to establish user context for subsequent operations.",
+        "type": "read"
+      }
+    ]
+  },
+  "clickup": {
+    "name": "ClickUp",
+    "toolkit": "clickup",
+    "category": "Projects",
+    "description": "Manage tasks and lists",
+    "logo": "/connectors/clickup.svg",
+    "actions": [
+      {
+        "code": "CLICKUP_CREATE_FOLDER",
+        "title": "Create folder",
+        "description": "Creates a new ClickUp Folder within the specified Space, which must exist and be accessible.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_LIST",
+        "title": "Create list",
+        "description": "Creates a new list in ClickUp within an existing folder.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_TASK",
+        "title": "Create a task",
+        "description": "Creates a new ClickUp task in a specific list, optionally as a subtask if a `parent` task ID (which cannot be a subtask itself and must be in the same list) is provided.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_TASK_COMMENT",
+        "title": "Create task comment",
+        "description": "Adds a comment to a ClickUp task; `team_id` is required if `custom_task_ids` is true.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_TASK",
+        "title": "Delete task",
+        "description": "Permanently deletes a task, using its standard ID or a custom task ID (requires `custom_task_ids=true` and `team_id`).",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_GET_TASK",
+        "title": "Get task",
+        "description": "Retrieves comprehensive details for a ClickUp task by its ID, supporting standard or custom task IDs (requires `team_id` for custom IDs).",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_UPDATE_TASK",
+        "title": "Update task",
+        "description": "Updates attributes of an existing task; `team_id` is required if `custom_task_ids` is true, use a single space (\" \") for `description` to clear it, and provide at least one modifiable field.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_ATTACHMENTS_UPLOAD_FILE_TO_TASK_AS_ATTACHMENT",
+        "title": "Create task attachment",
+        "description": "DEPRECATED: Use `create_task_attachment` to upload a file to a task; requires `multipart/form-data`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_CHECKLIST",
+        "title": "Create checklist",
+        "description": "Creates a new checklist with a specified name within an existing task, which can be identified by its standard ID or a custom task ID (if `custom_task_ids` is true, `team_id` is also required).",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_FOLDERLESS_LIST",
+        "title": "Create folderless list",
+        "description": "Creates a new folderless list (a list not part of any Folder) directly within a specified ClickUp Space.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_FOLDER_VIEW",
+        "title": "Create folder view",
+        "description": "Creates a new, highly customizable view within a specific ClickUp folder using its `folder_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_GOAL",
+        "title": "Create goal",
+        "description": "Creates a new goal in a ClickUp Team (Workspace).",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_LIST_COMMENT",
+        "title": "Create list comment",
+        "description": "Adds a new comment with specific text to an existing and accessible ClickUp List, assigns it to a user, and sets notification preferences for all list members.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_CREATE_SPACE",
+        "title": "Create space",
+        "description": "Creates a new ClickUp Space within a specified Workspace, allowing feature configuration which defaults to Workspace settings if unspecified.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_TIME_ENTRY",
+        "title": "Delete a time entry",
+        "description": "Deletes an existing time entry, specified by `timer_id`, from a Workspace identified by `team_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_CHECKLIST",
+        "title": "Delete checklist",
+        "description": "Permanently deletes an existing checklist identified by its `checklist_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_CHECKLIST_ITEM",
+        "title": "Delete checklist item",
+        "description": "Permanently deletes an existing item, identified by `checklist_item_id`, from an existing checklist, identified by `checklist_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_COMMENT",
+        "title": "Delete comment",
+        "description": "Deletes an existing comment from a task using its `comment_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_FOLDER",
+        "title": "Delete folder",
+        "description": "Permanently and irreversibly deletes a specified folder and all its contents (Lists, Tasks) if the folder_id exists.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_LIST",
+        "title": "Delete list",
+        "description": "Permanently deletes an existing List and all its contents; this action is destructive and irreversible via the API.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_SPACE",
+        "title": "Delete space",
+        "description": "Permanently deletes a specified Space in ClickUp; this action is irreversible as the Space cannot be recovered via the API.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_TEAM",
+        "title": "Delete team",
+        "description": "Permanently deletes an existing Team (user group) from the Workspace using its `group_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_DELETE_VIEW",
+        "title": "Delete view",
+        "description": "Permanently and irreversibly deletes an existing View in ClickUp, identified by its `view_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_GET_FOLDERS",
+        "title": "Get folders",
+        "description": "Retrieves Folders within a specified ClickUp Space, ensuring `space_id` is valid, with an option to filter by archived status.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_GOALS",
+        "title": "Get goals",
+        "description": "Retrieves goals for a specified ClickUp Workspace (Team); the `team_id` must be valid and accessible.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_LISTS",
+        "title": "Get lists",
+        "description": "Retrieves all lists within a specified, existing ClickUp folder, optionally filtering by archived status.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_LIST_MEMBERS",
+        "title": "Get list members",
+        "description": "Retrieves all members of a specific, existing ClickUp List by its ID.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_SPACES",
+        "title": "Get spaces",
+        "description": "Retrieves Spaces for a Team ID; member information for private Spaces is returned only if the authenticated user is a member.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_TASK_MEMBERS",
+        "title": "Get task members",
+        "description": "Retrieves users with explicit access (directly assigned or shared) to a specific existing task, excluding users with inherited permissions.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_GET_USER",
+        "title": "Get user",
+        "description": "Retrieves detailed information for a specific user within a ClickUp Workspace (Team), available only for Workspaces on the ClickUp Enterprise Plan.",
+        "type": "read"
+      },
+      {
+        "code": "CLICKUP_UPDATE_FOLDER",
+        "title": "Update folder",
+        "description": "Updates the name of an existing folder in ClickUp.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_UPDATE_LIST",
+        "title": "Update list",
+        "description": "Updates attributes of an existing ClickUp list, such as its name, content, due date, priority, assignee, or color status, identified by its `list_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_UPDATE_GOAL",
+        "title": "Update goal",
+        "description": "Updates attributes of an existing ClickUp goal, identified by its `goal_id`.",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_UPDATE_SPACE",
+        "title": "Update space",
+        "description": "Updates an existing ClickUp Space, allowing modification of its name, color, privacy, and feature settings (ClickApps).",
+        "type": "write"
+      },
+      {
+        "code": "CLICKUP_UPDATE_TEAM",
+        "title": "Update team",
+        "description": "Updates an existing ClickUp User Group (Team) using its `group_id`; note that adding a view-only guest as a paid member may incur charges.",
+        "type": "write"
+      }
+    ]
+  },
+  "monday": {
+    "name": "monday.com",
+    "toolkit": "monday",
+    "category": "Projects",
+    "description": "Manage boards and items",
+    "logo": "/connectors/monday.svg",
+    "actions": [
+      {
+        "code": "MONDAY_ADD_USERS_TO_BOARD",
+        "title": "Add users to board",
+        "description": "Adds users to a Monday.com board with a specified role.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_CHANGE_SIMPLE_COLUMN_VALUE",
+        "title": "Change simple column value",
+        "description": "Changes a specific column's value for a Monday.com item using a simple string, suitable for Text, Status, or Dropdown columns; can create new labels if `create_labels_if_missing` is true for Status/Dropdown columns.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_CREATE_BOARD",
+        "title": "Create a Monday board",
+        "description": "Creates a Monday.com board; `template_id` if used must be accessible, and `folder_id` must be in `workspace_id` if both are provided.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_CREATE_COLUMN",
+        "title": "Create column",
+        "description": "Creates a new column with a specified type and title on a monday.com board.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_CREATE_ITEM",
+        "title": "Create item",
+        "description": "Creates a new item on a Monday.com board, optionally assigning it to a group and setting column values.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_LIST_BOARDS",
+        "title": "List Monday boards (Deprecated)",
+        "description": "DEPRECATED: Use MONDAY_BOARDS instead.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_LIST_BOARD_ITEMS",
+        "title": "List board items",
+        "description": "DEPRECATED: Use MONDAY_ITEMS_PAGE instead, which supports cursor-based pagination.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_LIST_USERS",
+        "title": "List users",
+        "description": "Retrieves a list of users from Monday.com.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_MOVE_ITEM_TO_GROUP",
+        "title": "Move item to group",
+        "description": "Moves an item to a different group on the same Monday.com board; the item and group must exist.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_UPDATE_BOARD",
+        "title": "Update board",
+        "description": "Updates a specified attribute of an existing board on Monday.com.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_ARCHIVE_ITEM",
+        "title": "Archive item",
+        "description": "Archives an existing Monday.com item, moving it from active board views to the archive where it can be potentially restored.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_ARCHIVE_BOARD",
+        "title": "Archive board",
+        "description": "Archives a specified, existing, and unarchived board in Monday.com; archived boards can typically be restored later.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_CREATE_GROUP",
+        "title": "Create group",
+        "description": "Creates a new group with the given `group_name` on an existing Monday.com board, identified by its `board_id`.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_DELETE_COLUMN",
+        "title": "Delete column",
+        "description": "Deletes a specified column from a Monday.com board; this action is destructive and cannot be undone via the API.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_DELETE_GROUP",
+        "title": "Delete group",
+        "description": "Permanently deletes an existing group (and its items) from an existing board in Monday.com.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_DUPLICATE_ITEM",
+        "title": "Duplicate item",
+        "description": "Duplicates an item on a Monday.com board, optionally including its updates.",
+        "type": "write"
+      },
+      {
+        "code": "MONDAY_LIST_GROUPS",
+        "title": "List groups",
+        "description": "Tool to retrieve all groups of a specified board.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_LIST_COLUMNS",
+        "title": "List columns (Deprecated)",
+        "description": "DEPRECATED: Use MONDAY_COLUMNS instead.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_LIST_ITEMS",
+        "title": "List items",
+        "description": "Retrieves specified subitems from Monday.com using their IDs, returning raw JSON.",
+        "type": "read"
+      },
+      {
+        "code": "MONDAY_MOVE_ITEM_TO_BOARD",
+        "title": "Move item to board",
+        "description": "Moves a Monday.com item to a specified board and group; requires the item, target board, and target group to exist.",
+        "type": "write"
+      }
+    ]
+  },
+  "github": {
+    "name": "GitHub",
+    "toolkit": "github",
+    "category": "Engineering",
+    "description": "Issues, pull requests and repos",
+    "logo": "/connectors/github.svg",
+    "actions": [
+      {
+        "code": "GITHUB_LIST_REPOSITORIES_FOR_THE_AUTHENTICATED_USER",
+        "title": "List repositories for the authenticated user",
+        "description": "Lists repositories for the authenticated user; using 'type' with 'visibility' or 'affiliation' API parameters (not in this model) can cause a 422 error.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_GET_A_REPOSITORY",
+        "title": "Get a repository",
+        "description": "Retrieves detailed information about an existing and accessible GitHub repository.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_SEARCH_REPOSITORIES",
+        "title": "Search repositories",
+        "description": "Searches GitHub repositories using a flexible query (keywords, qualifiers) with sorting, ordering, and pagination.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_GET_A_PULL_REQUEST",
+        "title": "Get a pull request",
+        "description": "Retrieves a specific pull request from a GitHub repository using its owner, repository name, and pull request number.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_GET_A_BRANCH",
+        "title": "Get a branch",
+        "description": "Retrieves detailed information for a specified branch within a GitHub repository.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_SEARCH_COMMITS",
+        "title": "Search commits",
+        "description": "Finds commits on GitHub using a query string (q) supporting keywords and qualifiers, with options for sorting and pagination.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_SEARCH_USERS",
+        "title": "Search users",
+        "description": "Searches for users on GitHub by criteria like username, email, location, followers, or repository associations, using a flexible query string `q`.",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_ADD_ASSIGNEES_TO_AN_ISSUE",
+        "title": "Add assignees to an issue",
+        "description": "Adds assignees to a GitHub issue.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CREATE_AN_ISSUE_COMMENT",
+        "title": "Create an issue comment",
+        "description": "Creates a new comment on an existing GitHub issue or pull request within the specified repository.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_UPDATE_AN_ISSUE_COMMENT",
+        "title": "Update an issue comment",
+        "description": "Updates an existing comment on an issue or pull request within a specified repository.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CREATE_A_PULL_REQUEST",
+        "title": "Create a pull request",
+        "description": "Creates a pull request in a GitHub repository, requiring existing `base` and `head` branches; `title` or `issue` must be provided.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CREATE_A_REVIEW_FOR_A_PULL_REQUEST",
+        "title": "Create a review for a pull request",
+        "description": "Creates a pull request review, allowing approval, change requests, or comments; `body` is required if `event` is `REQUEST_CHANGES` or `COMMENT`, and omitting `event` makes the review `PENDING`.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CHECK_IF_PULL_REQUEST_HAS_BEEN_MERGED",
+        "title": "Check if pull request merged",
+        "description": "Checks if a specified GitHub pull request has been merged, indicated by a 204 HTTP status (merged) or 404 (not merged/found).",
+        "type": "read"
+      },
+      {
+        "code": "GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER",
+        "title": "Create a repository for the authenticated user",
+        "description": "Creates a new repository for the authenticated user, optionally within an organization if `team_id` is specified.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_RENAME_A_BRANCH",
+        "title": "Rename a branch",
+        "description": "Renames an existing branch in a GitHub repository; the new name must be unique and adhere to GitHub's naming conventions, and the current branch name cannot contain wildcard characters.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CREATE_AN_ISSUE",
+        "title": "Create an issue",
+        "description": "Creates a new issue in a GitHub repository, requiring the repository to exist and have issues enabled; specific fields like assignees, milestone, or labels may require push access.",
+        "type": "write"
+      },
+      {
+        "code": "GITHUB_CREATE_A_REVIEW_COMMENT_FOR_A_PULL_REQUEST",
+        "title": "Create a review comment for a pull request",
+        "description": "Creates a review comment on a pull request's diff, targeting a specific line, range of lines, an entire file, or replying to an existing comment.",
+        "type": "write"
+      }
+    ]
+  },
+  "hubspot": {
+    "name": "HubSpot",
+    "toolkit": "hubspot",
+    "category": "CRM",
+    "description": "Contacts, companies and deals",
+    "logo": "/connectors/hubspot.svg",
+    "actions": [
+      {
+        "code": "HUBSPOT_LIST_CONTACTS",
+        "title": "List contacts",
+        "description": "Retrieves a paginated list of HubSpot contacts.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_READ_CONTACT",
+        "title": "Read contact",
+        "description": "Retrieves a HubSpot contact by its ID.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_READ_CONTACTS",
+        "title": "Read contacts",
+        "description": "Batch read multiple HubSpot contacts by their IDs or custom identifier property.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_LIST_COMPANIES",
+        "title": "List companies",
+        "description": "Retrieves a paginated list of HubSpot companies.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_BATCH_READ_COMPANIES_BY_PROPERTIES",
+        "title": "Batch read companies by properties",
+        "description": "Batch-retrieves up to 100 HubSpot company records by their IDs in a single request.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_READ_CRM_OBJECT_BY_ID",
+        "title": "Read crm object by id",
+        "description": "Retrieves a specific CRM object (e.g., contact, company, deal, ticket) by its ID or a unique property, optionally including specific properties, history, and associations.",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_READ_APAGE_OF_OBJECTS_BY_TYPE",
+        "title": "Read a page of objects by type",
+        "description": "Retrieves a paginated list of objects for a specified and valid HubSpot CRM object type (e.g., 'contacts', 'companies', 'deals', or custom ID).",
+        "type": "read"
+      },
+      {
+        "code": "HUBSPOT_CREATE_CONTACTS",
+        "title": "Create contacts",
+        "description": "Creates multiple new HubSpot contacts in a single batch operation.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_UPDATE_CONTACT",
+        "title": "Update contact",
+        "description": "Updates properties for an existing HubSpot contact.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_COMPANIES",
+        "title": "Create companies",
+        "description": "Creates multiple new HubSpot companies in a single batch operation.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_TICKETS",
+        "title": "Create tickets",
+        "description": "Creates multiple HubSpot tickets in a batch, each with its own properties and associations; `inputs` list must not be empty, each item needs `properties`, and associations/custom properties must be validly defined using internal names for custom fields and ISO 8601 for dates.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_UPDATE_TICKET",
+        "title": "Update ticket",
+        "description": "Updates properties for an existing HubSpot ticket.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_UPDATE_DEAL",
+        "title": "Update deal",
+        "description": "Updates properties for an existing HubSpot deal.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_DEAL",
+        "title": "Create deal",
+        "description": "Creates a new HubSpot deal.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_UPDATE_DEALS",
+        "title": "Update deals",
+        "description": "Updates multiple HubSpot deals in a single batch operation.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_DEALS",
+        "title": "Create deals",
+        "description": "Creates multiple deals in HubSpot CRM; ensure any associated object IDs, deal stages, and pipeline IDs specified are valid and exist within the HubSpot account.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_NOTE",
+        "title": "Create note",
+        "description": "Creates a new HubSpot CRM note.",
+        "type": "write"
+      },
+      {
+        "code": "HUBSPOT_CREATE_CONTACT_FROM_NL",
+        "title": "Create Contact From Natural Language",
+        "description": "Creates a new contact in HubSpot from a natural language description.",
+        "type": "write"
+      }
+    ]
+  },
+  "salesforce": {
+    "name": "Salesforce",
+    "toolkit": "salesforce",
+    "category": "CRM",
+    "description": "Accounts, contacts and opportunities",
+    "logo": "/connectors/salesforce.svg",
+    "actions": [
+      {
+        "code": "SALESFORCE_GET_USER_INFO",
+        "title": "Get user info",
+        "description": "Retrieves information about the current user or a specific user in Salesforce.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_RUN_SOQL_QUERY",
+        "title": "Run SOQL query",
+        "description": "Executes a SOQL query against Salesforce data.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_EXECUTE_SOQL_QUERY",
+        "title": "Execute SOQL query (Deprecated)",
+        "description": "DEPRECATED: Use SALESFORCE_RUN_SOQL_QUERY instead.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_CREATE_ACCOUNT",
+        "title": "Create account",
+        "description": "Creates a new account in Salesforce with the specified information.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_UPDATE_ACCOUNT",
+        "title": "Update account",
+        "description": "Updates an existing account in Salesforce with the specified changes.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_GET_ACCOUNT",
+        "title": "Get account",
+        "description": "Retrieves a specific account by ID from Salesforce, returning all available fields.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_CREATE_LEAD",
+        "title": "Create lead",
+        "description": "Creates a new lead in Salesforce.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_UPDATE_LEAD",
+        "title": "Update lead",
+        "description": "Updates an existing lead in Salesforce with the specified changes.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_DELETE_LEAD",
+        "title": "Delete lead",
+        "description": "Permanently deletes a lead from Salesforce.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_RETRIEVE_LEAD_BY_ID",
+        "title": "Retrieve lead by id",
+        "description": "Retrieves details for a Salesforce Lead by its ID; the specified Lead ID must exist in Salesforce.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_APPLY_LEAD_ASSIGNMENT_RULES",
+        "title": "Apply lead assignment rules",
+        "description": "Applies configured lead assignment rules to a specific lead, automatically routing it to the appropriate owner based on your organization's rules.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_CREATE_CONTACT",
+        "title": "Create contact",
+        "description": "Creates a new contact in Salesforce with the specified information.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_UPDATE_CONTACT",
+        "title": "Update contact",
+        "description": "Updates an existing contact in Salesforce with the specified changes.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_DELETE_CONTACT",
+        "title": "Delete contact",
+        "description": "Permanently deletes a contact from Salesforce.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_QUERY_CONTACTS_BY_NAME",
+        "title": "Query contacts by name",
+        "description": "DEPRECATED: Finds Salesforce Contact records by name using a case-insensitive search.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_CREATE_OPPORTUNITY",
+        "title": "Create opportunity",
+        "description": "Creates a new opportunity in Salesforce with the specified information.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_UPDATE_OPPORTUNITY",
+        "title": "Update opportunity",
+        "description": "Updates an existing opportunity in Salesforce with the specified changes.",
+        "type": "write"
+      },
+      {
+        "code": "SALESFORCE_RETRIEVE_OPPORTUNITIES_DATA",
+        "title": "Retrieve opportunities data",
+        "description": "Retrieves all available Opportunity records, representing potential revenue-generating deals, from Salesforce.",
+        "type": "read"
+      },
+      {
+        "code": "SALESFORCE_CREATE_NOTE",
+        "title": "Create note",
+        "description": "Creates a new note attached to a Salesforce record with the specified title and content.",
+        "type": "write"
+      }
+    ]
+  },
+  "zoom": {
+    "name": "Zoom",
+    "toolkit": "zoom",
+    "category": "Meetings",
+    "description": "Schedule and list meetings",
+    "logo": "/connectors/zoom.svg",
+    "actions": [
+      {
+        "code": "ZOOM_CREATE_A_MEETING",
+        "title": "Create a meeting",
+        "description": "Enable Zoom meeting creation via user-level apps with \"me\".",
+        "type": "write"
+      },
+      {
+        "code": "ZOOM_GET_A_MEETING",
+        "title": "Get a meeting",
+        "description": "Retrieves detailed information about a Zoom meeting by its ID.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_GET_A_MEETING_SUMMARY",
+        "title": "Get a meeting summary (Paid accounts only)",
+        "description": "IMPORTANT: This action requires a PAID Zoom account (Pro, Business, or Enterprise plan).",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_GET_MEETING_RECORDINGS",
+        "title": "Get meeting recordings",
+        "description": "To download meeting recordings, use `download_url`.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_ALL_RECORDINGS",
+        "title": "List all recordings",
+        "description": "This text details how to list Zoom cloud recordings for a user, notably by using \"me\" for user-level apps and requiring an OAuth token for access.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_MEETINGS",
+        "title": "List meetings",
+        "description": "This Zoom API lists a user's scheduled meetings using the `me` value for user-level apps, excluding instant meetings and only showing unexpired ones.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_ADD_A_MEETING_REGISTRANT",
+        "title": "Add a meeting registrant",
+        "description": "Registers a participant for a Zoom meeting that has registration enabled.",
+        "type": "write"
+      },
+      {
+        "code": "ZOOM_ADD_A_WEBINAR_REGISTRANT",
+        "title": "Add a webinar registrant",
+        "description": "Registers a participant for a Zoom webinar that has registration enabled.",
+        "type": "write"
+      },
+      {
+        "code": "ZOOM_DELETE_MEETING_RECORDINGS",
+        "title": "Delete meeting recordings",
+        "description": "Deletes all cloud recordings for a meeting or webinar.",
+        "type": "write"
+      },
+      {
+        "code": "ZOOM_GET_A_WEBINAR",
+        "title": "Get a webinar",
+        "description": "Access Zoom Webinar details requires Pro or higher plan and Webinar add-on.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_GET_DAILY_USAGE_REPORT",
+        "title": "Get daily usage report",
+        "description": "The daily report provides Zoom service usage details, like new users, meetings, participants, and minutes per day for a month, requiring a Pro plan or higher.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_GET_PAST_MEETING_PARTICIPANTS",
+        "title": "Get past meeting participants",
+        "description": "Retrieves the list of participants who attended a past (ended) Zoom meeting.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_ARCHIVED_FILES",
+        "title": "List archived files",
+        "description": "Lists archived meeting and webinar files within a specified date range (max 7 days).",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_DEVICES",
+        "title": "List devices",
+        "description": "Lists devices in your Zoom account managed through Zoom Device Management (ZDM).",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_WEBINARS",
+        "title": "List webinars",
+        "description": "The API lists all scheduled webinars for Zoom users with a webinar plan, using `me` for user-level apps.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_LIST_WEBINAR_PARTICIPANTS",
+        "title": "List webinar participants",
+        "description": "Get a list of past webinar participants with a Pro plan or above plus an add-on.",
+        "type": "read"
+      },
+      {
+        "code": "ZOOM_UPDATE_A_MEETING",
+        "title": "Update a meeting",
+        "description": "To update a meeting via API, ensure `start_time` is future-dated; `recurrence` is needed.",
+        "type": "write"
+      }
+    ]
+  },
+  "dropbox": {
+    "name": "Dropbox",
+    "toolkit": "dropbox",
+    "category": "Files",
+    "description": "Find and manage files",
+    "logo": "/connectors/dropbox.svg",
+    "actions": [
+      {
+        "code": "DROPBOX_CREATE_FILE_REQUEST",
+        "title": "Create file request",
+        "description": "Tool to create a new file request in Dropbox.",
+        "type": "write"
+      },
+      {
+        "code": "DROPBOX_CREATE_FOLDER",
+        "title": "Create folder",
+        "description": "Tool to create a new folder at a specified path in Dropbox.",
+        "type": "write"
+      },
+      {
+        "code": "DROPBOX_CREATE_PAPER_DOCUMENT",
+        "title": "Create paper document",
+        "description": "Creates a new Dropbox Paper document at the specified path using HTML or Markdown content.",
+        "type": "write"
+      },
+      {
+        "code": "DROPBOX_MOVE_FILE_OR_FOLDER",
+        "title": "Move file or folder",
+        "description": "Move file or folder",
+        "type": "write"
+      },
+      {
+        "code": "DROPBOX_SEARCH_FILE_OR_FOLDER",
+        "title": "Search File or Folder",
+        "description": "Tool to search for files and folders in Dropbox by name or content, optionally scoped to a path, with pagination support.",
+        "type": "read"
+      },
+      {
+        "code": "DROPBOX_DELETE_FILE_OR_FOLDER",
+        "title": "Delete file or folder (Deprecated)",
+        "description": "DEPRECATED: Use DeleteFile instead.",
+        "type": "write"
+      },
+      {
+        "code": "DROPBOX_GET_ABOUT_ME",
+        "title": "Get about me",
+        "description": "Tool to get information about the current user's Dropbox account.",
+        "type": "read"
+      },
+      {
+        "code": "DROPBOX_LIST_FILES_IN_FOLDER",
+        "title": "List files in folder",
+        "description": "Tool to list files and folders in a specified Dropbox directory.",
+        "type": "read"
+      },
+      {
+        "code": "DROPBOX_LIST_FOLDERS",
+        "title": "List folder contents (Deprecated)",
+        "description": "DEPRECATED: Use ListFilesInFolder instead.",
+        "type": "read"
+      },
+      {
+        "code": "DROPBOX_READ_FILE",
+        "title": "Read a file",
+        "description": "Downloads a file from the specified Dropbox path, requiring `files.content.read` scope.",
+        "type": "read"
+      },
+      {
+        "code": "DROPBOX_UPLOAD_FILE",
+        "title": "Upload File",
+        "description": "Uploads a file (up to ~150 MB) to a specified path in the user's Dropbox, with options for handling existing files.",
+        "type": "write"
+      }
+    ]
+  }
+}
