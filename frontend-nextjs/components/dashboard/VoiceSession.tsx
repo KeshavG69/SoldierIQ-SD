@@ -1,3 +1,13 @@
+/*
+ * LiveKit voice agent — disabled. Voice mode is now dictation only: the mic
+ * button transcribes speech into the chat input (components/dashboard/chat/
+ * VoiceButton.tsx → lib/voice/liveDictation.ts → POST /api/voice/transcribe).
+ * Kept commented out in case the realtime voice agent comes back.
+ */
+
+export {};
+
+/*
 "use client";
 
 import { useEffect } from "react";
@@ -16,7 +26,7 @@ import { useVoiceStore } from "@/lib/stores/voiceStore";
  * Full-screen voice call UX — mounted once at the dashboard root. When the voice
  * store has `connectionDetails`, renders a `<LiveKitRoom>` covering the viewport
  * with a bar visualizer, agent-state label, and end-call button.
- */
+ * /
 export default function VoiceSession() {
   const { state, details, error, stop } = useVoiceStore();
   const active = state === "connected" && details !== null;
@@ -76,7 +86,7 @@ function VoiceRoomContent() {
 
   return (
     <div className="relative flex h-full w-full flex-col items-center justify-center">
-      {/* End call — top-right */}
+      {/* End call — top-right * /}
       <button
         type="button"
         onClick={stop}
@@ -87,7 +97,7 @@ function VoiceRoomContent() {
         End
       </button>
 
-      {/* Visualizer */}
+      {/* Visualizer * /}
       <div className="flex h-56 w-full max-w-lg items-center justify-center">
         <BarVisualizer
           state={agentState}
@@ -97,7 +107,7 @@ function VoiceRoomContent() {
         />
       </div>
 
-      {/* State label */}
+      {/* State label * /}
       <div className="mt-10 text-center">
         <div className="text-xs uppercase tracking-[0.2em] text-white/50">
           {label.eyebrow}
@@ -126,3 +136,5 @@ function agentStateLabel(state: ReturnType<typeof useVoiceAssistant>["state"]) {
       return { eyebrow: "Voice call", main: "Ready" };
   }
 }
+
+*/

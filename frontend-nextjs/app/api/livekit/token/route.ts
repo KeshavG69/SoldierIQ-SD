@@ -1,3 +1,13 @@
+/*
+ * LiveKit voice agent — disabled. Voice mode is now dictation only: the mic
+ * button transcribes speech into the chat input (components/dashboard/chat/
+ * VoiceButton.tsx → lib/voice/liveDictation.ts → POST /api/voice/transcribe).
+ * Kept commented out in case the realtime voice agent comes back.
+ */
+
+export {};
+
+/*
 import { NextRequest, NextResponse } from "next/server";
 import { AccessToken, type VideoGrant } from "livekit-server-sdk";
 
@@ -9,7 +19,7 @@ import { AccessToken, type VideoGrant } from "livekit-server-sdk";
  * endpoint already validates the token against Keycloak. If valid, we mint a
  * short-lived LK token with the selected documents embedded as participant metadata
  * so the voice agent can scope retrieval.
- */
+ * /
 
 export const revalidate = 0;
 
@@ -110,3 +120,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+*/

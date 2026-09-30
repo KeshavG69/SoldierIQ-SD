@@ -18,10 +18,11 @@ const WorkflowPanel = lazy(
   () => import("@/components/dashboard/WorkflowPanel")
 );
 
-// Lazy load voice session (only loaded when user starts a voice call)
-const VoiceSession = lazy(
-  () => import("@/components/dashboard/VoiceSession")
-);
+// LiveKit voice agent — disabled; voice mode is dictation only now
+// (components/dashboard/chat/VoiceButton.tsx).
+// const VoiceSession = lazy(
+//   () => import("@/components/dashboard/VoiceSession")
+// );
 
 const MIN_PANEL_WIDTH = 280;
 const MAX_PANEL_WIDTH = 600;
@@ -269,9 +270,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* LiveKit voice agent — disabled (see VoiceSession.tsx).
       <Suspense fallback={null}>
         <VoiceSession />
-      </Suspense>
+      </Suspense> */}
     </div>
   );
 }

@@ -1,3 +1,13 @@
+/*
+ * LiveKit voice agent — disabled. Voice mode is now dictation only: the mic
+ * button transcribes speech into the chat input (components/dashboard/chat/
+ * VoiceButton.tsx → lib/voice/liveDictation.ts → POST /api/voice/transcribe).
+ * Kept commented out in case the realtime voice agent comes back.
+ */
+
+export {};
+
+/*
 import { create } from "zustand";
 import { fetchWithRefresh } from "@/lib/api/client";
 
@@ -61,3 +71,5 @@ export const useVoiceStore = create<VoiceStore>((set, get) => ({
 
   setError: (message) => set({ state: "error", error: message, details: null }),
 }));
+
+*/
