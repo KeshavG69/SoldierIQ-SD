@@ -17,6 +17,8 @@ export interface ConnectorAction {
   title: string;
   description: string | null;
   type: "read" | "write";
+  /** False when the user's granted permissions can't run this action. */
+  available: boolean;
   enabled: boolean;
 }
 
@@ -32,6 +34,8 @@ export interface Connector {
   enabled: boolean;
   status: string | null;
   connected: boolean;
+  /** Connected, but some actions need permissions the user didn't grant. */
+  limited_access: boolean;
   actions: ConnectorAction[];
 }
 

@@ -34,7 +34,7 @@ def create_composio_setup_tools(organization_id: Optional[str], user_id: str) ->
         Call this when the user wants to do something in an app whose tools you don't have.
 
         Args:
-            service_name (str): App key, e.g. "gmail", "slack", "jira", "googlecalendar", "notion".
+            service_name (str): App key, e.g. "gmail", "slack", "jira", "googlecalendar", "outlook".
             query (str): The user's request, verbatim.
             task_description (str): Short description of what needs doing, e.g. "send an email".
 
@@ -56,13 +56,21 @@ def create_composio_setup_tools(organization_id: Optional[str], user_id: str) ->
             if connection and connection.get("status") != "ACTIVE":
                 connection = await _refresh_pending(connection)
             connected = bool(connection and connection.get("status") == "ACTIVE")
+            # Connected, but the grant left nothing usable for this request
+            # (the selector only sees actions the permissions allow) → offer
+            # to reconnect and grant access.
+            needs_more_access = connected and (
+                bool(selection.get("needs_more_access"))
+                or not (selection.get("added_actions") or selection.get("already_enabled_actions"))
+            )
 
             result = {
                 "service": tool["name"],
                 "service_title": tool["title"],
                 "logo": tool["logo"],
-                "already_connected": connected,
-                "needs_auth": not connected,
+                "already_connected": connected and not needs_more_access,
+                "needs_auth": not connected or needs_more_access,
+                "reconnect": needs_more_access,
                 "actions_added": selection.get("added_actions", []),
                 "already_enabled_actions": selection.get("already_enabled_actions", []),
                 "disconnected_actions": selection.get("disconnected_actions", []),
@@ -70,7 +78,13 @@ def create_composio_setup_tools(organization_id: Optional[str], user_id: str) ->
             }
             if not selection.get("success", False):
                 result["error"] = selection.get("error")
-            if connected:
+            if needs_more_access:
+                result["message"] = (
+                    f"{tool['title']} is connected, but without the permission this request needs. "
+                    f"A 'Reconnect {tool['title']}' button is shown to the user under your reply; "
+                    "they should reconnect, allow access, then send the request again."
+                )
+            elif connected:
                 result["message"] = (
                     f"{tool['title']} is connected. {selection.get('message', '')} "
                     "The new actions are usable from the user's next message."
@@ -101,7 +115,20 @@ def create_composio_setup_tools(organization_id: Optional[str], user_id: str) ->
         """
         try:
             result = await smart_select_actions(organization_id, user_id, query, required_service, task_description)
-            if result.get("added_actions"):
+            if result.get("needs_more_access"):
+                # Same Reconnect card as setup_composio_service (ChatArea).
+                tool = await resolve_tool(required_service)
+                if tool:
+                    result.update({
+                        "service_title": tool["title"], "logo": tool["logo"],
+                        "reconnect": True, "needs_auth": True, "already_connected": False,
+                    })
+                    result["message"] = (
+                        f"{tool['title']} is connected, but without the permission this request needs. "
+                        f"A 'Reconnect {tool['title']}' button is shown to the user under your reply; "
+                        "they should reconnect, allow access, then send the request again."
+                    )
+            elif result.get("added_actions"):
                 result["message"] = f"{result['message']} They are usable from the user's next message."
             return json.dumps(result)
         except Exception as e:
@@ -118,7 +145,7 @@ The user can connect third-party apps. Supported app keys: {", ".join(supported)
 Apps with tools available to you right now: {connected}.
 
 When the user wants to DO something in an app (send/draft/reply to email, schedule a meeting, post to Slack,
-create/update/close a Jira issue, create a Notion page, …) or read their own data there (their inbox, calendar,
+create/update/close a Jira issue, update a HubSpot deal, …) or read their own data there (their inbox, calendar,
 issues) and you do NOT have that app's tools, call setup_composio_service(service_name, query, task_description):
   - query = the user's request verbatim; task_description = a short summary, e.g. "send an email".
   - It enables the right actions and tells you whether the app is connected.

@@ -3,12 +3,23 @@ Agent Streaming Service
 Handles streaming responses from Agno agents
 """
 
+import json
 import time
 from typing import Any, AsyncGenerator, Dict, Optional
 from agno.agent import Agent
 from agno.run.agent import RunEvent, RunOutput, RunOutputEvent
 from app.logger import logger
 from services.tool_display import describe_tool
+
+
+def _reports_failure(result: Any) -> bool:
+    if not isinstance(result, str) or '"successful"' not in result[:4000]:
+        return False
+    try:
+        return json.loads(result).get("successful") is False
+    except (ValueError, AttributeError):
+        # Truncated/non-JSON results: fall back to a prefix check.
+        return '"successful": false' in result[:4000]
 
 
 def extract_text(content: Any) -> Optional[str]:
@@ -179,7 +190,9 @@ async def stream_agent_response(
                         "tool_name": tool.get("tool_name"),
                         "tool_args": tool.get("tool_args"),
                         "result": tool.get("result"),
-                        "error": bool(tool.get("tool_call_error")),
+                        # Composio actions report failure in the result
+                        # ({"successful": false, ...}) rather than raising.
+                        "error": bool(tool.get("tool_call_error")) or _reports_failure(tool.get("result")),
                         "duration": metrics.get("duration") if isinstance(metrics, dict) else None,
                         "display": await describe_tool(tool.get("tool_name"), tool.get("tool_args")),
                     }
