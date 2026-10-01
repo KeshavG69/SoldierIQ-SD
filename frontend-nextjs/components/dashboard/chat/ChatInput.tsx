@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { TAKCredentials } from "@/lib/api/documents";
-import VoiceButton, { DictationState } from "./VoiceButton";
+import VoiceButton from "./VoiceButton";
 
 interface ChatInputProps {
   inputMessage: string;
@@ -26,9 +26,6 @@ const ChatInput = React.memo(function ChatInput({
   onKeyDown,
 }: ChatInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [dictation, setDictation] = useState<DictationState>("idle");
-  const [dictationError, setDictationError] = useState<string | null>(null);
-  const dictating = dictation !== "idle";
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -59,19 +56,9 @@ const ChatInput = React.memo(function ChatInput({
           </div>
 
           <div className="flex items-center gap-3">
-            {dictationError ? (
-              <span className="text-red-500">{dictationError}</span>
-            ) : (
-              <span className={dictating ? "text-red-500" : "text-muted-foreground dark:text-muted-foreground"}>
-                {dictation === "listening"
-                  ? "Listening…"
-                  : dictation === "finishing"
-                    ? "Finishing…"
-                    : isLoading
-                      ? "Thinking…"
-                      : "Ready"}
-              </span>
-            )}
+            <span className="text-muted-foreground dark:text-muted-foreground">
+              {isLoading ? "Thinking…" : "Ready"}
+            </span>
             {takEnabled && takCredentials && (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -88,38 +75,20 @@ const ChatInput = React.memo(function ChatInput({
               ref={textareaRef}
               value={inputMessage}
               onChange={(e) => onChange(e.target.value)}
-              onKeyDown={(e) => {
-                // Don't send half a sentence while dictation is still running.
-                if (dictating && e.key === "Enter") {
-                  e.preventDefault();
-                  return;
-                }
-                onKeyDown(e);
-              }}
-              readOnly={dictating}
+              onKeyDown={onKeyDown}
               placeholder={
-                dictation === "listening"
-                  ? "Listening… start speaking"
-                  : selectedDocsCount === 0
-                    ? "Ask a question…"
-                    : "Ask about your selected documents…"
+                selectedDocsCount === 0
+                  ? "Ask a question…"
+                  : "Ask about your selected documents…"
               }
               disabled={isLoading}
               className="w-full bg-transparent pl-4 pr-12 py-3 resize-none max-h-40 text-sm text-foreground dark:text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground focus:outline-none disabled:opacity-50"
               rows={1}
             />
-            <VoiceButton
-              disabled={isLoading}
-              value={inputMessage}
-              onChange={onChange}
-              onStateChange={(state, error) => {
-                setDictation(state);
-                setDictationError(error ?? null);
-              }}
-            />
+            <VoiceButton disabled={isLoading} />
             <button
               type="submit"
-              disabled={isLoading || dictating || !inputMessage.trim()}
+              disabled={isLoading || !inputMessage.trim()}
               className="absolute right-2 bottom-2 w-8 h-8 rounded-lg bg-brand text-brand-foreground hover:bg-brand-hover shadow-accent disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center justify-center"
               aria-label="Send"
             >
