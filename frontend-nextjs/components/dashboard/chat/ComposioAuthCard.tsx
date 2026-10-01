@@ -34,7 +34,9 @@ export default function ComposioAuthCard({ info }: { info: ComposioAuthInfo }) {
           <div className="text-xs text-muted-foreground">
             {connected
               ? "Connected — send your request again to use it."
-              : `Connect ${info.service_title} so the assistant can act for you.`}
+              : info.reconnect
+                ? `Reconnect ${info.service_title} and allow access so the assistant can do this.`
+                : `Connect ${info.service_title} so the assistant can act for you.`}
           </div>
         </div>
         {connected ? (
@@ -50,7 +52,7 @@ export default function ComposioAuthCard({ info }: { info: ComposioAuthInfo }) {
             disabled={!!connecting}
             className="px-3 py-1.5 rounded-lg bg-brand text-brand-foreground text-xs font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
           >
-            {connecting ? "Connecting…" : "Connect"}
+            {connecting ? "Connecting…" : info.reconnect ? "Reconnect" : "Connect"}
           </button>
         )}
       </div>

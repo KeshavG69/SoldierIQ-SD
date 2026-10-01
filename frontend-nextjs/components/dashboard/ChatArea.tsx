@@ -363,15 +363,23 @@ export default function ChatArea() {
                   });
                 }
                   // setup_composio_service → "Connect <app>" card under the reply.
-                  if (parsed.data?.tool_name === "setup_composio_service" && parsed.data?.result) {
+                  // select_additional_actions shows it too when access is short (Reconnect).
+                  if (
+                    (parsed.data?.tool_name === "setup_composio_service" ||
+                      parsed.data?.tool_name === "select_additional_actions") &&
+                    parsed.data?.result
+                  ) {
                     try {
                       const r = JSON.parse(parsed.data.result);
-                      if (r?.service && !r.error) {
+                      const showCard =
+                        parsed.data.tool_name === "setup_composio_service" ? r?.service && !r.error : r?.reconnect;
+                      if (showCard) {
                         setLastMessageComposioAuth({
                           service: r.service,
                           service_title: r.service_title || r.service,
                           logo: r.logo,
                           already_connected: !!r.already_connected,
+                          reconnect: !!r.reconnect,
                           actions_added: r.actions_added || [],
                         });
                       }

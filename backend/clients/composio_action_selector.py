@@ -15,7 +15,9 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 from app.logger import logger
-from clients.composio_connectors import ACTION_LIMIT, _org, _pool, _upsert_tool_toggle, get_catalog
+from clients.composio_connectors import (
+    ACTION_LIMIT, _org, _pool, _upsert_tool_toggle, available_actions, get_catalog,
+)
 from clients.ultimate_llm import get_llm
 
 SELECTOR_MODEL = "google/gemini-3-flash-preview"
@@ -24,6 +26,10 @@ SELECTOR_MODEL = "google/gemini-3-flash-preview"
 class _Selection(BaseModel):
     selected_actions: List[str] = Field(default_factory=list, description="Action codes to enable")
     actions_to_disconnect: List[str] = Field(default_factory=list, description="Currently enabled action codes to disable to stay under the limit")
+    request_supported: bool = Field(
+        default=True,
+        description="False when none of the listed actions can do what the user asked",
+    )
     reasoning: str = ""
 
 
@@ -75,6 +81,9 @@ async def _select_with_llm(
 5. Include PREREQUISITE / discovery actions: if an action needs an ID, also select the search/list/get action
    that finds it (e.g. replying to an email needs a fetch/search action to find the thread).
 6. Only use action codes exactly as listed above.
+7. If NONE of the listed actions (enabled or available) can do what the user asked — for example they want to
+   send or change something but only reading actions are listed — set "request_supported" to false and return
+   empty lists. Do not substitute unrelated actions.
 
 Examples:
 - Query "Send an email to john", current ["GMAIL_SEND_EMAIL"] → selected [], disconnect [] (already sufficient).
@@ -119,7 +128,9 @@ async def smart_select_actions(
         )
 
     current = [dict(r) for r in current_rows]
-    available = (await get_catalog())["actions_by_tool"].get(tool["id"], [])
+    # Only actions the user's granted permissions can run are candidates —
+    # the model never sees the rest, so it can't pick them.
+    available = await available_actions(organization_id, user_id, tool["name"])
     enabled_codes = {a["code"] for a in current}
     available_codes = [a["code"] for a in available]
 
@@ -129,10 +140,32 @@ async def smart_select_actions(
         selected = [c for c in dict.fromkeys(sel.selected_actions) if c in available_codes and c not in enabled_codes]
         to_disconnect = [c for c in dict.fromkeys(sel.actions_to_disconnect) if c in enabled_codes and c not in selected]
         reasoning = sel.reasoning
+        request_supported = sel.request_supported
     except Exception as e:
         logger.warning(f"Action-selection LLM failed ({e}); falling back to defaults for {tool['name']}")
         selected, to_disconnect = [], []
         reasoning = f"LLM selection failed ({e})."
+        request_supported = True
+
+    # The user's grant rules some of this app's actions out, and what's left
+    # can't do the request → they need to reconnect with more access. The
+    # model never saw the blocked actions; we only report that access is short.
+    all_count = len((await get_catalog())["actions_by_tool"].get(tool["id"], []))
+    if not request_supported and len(available) < all_count:
+        return {
+            "success": False,
+            "actions_needed": True,
+            "needs_more_access": True,
+            "service": tool["name"],
+            "added_actions": [],
+            "already_enabled_actions": [],
+            "total_actions": len(current),
+            "reasoning": reasoning,
+            "message": (
+                f"{tool['title']} is connected without the permission this request needs. "
+                f"The user must reconnect {tool['title']} and allow access."
+            ),
+        }
 
     service_enabled = [a["code"] for a in current if a["service"] == tool["name"]]
     if not selected:

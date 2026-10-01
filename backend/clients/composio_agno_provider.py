@@ -88,6 +88,33 @@ def _compact(value: t.Any) -> t.Any:
     return value
 
 
+_SCOPE_ERROR_MARKERS = (
+    "insufficient authentication scopes", "insufficient scope", "insufficient permission",
+    "access_token_scope_insufficient", "request had insufficient", "invalid oauth scope",
+)
+
+
+def _explain_permission_error(slug: str, result: t.Any) -> t.Any:
+    """Provider said the connection lacks a permission (e.g. the user unticked
+    it at Google's consent screen). Say so plainly — it is connected, just
+    missing access — instead of passing through a raw 403 blob."""
+    if not isinstance(result, dict) or result.get("successful", True):
+        return result
+    error = str(result.get("error") or "")
+    lower = error.lower()
+    if any(m in lower for m in _SCOPE_ERROR_MARKERS) or ("403" in lower and "scope" in lower):
+        app = (slug or "").split("_")[0].title() or "this app"
+        return {
+            **result,
+            "error": (
+                f"{app} is connected but is missing the permission this action needs "
+                f"(the user did not grant it). Ask the user to reconnect {app} from "
+                f"Connectors and allow access. Details: {error[:300]}"
+            ),
+        }
+    return result
+
+
 def _serialize_result(result: t.Any) -> str:
     text = json.dumps(_compact(result), default=str)
     if len(text) > _MAX_RESULT_CHARS:
@@ -116,7 +143,7 @@ class AgnoProvider(AgenticProvider[Toolkit, t.List[Toolkit]], name="agno"):
             bound.apply_defaults()
             arguments = _sanitize_arguments(tool.slug, _strip_empty(dict(bound.arguments)))
             result = execute_tool(slug=tool.slug, arguments=arguments)
-            return _serialize_result(result)
+            return _serialize_result(_explain_permission_error(tool.slug, result))
 
         func: t.Any = function_template
         func.__signature__ = sig

@@ -82,6 +82,7 @@ export interface ComposioAuthInfo {
   service_title: string;
   logo?: string | null;
   already_connected: boolean;
+  reconnect?: boolean; // connected with limited permissions → offer to reconnect
   actions_added: string[];
 }
 

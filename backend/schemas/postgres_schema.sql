@@ -168,3 +168,10 @@ CREATE TABLE IF NOT EXISTS public.user_connector_actions (
 -- Enabled-action lookups (limit count, agent tools, Connectors screen).
 CREATE INDEX IF NOT EXISTS idx_user_connector_actions_enabled
     ON public.user_connector_actions (organization_id, user_id) WHERE enabled;
+
+-- Granular permissions: what each action needs (Composio scope_requirements,
+-- {"all_of": [{"any_of": [...]}]}) and what each connection was granted.
+-- Actions whose requirements the grant doesn't meet are never given to the
+-- agent, can't be switched on, and can't be picked by the smart selector.
+ALTER TABLE public.connector_tool_actions ADD COLUMN IF NOT EXISTS scope_requirements JSONB;
+ALTER TABLE public.composio_connections ADD COLUMN IF NOT EXISTS granted_scopes TEXT[];

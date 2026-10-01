@@ -271,7 +271,7 @@ function Toggle({
 
 function ConnectorLogo({ c }: { c: Connector }) {
   const [failed, setFailed] = useState(false);
-  // White tile in both themes: several brand marks (GitHub, Notion) are black.
+  // White tile in both themes: some brand marks are dark.
   return (
     <div className="w-9 h-9 shrink-0 rounded-lg bg-white border border-border flex items-center justify-center overflow-hidden">
       {c.logo && !failed ? (
@@ -323,9 +323,13 @@ function ConnectorRow({
           <p className="text-xs text-muted-foreground truncate">
             {c.connected ? (
               <>
-                <span className="text-emerald-500">Connected</span>
+                {c.limited_access ? (
+                  <span className="text-amber-500">Limited access</span>
+                ) : (
+                  <span className="text-emerald-500">Connected</span>
+                )}
                 {" · "}
-                {enabledCount}/{c.actions.length} actions enabled
+                {enabledCount}/{c.actions.filter((a) => a.available).length} actions enabled
               </>
             ) : (
               c.description
@@ -335,6 +339,16 @@ function ConnectorRow({
 
         {c.connected ? (
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+            {c.limited_access && (
+              <button
+                onClick={() => onConnect(c)}
+                disabled={busy}
+                title="Some actions need permissions you didn't grant. Reconnect and allow access."
+                className="px-3 py-1.5 rounded-lg bg-brand text-brand-foreground text-xs font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors"
+              >
+                Reconnect
+              </button>
+            )}
             <button
               onClick={() => onDisconnect(c)}
               disabled={busy}
@@ -372,7 +386,7 @@ function ConnectorRow({
         <div className="px-4 pb-3">
           <div className="rounded-lg border border-border bg-surface-2/50 divide-y divide-border">
             {c.actions.map((a) => (
-              <div key={a.id} className="flex items-start gap-3 px-3 py-2.5">
+              <div key={a.id} className={`flex items-start gap-3 px-3 py-2.5 ${a.available ? "" : "opacity-60"}`}>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-foreground">{a.title}</span>
@@ -383,6 +397,14 @@ function ConnectorRow({
                     >
                       {a.type}
                     </span>
+                    {!a.available && (
+                      <span
+                        className="px-1.5 py-px rounded text-[9px] font-semibold uppercase tracking-wide bg-secondary text-muted-foreground"
+                        title="You didn't grant the permission this needs. Reconnect and allow access."
+                      >
+                        Not granted
+                      </span>
+                    )}
                   </div>
                   {a.description && (
                     <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{a.description}</p>
@@ -390,7 +412,7 @@ function ConnectorRow({
                 </div>
                 <Toggle
                   checked={a.enabled}
-                  disabled={!a.enabled && atLimit}
+                  disabled={!a.available || (!a.enabled && atLimit)}
                   onChange={(v) => onToggleAction(c, a, v)}
                   label={`Enable ${a.title}`}
                 />
