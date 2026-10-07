@@ -20,6 +20,12 @@
       "port": 3000
     },
     {
+      "name": "nextjs-dev-3010",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8010", "npm", "--prefix", "frontend-nextjs", "run", "dev", "--", "-p", "3010"],
+      "port": 3010
+    },
+    {
       "name": "backend-8020",
       "runtimeExecutable": "uv",
       "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "uvicorn", "app.server:app", "--reload", "--host", "0.0.0.0", "--port", "8020"],
