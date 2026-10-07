@@ -143,6 +143,14 @@ export default function DashboardPage() {
     );
   }
 
+  // Mounted in every layout branch below — the mic button lives in ChatInput,
+  // which renders in both, so the call screen must too.
+  const voiceSession = (
+    <Suspense fallback={null}>
+      <VoiceSession />
+    </Suspense>
+  );
+
   // Mobile layout
   if (isMobile) {
     return (
@@ -195,6 +203,8 @@ export default function DashboardPage() {
             </Suspense>
           </ErrorBoundary>
         </div>
+
+        {voiceSession}
       </div>
     );
   }
@@ -269,9 +279,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <Suspense fallback={null}>
-        <VoiceSession />
-      </Suspense>
+      {voiceSession}
     </div>
   );
 }
