@@ -8,6 +8,7 @@ graphrag_client fix).
 """
 from __future__ import annotations
 
+import time
 from typing import Any, Dict
 
 import falkordb
@@ -16,6 +17,15 @@ from app.logger import logger
 from app.settings import settings
 
 _connections: Dict[str, Any] = {}
+_last_used: Dict[str, float] = {}
+
+# Railway's TCP proxy silently drops idle connections. A query written to such a
+# socket is never acknowledged, and with no socket timeout it blocks forever (seen
+# as the first search after a few idle minutes hanging). So: open a fresh client
+# when the cached one has been idle this long, and bound every socket operation
+# as a backstop so nothing can hang indefinitely.
+_IDLE_RECYCLE_S = 120
+_SOCKET_TIMEOUT_S = 300
 
 
 def graph_name(organization_id: str) -> str:
@@ -24,6 +34,10 @@ def graph_name(organization_id: str) -> str:
 
 def get_graph(organization_id: str):
     name = graph_name(organization_id)
+    now = time.monotonic()
+    if name in _connections and now - _last_used.get(name, now) > _IDLE_RECYCLE_S:
+        logger.info(f"[kg-store] recycling FalkorDB client for {name} after idle period")
+        del _connections[name]
     if name not in _connections:
         db = falkordb.FalkorDB(
             host=settings.GRAPH_DATABASE_URL,
@@ -31,8 +45,11 @@ def get_graph(organization_id: str):
             username=settings.GRAPH_DATABASE_USERNAME or None,
             password=settings.GRAPH_DATABASE_PASSWORD or None,
             ssl=settings.GRAPH_DATABASE_SSL,
+            socket_timeout=_SOCKET_TIMEOUT_S,
+            socket_connect_timeout=10,
         )
         _connections[name] = db.select_graph(name)
+    _last_used[name] = now
     return _connections[name]
 
 

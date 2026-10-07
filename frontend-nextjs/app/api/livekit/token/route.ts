@@ -5,7 +5,7 @@ import { AccessToken, type VideoGrant } from "livekit-server-sdk";
  * Mint a LiveKit access token for the voice agent.
  *
  * Auth model: the browser sends its Keycloak JWT as `Authorization: Bearer <token>`.
- * We forward it to the KM backend's `/api/auth/me` to resolve the identity — that
+ * We forward it to the backend's `/api/auth/me` to resolve the identity — that
  * endpoint already validates the token against Keycloak. If valid, we mint a
  * short-lived LK token with the selected documents embedded as participant metadata
  * so the voice agent can scope retrieval.

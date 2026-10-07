@@ -70,6 +70,10 @@ class Settings(BaseSettings):
 
     POSTGRES_URL: str = ""
 
+    # Shared secret the LiveKit voice-agent worker sends to /api/voice/search.
+    # Empty = endpoint disabled.
+    VOICE_AGENT_SECRET: str = ""
+
     # FalkorDB
     GRAPH_DATABASE_URL: str = "localhost"
     GRAPH_DATABASE_PORT: int = 6379

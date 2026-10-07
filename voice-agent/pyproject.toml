@@ -1,0 +1,20 @@
+[project]
+name = "soldieriq-voice-agent"
+version = "0.1.0"
+description = "SoldierIQ LiveKit voice agent — knowledge-base Q&A over selected documents"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+authors = [
+    { name = "SoldierIQ Team" }
+]
+dependencies = [
+    # LiveKit
+    "livekit-agents[openai,silero,deepgram,cartesia,turn-detector]~=1.4",
+    "livekit-plugins-noise-cancellation~=0.2",
+    # Settings
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.10.0",
+    "python-dotenv>=1.1.0",
+    # Knowledge search = HTTP call to the SoldierIQ backend (retriever.py)
+    "aiohttp>=3.9",
+]
