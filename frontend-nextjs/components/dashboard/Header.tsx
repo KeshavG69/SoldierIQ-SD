@@ -117,6 +117,13 @@ export default function Header() {
           <span className="hidden md:inline">Book call</span>
         </button>
 
+        <button onClick={() => router.push("/dashboard/xr")} className={navBtnClass} title="Voice agent with hand gestures (Meta Quest)">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v7a2 2 0 01-2 2h-4l-2-3h-2l-2 3H5a2 2 0 01-2-2V8z" />
+          </svg>
+          <span className="hidden md:inline">VR mode</span>
+        </button>
+
         <div className="mx-1 h-5 w-px bg-secondary dark:bg-secondary" />
 
         <ThemeToggle />
