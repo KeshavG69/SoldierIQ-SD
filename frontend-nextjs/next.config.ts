@@ -25,6 +25,19 @@ const nextConfig: NextConfig = {
 
   // Turbopack config (use --turbopack flag when running dev)
   turbopack: {},
+
+  webpack: (config) => {
+    // The WebXR emulator (@react-three/xr → @iwer/sem) imports `@bufbuild/protobuf/wire`
+    // (v2) without declaring it, so it resolves to LiveKit's hoisted v1, which has no
+    // `/wire` export. Point that subpath at the v2 copy ts-proto installs.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@bufbuild/protobuf/wire$": require.resolve("@bufbuild/protobuf/wire", {
+        paths: [require.resolve("ts-proto")],
+      }),
+    };
+    return config;
+  },
 };
 
 export default nextConfig;

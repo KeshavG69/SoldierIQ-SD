@@ -27,6 +27,7 @@ from livekit.agents import (
     WorkerOptions,
     cli,
 )
+from livekit import rtc
 from livekit.plugins import noise_cancellation, openai, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
@@ -69,6 +70,29 @@ async def _wait_for_metadata(ctx: JobContext, timeout: float = 3.0) -> dict:
         return {}
 
 
+def _register_client_rpcs(ctx: JobContext, session: AgentSession) -> None:
+    """RPCs the frontend calls from explicit user actions (e.g. VR hand gestures)."""
+
+    @ctx.room.local_participant.register_rpc_method("agent.interrupt")
+    async def _interrupt(data: rtc.RpcInvocationData) -> str:
+        logger.info("Interrupt requested by %s", data.caller_identity)
+        await session.interrupt(force=True)
+        return "ok"
+
+    @ctx.room.local_participant.register_rpc_method("agent.feedback")
+    async def _feedback(data: rtc.RpcInvocationData) -> str:
+        rating = _parse_metadata(data.payload).get("rating")
+        logger.info("Feedback from %s: %s", data.caller_identity, rating)
+        if rating == "down":
+            await session.interrupt(force=True)
+            session.generate_reply(
+                instructions=(
+                    "The user indicated your last answer wasn't helpful. Briefly acknowledge it, "
+                    "then answer their last question again more clearly, using the documents."
+                )
+            )
+        return "ok"
+
 
 async def entrypoint(ctx: JobContext) -> None:
     await ctx.connect()
@@ -107,6 +131,8 @@ async def entrypoint(ctx: JobContext) -> None:
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )
+
+    _register_client_rpcs(ctx, session)
 
     if not metadata.get("document_ids"):
         greeting = (
