@@ -5,20 +5,23 @@ import {
   BarVisualizer,
   LiveKitRoom,
   RoomAudioRenderer,
+  TrackToggle,
+  VideoTrack,
   useVoiceAssistant,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
+import { Track } from "livekit-client";
 import { X } from "lucide-react";
 
 import { useVoiceStore } from "@/lib/stores/voiceStore";
 
 /**
- * Full-screen voice call UX — mounted once at the dashboard root. When the voice
- * store has `connectionDetails`, renders a `<LiveKitRoom>` covering the viewport
- * with a bar visualizer, agent-state label, and end-call button.
+ * Full-screen call UX — mounted once at the dashboard root. When the voice store
+ * has `connectionDetails`, renders a `<LiveKitRoom>` covering the viewport: a bar
+ * visualizer for the document voice call, or the avatar's video for the concierge.
  */
 export default function VoiceSession() {
-  const { state, details, error, stop } = useVoiceStore();
+  const { state, mode, details, error, stop } = useVoiceStore();
   const active = state === "connected" && details !== null;
 
   // Auto-clear after a brief error flash so the UI doesn't stay stuck.
@@ -61,7 +64,7 @@ export default function VoiceSession() {
         }}
         className="h-full w-full"
       >
-        <VoiceRoomContent />
+        {mode === "concierge" ? <AvatarRoomContent /> : <VoiceRoomContent />}
         <RoomAudioRenderer />
       </LiveKitRoom>
     </div>
@@ -108,21 +111,86 @@ function VoiceRoomContent() {
   );
 }
 
-function agentStateLabel(state: ReturnType<typeof useVoiceAssistant>["state"]) {
+/** Concierge call: the avatar worker publishes the agent's video (and lip-synced audio). */
+function AvatarRoomContent() {
+  const { state: agentState, videoTrack, audioTrack } = useVoiceAssistant();
+  const stop = useVoiceStore((s) => s.stop);
+
+  const label = agentStateLabel(agentState, "Agent chat");
+  // The agent only goes live after its avatar joins; live with no video means the
+  // avatar couldn't start and the agent fell back to voice-only.
+  const voiceOnly =
+    !videoTrack && (agentState === "listening" || agentState === "thinking" || agentState === "speaking");
+
+  return (
+    <div className="relative flex h-full w-full flex-col items-center justify-center px-4">
+      <button
+        type="button"
+        onClick={stop}
+        aria-label="End call"
+        className="absolute right-6 top-6 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors"
+      >
+        <X className="h-4 w-4" />
+        End
+      </button>
+
+      {/* Sized by the avatar's own video: Tavus is landscape, Simli square, LemonSlice portrait */}
+      <div className="relative max-w-full overflow-hidden rounded-2xl bg-white/5 ring-1 ring-white/10">
+        {videoTrack ? (
+          <VideoTrack
+            trackRef={videoTrack}
+            className="block h-auto w-auto max-h-[min(65vh,600px)] max-w-[min(90vw,960px)]"
+          />
+        ) : voiceOnly ? (
+          <div className="flex aspect-square h-[min(65vh,600px)] max-w-full flex-col items-center justify-center gap-4 px-6">
+            <BarVisualizer
+              state={agentState}
+              barCount={5}
+              trackRef={audioTrack}
+              className="h-32 w-full [&>.lk-audio-bar]:bg-white"
+            />
+            <span className="text-center text-xs text-white/50">Video unavailable — voice only</span>
+          </div>
+        ) : (
+          <div className="flex aspect-square h-[min(65vh,600px)] max-w-full flex-col items-center justify-center gap-3 text-white/60">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
+            <span className="text-sm">Bringing the concierge online…</span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-8 flex items-center gap-6">
+        <div className="text-center">
+          <div className="text-xs uppercase tracking-[0.2em] text-white/50">{label.eyebrow}</div>
+          <div className="mt-1 text-lg font-medium text-white">{label.main}</div>
+        </div>
+        <TrackToggle
+          source={Track.Source.Microphone}
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors [&>svg]:h-5 [&>svg]:w-5"
+        />
+      </div>
+    </div>
+  );
+}
+
+function agentStateLabel(
+  state: ReturnType<typeof useVoiceAssistant>["state"],
+  eyebrow = "Voice call",
+) {
   switch (state) {
     case "connecting":
-      return { eyebrow: "Voice call", main: "Connecting…" };
+      return { eyebrow, main: "Connecting…" };
     case "initializing":
-      return { eyebrow: "Voice call", main: "Starting up…" };
+      return { eyebrow, main: "Starting up…" };
     case "listening":
-      return { eyebrow: "Voice call", main: "Listening" };
+      return { eyebrow, main: "Listening" };
     case "thinking":
-      return { eyebrow: "Voice call", main: "Thinking…" };
+      return { eyebrow, main: "Thinking…" };
     case "speaking":
-      return { eyebrow: "Voice call", main: "Speaking" };
+      return { eyebrow, main: "Speaking" };
     case "disconnected":
-      return { eyebrow: "Voice call", main: "Disconnected" };
+      return { eyebrow, main: "Disconnected" };
     default:
-      return { eyebrow: "Voice call", main: "Ready" };
+      return { eyebrow, main: "Ready" };
   }
 }

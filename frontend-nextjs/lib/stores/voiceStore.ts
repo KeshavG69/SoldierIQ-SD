@@ -10,13 +10,18 @@ export interface ConnectionDetails {
 
 type VoiceState = "idle" | "fetching-token" | "connected" | "error";
 
+/** "voice" = document Q&A call (mic button); "concierge" = avatar video call (Agent chat). */
+export type AgentMode = "voice" | "concierge";
+
 interface StartArgs {
   document_ids: string[];
   file_names: string[];
+  mode?: AgentMode;
 }
 
 interface VoiceStore {
   state: VoiceState;
+  mode: AgentMode;
   details: ConnectionDetails | null;
   error: string | null;
   start: (args: StartArgs) => Promise<void>;
@@ -27,17 +32,18 @@ interface VoiceStore {
 
 export const useVoiceStore = create<VoiceStore>((set, get) => ({
   state: "idle",
+  mode: "voice",
   details: null,
   error: null,
 
-  start: async ({ document_ids, file_names }) => {
+  start: async ({ document_ids, file_names, mode = "voice" }) => {
     if (get().state !== "idle") return;
-    set({ state: "fetching-token", error: null });
+    set({ state: "fetching-token", mode, error: null });
 
     try {
       const res = await fetchWithRefresh("/api/livekit/token", {
         method: "POST",
-        body: JSON.stringify({ document_ids, file_names }),
+        body: JSON.stringify({ document_ids, file_names, mode }),
       });
 
       if (!res.ok) {
