@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { useChatStore } from "@/lib/stores/chatStore";
+import { useVoiceStore } from "@/lib/stores/voiceStore";
 import ModelSelector from "./ModelSelector";
 import WorkspaceSwitcher from "./WorkspaceSwitcher";
 import ThemeToggle from "../ThemeToggle";
@@ -23,22 +24,17 @@ export default function Header() {
   const [showTAKSettings, setShowTAKSettings] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
   const [showConnectors, setShowConnectors] = useState(false);
-  const [comingSoonDialog, setComingSoonDialog] = useState<{ show: boolean; feature: string }>({
-    show: false,
-    feature: "",
-  });
+  const voiceState = useVoiceStore((s) => s.state);
+  const startCall = useVoiceStore((s) => s.start);
+  const callBusy = voiceState === "fetching-token" || voiceState === "connected";
 
   const handleLogout = async () => {
     await logout();
     router.push("/auth/login");
   };
 
-  const showComingSoonDialog = (feature: string) => {
-    setComingSoonDialog({ show: true, feature });
-  };
-
-  const closeComingSoonDialog = () => {
-    setComingSoonDialog({ show: false, feature: "" });
+  const startAgentChat = () => {
+    startCall({ document_ids: [], file_names: [], mode: "concierge" });
   };
 
   const openCalendly = () => {
@@ -100,8 +96,10 @@ export default function Header() {
         </button>
 
         <button
-          onClick={() => showComingSoonDialog("Automated Agent Chat")}
-          className={navBtnClass}
+          onClick={startAgentChat}
+          disabled={callBusy}
+          className={`${navBtnClass} disabled:opacity-40 disabled:cursor-not-allowed`}
+          title="Talk to the SoldierIQ concierge (video avatar)"
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
@@ -232,43 +230,6 @@ export default function Header() {
           )}
         </div>
       </div>
-
-      {/* Coming Soon Dialog */}
-      {comingSoonDialog.show && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-150"
-            style={{ zIndex: Z_INDEX.MODAL }}
-            onClick={closeComingSoonDialog}
-          />
-          <div
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md animate-in zoom-in-95 duration-150 px-4"
-            style={{ zIndex: Z_INDEX.MODAL + 1 }}
-          >
-            <div className="rounded-xl bg-white dark:bg-background border border-border dark:border-border shadow-2xl overflow-hidden">
-              <div className="px-6 py-5 border-b border-border dark:border-border">
-                <h3 className="text-base font-semibold text-foreground dark:text-foreground">
-                  Coming soon
-                </h3>
-                <p className="text-sm text-muted-foreground dark:text-muted-foreground mt-0.5">
-                  {comingSoonDialog.feature} is in development.
-                </p>
-              </div>
-              <div className="px-6 py-4 text-sm text-muted-foreground dark:text-muted-foreground leading-relaxed">
-                We&apos;re actively working on this feature. Check back soon for updates.
-              </div>
-              <div className="px-6 py-4 border-t border-border dark:border-border bg-surface-2 dark:bg-card/50 flex justify-end">
-                <button
-                  onClick={closeComingSoonDialog}
-                  className="px-4 py-2 rounded-lg bg-brand text-brand-foreground text-sm font-medium hover:bg-brand-hover shadow-accent transition-colors"
-                >
-                  Got it
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {showTicketModal && <TicketCreationModal onClose={() => setShowTicketModal(false)} />}
       <TAKSettingsModal isOpen={showTAKSettings} onClose={() => setShowTAKSettings(false)} />

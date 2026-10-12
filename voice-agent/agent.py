@@ -12,6 +12,9 @@ and starts an AgentSession wired up with:
 
 Retrieval is delegated to this repo's backend (POST /api/voice/search, the same
 knowledge-graph search as text chat) via HTTP — see retriever.py.
+
+Metadata `mode` picks the agent: "voice" (default) is the document Q&A call;
+"concierge" is the app-help agent with a video avatar (see concierge.py, avatar.py).
 """
 
 from __future__ import annotations
@@ -23,14 +26,16 @@ import logging
 from livekit.agents import (
     AgentSession,
     JobContext,
-    RoomInputOptions,
     WorkerOptions,
     cli,
 )
+from livekit.agents.voice.room_io import AudioInputOptions, RoomOptions
 from livekit import rtc
 from livekit.plugins import noise_cancellation, openai, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
+from avatar import build_avatar
+from concierge import GREETING as CONCIERGE_GREETING, ConciergeAgent
 from prompts import build_instructions
 from settings import settings
 from tools import KnowledgeAgent
@@ -98,8 +103,10 @@ async def entrypoint(ctx: JobContext) -> None:
     await ctx.connect()
     metadata = await _wait_for_metadata(ctx)
 
+    mode = metadata.get("mode") or "voice"
     logger.info(
-        "Voice agent starting for user=%s org=%s docs=%s",
+        "Agent starting mode=%s user=%s org=%s docs=%s",
+        mode,
         metadata.get("user_id"),
         metadata.get("organization_id"),
         len(metadata.get("document_ids") or []),
@@ -116,6 +123,27 @@ async def entrypoint(ctx: JobContext) -> None:
         turn_detection=MultilingualModel(),
         userdata=metadata,
     )
+    room_options = RoomOptions(
+        audio_input=AudioInputOptions(noise_cancellation=noise_cancellation.BVC()),
+    )
+
+    if mode == "concierge":
+        # The avatar must be started first so it takes over the session's audio output.
+        avatar = build_avatar()
+        try:
+            await avatar.start(session, room=ctx.room)
+            await avatar.wait_for_join()
+        except Exception:
+            # Plan limits, used-up Inference credits or a bad AVATAR_IMAGE_URL: stop the
+            # avatar (ends billing) and give the session back its room audio — the user
+            # still gets the concierge, voice-only.
+            logger.exception("Avatar unavailable; concierge continues voice-only")
+            await avatar.aclose()
+            session.output.audio = None
+        await session.start(room=ctx.room, agent=ConciergeAgent(), room_options=room_options)
+        _register_client_rpcs(ctx, session)
+        await session.generate_reply(instructions=f"Say exactly: {CONCIERGE_GREETING!r}")
+        return
 
     agent = KnowledgeAgent(
         instructions=build_instructions(
@@ -124,13 +152,7 @@ async def entrypoint(ctx: JobContext) -> None:
         )
     )
 
-    await session.start(
-        room=ctx.room,
-        agent=agent,
-        room_input_options=RoomInputOptions(
-            noise_cancellation=noise_cancellation.BVC(),
-        ),
-    )
+    await session.start(room=ctx.room, agent=agent, room_options=room_options)
 
     _register_client_rpcs(ctx, session)
 

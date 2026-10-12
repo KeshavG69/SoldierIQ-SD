@@ -12,6 +12,11 @@ FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim AS base
 # the application crashes without emitting any logs due to buffering.
 ENV PYTHONUNBUFFERED=1
 
+# Keep downloaded model files (turn detector, VAD) under /app: `download-files` runs in
+# the build stage, and only /app is copied into the final image. Without this they land
+# in /root/.cache and the worker fails with "Could not find file model_q8.onnx".
+ENV HF_HOME=/app/models
+
 # --- Build stage ---
 # Install dependencies, build native extensions, and prepare the application
 FROM base AS build

@@ -18,9 +18,14 @@ const API_SECRET = process.env.LIVEKIT_API_SECRET;
 const LIVEKIT_URL = process.env.LIVEKIT_URL;
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+/** "voice" = document Q&A call (mic button); "concierge" = app-help agent with a video avatar. */
+type AgentMode = "voice" | "concierge";
+const AGENT_MODES: readonly AgentMode[] = ["voice", "concierge"];
+
 interface StartRequestBody {
   document_ids?: string[];
   file_names?: string[];
+  mode?: string;
 }
 
 interface MeResponse {
@@ -66,15 +71,17 @@ export async function POST(req: NextRequest) {
     const body = (await req.json().catch(() => ({}))) as StartRequestBody;
     const documentIds = Array.isArray(body.document_ids) ? body.document_ids : [];
     const fileNames = Array.isArray(body.file_names) ? body.file_names : [];
+    const mode: AgentMode = AGENT_MODES.includes(body.mode as AgentMode) ? (body.mode as AgentMode) : "voice";
 
     const metadata = JSON.stringify({
       user_id: me.id,
       organization_id: me.organization_id,
       document_ids: documentIds,
       file_names: fileNames,
+      mode,
     });
 
-    const roomName = `voice_${me.id}_${Date.now()}`;
+    const roomName = `${mode}_${me.id}_${Date.now()}`;
     const participantIdentity = `${me.id}_${Math.floor(Math.random() * 10_000)}`;
     const participantName = [me.firstName, me.lastName].filter(Boolean).join(" ") || me.email || me.id;
 
