@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS public.user_document_selections (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (organization_id, user_id)
 );
+-- The login briefing looks up documents added to the org since the last visit.
+CREATE INDEX IF NOT EXISTS idx_documents_org_created
+    ON public.documents (organization_id, created_at DESC);
 """
 
 

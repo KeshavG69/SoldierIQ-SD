@@ -13,6 +13,7 @@ import TicketCreationModal from "../TicketCreationModal";
 import TAKSettingsModal from "./TAKSettingsModal";
 import TeamModal from "./TeamModal";
 import ConnectorsModal from "./ConnectorsModal";
+import MemoryModal from "./MemoryModal";
 import { Z_INDEX } from "@/lib/constants/zIndex";
 
 export default function Header() {
@@ -24,6 +25,7 @@ export default function Header() {
   const [showTAKSettings, setShowTAKSettings] = useState(false);
   const [showTeam, setShowTeam] = useState(false);
   const [showConnectors, setShowConnectors] = useState(false);
+  const [showMemory, setShowMemory] = useState(false);
   const voiceState = useVoiceStore((s) => s.state);
   const startCall = useVoiceStore((s) => s.start);
   const callBusy = voiceState === "fetching-token" || voiceState === "connected";
@@ -202,6 +204,18 @@ export default function Header() {
                   <button
                     onClick={() => {
                       setShowMenu(false);
+                      setShowMemory(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-2 text-left text-sm text-muted-foreground dark:text-foreground hover:bg-secondary dark:hover:bg-accent rounded-lg transition-colors"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18ZM12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18ZM12 5v13" />
+                    </svg>
+                    Memory
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
                       setShowTAKSettings(true);
                     }}
                     className="w-full flex items-center gap-2 px-2.5 py-2 text-left text-sm text-muted-foreground dark:text-foreground hover:bg-secondary dark:hover:bg-accent rounded-lg transition-colors"
@@ -235,6 +249,7 @@ export default function Header() {
       <TAKSettingsModal isOpen={showTAKSettings} onClose={() => setShowTAKSettings(false)} />
       {showTeam && <TeamModal onClose={() => setShowTeam(false)} />}
       {showConnectors && <ConnectorsModal onClose={() => setShowConnectors(false)} />}
+      {showMemory && <MemoryModal onClose={() => setShowMemory(false)} />}
     </header>
   );
 }

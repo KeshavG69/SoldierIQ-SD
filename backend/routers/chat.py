@@ -14,7 +14,9 @@ from utils.streaming import create_sse_event_stream
 from app.logger import logger
 from auth.keycloak_auth import get_current_user_keycloak
 from orgs.dependencies import get_current_context
-from clients.mongodb_client import get_mongodb_client
+from clients.postgres_client import get_postgres_client
+from clients.agent_memory import SESSION_TABLE
+import asyncpg
 import uuid
 import json
 
@@ -158,6 +160,15 @@ async def chat_briefing(
         raise HTTPException(status_code=500, detail="Could not generate briefing")
 
 
+def _json(v):
+    """asyncpg returns JSONB columns as strings."""
+    return json.loads(v) if isinstance(v, str) else v
+
+
+async def _sessions_conn():
+    return (await get_postgres_client().get_pool()).acquire()
+
+
 @router.get("/chat/sessions")
 async def list_chat_sessions(
     current_user: dict = Depends(get_current_context),
@@ -175,7 +186,7 @@ async def list_chat_sessions(
     - updated_at: When session was last updated
     - message_preview: Preview of first message
 
-    Note: agent_sessions collection only stores user_id (not organization_id).
+    Note: agent_sessions only stores user_id (not organization_id).
     Organization-level filtering is handled by user authentication.
 
     Args:
@@ -192,67 +203,48 @@ async def list_chat_sessions(
 
         logger.info(f"📋 Listing chat sessions for user: {user_id}")
 
-        mongodb = get_mongodb_client()
-
-        # Query by user_id only (agent_sessions collection doesn't store organization_id)
-        query = {"user_id": user_id}
-
-        # Get sessions with limited projection for performance
-        sessions = await mongodb.async_find_documents(
-            collection="agent_sessions",
-            query=query,
-            projection={
-                "session_id": 1,
-                "session_data": 1,
-                "created_at": 1,
-                "updated_at": 1,
-                "runs": {"$slice": 1}  # Just first run for message preview
-            },
-            limit=limit,
-            skip=skip
-        )
-
-        logger.info(f"Retrieved {len(sessions)} raw sessions from MongoDB")
-
-        # Sort by updated_at descending (most recent first)
-        sessions_sorted = sorted(
-            sessions,
-            key=lambda x: x.get("updated_at", 0),
-            reverse=True
-        )
-
-        logger.info(f"Sorted {len(sessions_sorted)} sessions")
+        # Only the columns the list needs, plus the first user message of the
+        # first run as a preview — not the full run history.
+        query = f"""
+            SELECT session_id,
+                   session_data->>'session_name' AS session_name,
+                   created_at, updated_at,
+                   (SELECT m->>'content'
+                      FROM jsonb_array_elements(COALESCE(runs->0->'messages', '[]'::jsonb)) m
+                     WHERE m->>'role' = 'user'
+                     LIMIT 1) AS first_user_message
+              FROM {SESSION_TABLE}
+             WHERE user_id = $1
+             ORDER BY updated_at DESC NULLS LAST
+             LIMIT $2 OFFSET $3
+        """
+        try:
+            async with await _sessions_conn() as conn:
+                rows = await conn.fetch(query, user_id, limit, skip)
+        except asyncpg.exceptions.UndefinedTableError:
+            rows = []  # no chat has been saved yet
 
         # Transform for frontend
         result = []
-        for session in sessions_sorted:
-            # Get first message as preview
-            message_preview = ""
-            first_user_message = ""
-
-            if session.get("runs") and len(session["runs"]) > 0:
-                messages = session["runs"][0].get("messages", [])
-                for msg in messages:
-                    if msg.get("role") == "user":
-                        first_user_message = msg.get("content", "")
-                        message_preview = first_user_message[:100]
-                        if len(first_user_message) > 100:
-                            message_preview += "..."
-                        break
+        for row in rows:
+            first_user_message = row["first_user_message"] or ""
+            message_preview = first_user_message[:100]
+            if len(first_user_message) > 100:
+                message_preview += "..."
 
             # Use session name if available, otherwise use first message
-            session_name = session.get("session_data", {}).get("session_name")
+            session_name = row["session_name"]
             if not session_name:
                 session_name = first_user_message[:50] if first_user_message else "New Chat"
                 if first_user_message and len(first_user_message) > 50:
                     session_name += "..."
 
             result.append({
-                "session_id": session["session_id"],
+                "session_id": row["session_id"],
                 "name": session_name,
                 "message_preview": message_preview,
-                "created_at": session.get("created_at"),
-                "updated_at": session.get("updated_at")
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"]
             })
 
         logger.info(f"✅ Found {len(result)} chat sessions")
@@ -279,7 +271,7 @@ async def get_chat_session(
     Returns all messages in the session in chronological order.
     Only returns sessions owned by the authenticated user.
 
-    Note: agent_sessions collection only stores user_id (not organization_id).
+    Note: agent_sessions only stores user_id (not organization_id).
 
     Args:
         session_id: The unique session identifier
@@ -294,18 +286,25 @@ async def get_chat_session(
 
         logger.info(f"📖 Getting chat session: {session_id} for user: {user_id}")
 
-        mongodb = get_mongodb_client()
-
-        # Security: Ensure user owns this session (filter by user_id only)
-        query = {
-            "session_id": session_id,
-            "user_id": user_id
-        }
-
-        session = await mongodb.async_find_document(
-            collection="agent_sessions",
-            query=query
-        )
+        # Security: Ensure user owns this session (filter by user_id)
+        try:
+            async with await _sessions_conn() as conn:
+                row = await conn.fetchrow(
+                    f"""SELECT session_data, runs, created_at, updated_at
+                          FROM {SESSION_TABLE}
+                         WHERE session_id = $1 AND user_id = $2""",
+                    session_id, user_id,
+                )
+        except asyncpg.exceptions.UndefinedTableError:
+            row = None
+        session = None
+        if row:
+            session = {
+                "session_data": _json(row["session_data"]) or {},
+                "runs": _json(row["runs"]) or [],
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"],
+            }
 
         if not session:
             raise HTTPException(
@@ -315,7 +314,7 @@ async def get_chat_session(
 
         # Extract clean message history (avoiding duplicates from from_history)
         messages = []
-        for run_idx, run in enumerate(session.get("runs", [])):
+        for run_idx, run in enumerate(session.get("runs") or []):
             run_messages = run.get("messages", [])
             logger.debug(f"Processing run {run_idx}: {len(run_messages)} messages")
 
@@ -418,7 +417,7 @@ async def get_chat_session(
         return {
             "success": True,
             "session_id": session_id,
-            "session_name": session.get("session_data", {}).get("session_name"),
+            "session_name": (session.get("session_data") or {}).get("session_name"),
             "messages": messages,
             "created_at": session.get("created_at"),
             "updated_at": session.get("updated_at")
@@ -442,7 +441,7 @@ async def delete_chat_session(
     Permanently deletes a session and all its messages.
     Only the owner can delete their sessions.
 
-    Note: agent_sessions collection only stores user_id (not organization_id).
+    Note: agent_sessions only stores user_id (not organization_id).
 
     Args:
         session_id: The unique session identifier
@@ -457,18 +456,18 @@ async def delete_chat_session(
 
         logger.info(f"🗑️ Deleting chat session: {session_id} for user: {user_id}")
 
-        mongodb = get_mongodb_client()
-
-        # Security: Ensure user owns this session (filter by user_id only)
-        query = {
-            "session_id": session_id,
-            "user_id": user_id
-        }
-
-        deleted_count = await mongodb.async_delete_document(
-            collection="agent_sessions",
-            query=query
-        )
+        # Security: Ensure user owns this session (filter by user_id)
+        try:
+            async with await _sessions_conn() as conn:
+                deleted = await conn.fetchval(
+                    f"""DELETE FROM {SESSION_TABLE}
+                         WHERE session_id = $1 AND user_id = $2
+                     RETURNING session_id""",
+                    session_id, user_id,
+                )
+        except asyncpg.exceptions.UndefinedTableError:
+            deleted = None
+        deleted_count = 1 if deleted else 0
 
         if deleted_count == 0:
             raise HTTPException(
@@ -503,7 +502,7 @@ async def rename_chat_session(
     Updates the session name to a custom value.
     Only the owner can rename their sessions.
 
-    Note: agent_sessions collection only stores user_id (not organization_id).
+    Note: agent_sessions only stores user_id (not organization_id).
 
     Args:
         session_id: The unique session identifier
@@ -522,20 +521,20 @@ async def rename_chat_session(
 
         logger.info(f"✏️ Renaming chat session: {session_id} to '{new_name}'")
 
-        mongodb = get_mongodb_client()
-
-        # Security: Ensure user owns this session (filter by user_id only)
-        query = {
-            "session_id": session_id,
-            "user_id": user_id
-        }
-
-        # Update session name
-        modified_count = await mongodb.async_update_document(
-            collection="agent_sessions",
-            query=query,
-            update={"$set": {"session_data.session_name": new_name.strip()}}
-        )
+        # Security: Ensure user owns this session (filter by user_id)
+        try:
+            async with await _sessions_conn() as conn:
+                renamed = await conn.fetchval(
+                    f"""UPDATE {SESSION_TABLE}
+                           SET session_data = jsonb_set(COALESCE(session_data, '{{}}'::jsonb),
+                                                        '{{session_name}}', to_jsonb($3::text))
+                         WHERE session_id = $1 AND user_id = $2
+                     RETURNING session_id""",
+                    session_id, user_id, new_name.strip(),
+                )
+        except asyncpg.exceptions.UndefinedTableError:
+            renamed = None
+        modified_count = 1 if renamed else 0
 
         if modified_count == 0:
             raise HTTPException(
