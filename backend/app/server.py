@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.settings import settings
 from app.middleware import  SecurityHeadersMiddleware
 from app.logger import logger
-from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests, connectors, voice
+from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests, connectors, voice, memory
 
 
 def _prewarm_clients():
@@ -27,7 +27,22 @@ def _prewarm_clients():
         except Exception as e:
             logger.warning(f"⚠️ Pre-warm failed (non-fatal): {e}")
 
+    def _warm_memory():
+        # Connect to the agent db and look up its tables once (creating them
+        # if missing), so the first chat / Memory page load doesn't pay for it.
+        try:
+            from clients.agent_memory import get_agent_db
+            db = get_agent_db()
+            db._get_table("sessions", create_table_if_not_found=True)
+            db._get_table("memories", create_table_if_not_found=True)
+            from clients.agent_memory import ensure_agent_indexes
+            ensure_agent_indexes()
+            logger.info("✅ Agent session + memory tables ready (Postgres)")
+        except Exception as e:
+            logger.warning(f"⚠️ Agent db pre-warm failed (non-fatal): {e}")
+
     threading.Thread(target=_warm, daemon=True).start()
+    threading.Thread(target=_warm_memory, daemon=True).start()
 
 
 @asynccontextmanager
@@ -126,6 +141,7 @@ app.include_router(invitations.router, prefix="/api")
 app.include_router(organizations.router, prefix="/api")
 app.include_router(access_requests.router, prefix="/api")
 app.include_router(voice.router, prefix="/api")
+app.include_router(memory.router, prefix="/api")
 
 
 if __name__ == "__main__":

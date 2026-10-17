@@ -85,7 +85,11 @@ export default function SessionDropdown({ hasUserMessages }: SessionDropdownProp
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          // Refresh on open so chats from this visit show up without a reload.
+          if (!isOpen) refetch();
+          setIsOpen(!isOpen);
+        }}
         className="inline-flex items-center gap-1.5 px-2.5 h-8 rounded-lg border border-border dark:border-border bg-white dark:bg-background hover:bg-surface-2 dark:hover:bg-accent transition-colors text-xs font-medium text-muted-foreground dark:text-foreground"
       >
         {hasUserMessages ? (

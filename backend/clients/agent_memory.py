@@ -1,11 +1,15 @@
 """
 Agent Memory Manager
-Provides database and memory management for agents
+Provides database and memory management for agents.
+
+Agent storage lives in Postgres, in tables Agno creates on first use:
+  public.agent_sessions  chat sessions (history, runs, session name)
+  public.agent_memories  long-term user memories
 """
 
 import threading
 from typing import List, Optional
-from agno.db.mongo import MongoDb
+from agno.db.postgres import PostgresDb
 from agno.db.schemas import UserMemory
 from agno.memory.manager import MemoryManager
 from agno.models.message import Message
@@ -17,6 +21,8 @@ from clients.ultimate_llm import get_llm_agno
 # to) whichever chat model the first agent happened to use.
 MEMORY_MODEL = "google/gemini-3-flash-preview"
 MAX_MEMORIES_PER_USER = 20
+MEMORY_TABLE = "agent_memories"
+SESSION_TABLE = "agent_sessions"
 
 
 # Patch for legacy memory format compatibility
@@ -35,6 +41,7 @@ def _user_memory_from_dict_with_alias(cls, data):
         "topics",
         "user_id",
         "input",
+        "created_at",
         "updated_at",
         "feedback",
         "agent_id",
@@ -131,6 +138,25 @@ GUIDING PRINCIPLES:
 - Respect privacy and only remember what's useful for assistance
 - Store information that reduces friction in future interactions
 """
+
+
+class CachedTablePostgresDb(PostgresDb):
+    """PostgresDb that looks each table up once.
+
+    Agno re-checks that a table exists, validates its schema and re-reflects it
+    on every call — several round-trips each time, which over a remote
+    Postgres made a single memory read take ~8s. Once a table is found it
+    doesn't change shape, so keep the Table object.
+    """
+
+    def _get_table(self, table_type: str, create_table_if_not_found: Optional[bool] = False):
+        cache = self.__dict__.setdefault("_table_cache", {})
+        if table_type in cache:
+            return cache[table_type]
+        table = super()._get_table(table_type, create_table_if_not_found=create_table_if_not_found)
+        if table is not None:
+            cache[table_type] = table
+        return table
 
 
 class LimitedMemoryManager(MemoryManager):
@@ -241,26 +267,29 @@ class AgentMemoryManager:
         if hasattr(self, "_initialized") and self._initialized:
             return
 
-        self._db_cache: Optional[MongoDb] = None
+        self._db_cache: Optional[CachedTablePostgresDb] = None
         self._memory_managers: dict[str, LimitedMemoryManager] = {}
         self._db_lock = threading.Lock()
         self._memory_lock = threading.Lock()
         self._initialized = True
 
-    def get_db(self) -> MongoDb:
-        """Get or create shared MongoDb instance for agent storage"""
+    def get_db(self) -> CachedTablePostgresDb:
+        """Get or create the shared Postgres db for agent sessions and memories"""
         if self._db_cache is None:
             with self._db_lock:
                 if self._db_cache is None:
-                    logger.info("Initializing MongoDb instance for agent storage")
-                    self._db_cache = MongoDb(
-                        db_url=settings.MONGODB_URL,
-                        db_name=settings.MONGODB_DATABASE,
-                        session_collection="agent_sessions",
-                        memory_collection="agent_memory",
-                        metrics_collection="agent_metrics",
-                        eval_collection="agent_eval_runs",
-                        knowledge_collection="agent_knowledge",
+                    logger.info("Initializing PostgresDb for agent storage")
+                    url = settings.POSTGRES_URL
+                    # SQLAlchemy needs the driver named; psycopg (v3) is installed.
+                    for prefix in ("postgresql://", "postgres://"):
+                        if url.startswith(prefix):
+                            url = "postgresql+psycopg://" + url[len(prefix):]
+                            break
+                    self._db_cache = CachedTablePostgresDb(
+                        db_url=url,
+                        db_schema="public",
+                        session_table=SESSION_TABLE,
+                        memory_table=MEMORY_TABLE,
                     )
         return self._db_cache
 
@@ -311,11 +340,36 @@ def get_agent_memory_manager() -> AgentMemoryManager:
     return _agent_memory_manager
 
 
-def get_agent_db() -> MongoDb:
-    """Get agent database instance"""
+def get_agent_db() -> CachedTablePostgresDb:
+    """Get the agent database (Postgres: sessions + memories)"""
     return get_agent_memory_manager().get_db()
 
 
 def get_memory_manager(organization_id: Optional[str] = None) -> LimitedMemoryManager:
     """Get the memory manager for an organization"""
     return get_agent_memory_manager().get_memory_manager(organization_id)
+
+
+def get_memory_db() -> CachedTablePostgresDb:
+    """Get the Postgres db that holds long-term user memories (same as get_agent_db)"""
+    return get_agent_memory_manager().get_db()
+
+
+# Indexes for the queries the app runs on these tables. Agno only indexes
+# user_id on memories and nothing on sessions, but every session query
+# (list / load / rename / delete) filters on user_id and the list sorts by
+# updated_at. Idempotent; run at startup once the tables exist.
+AGENT_TABLE_INDEXES = (
+    f"CREATE INDEX IF NOT EXISTS idx_{SESSION_TABLE}_user_updated "
+    f"ON public.{SESSION_TABLE} (user_id, updated_at DESC)",
+    f"CREATE INDEX IF NOT EXISTS idx_{MEMORY_TABLE}_user_updated "
+    f"ON public.{MEMORY_TABLE} (user_id, updated_at DESC)",
+)
+
+
+def ensure_agent_indexes() -> None:
+    from sqlalchemy import text
+
+    with get_agent_db().db_engine.begin() as conn:
+        for stmt in AGENT_TABLE_INDEXES:
+            conn.execute(text(stmt))
