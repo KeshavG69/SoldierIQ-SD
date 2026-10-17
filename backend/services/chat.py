@@ -26,6 +26,7 @@ async def create_chat_agent(
     tak_credentials: Optional[dict] = None,
     user_email: Optional[str] = None,
     is_admin: bool = False,
+    opening_briefing: Optional[str] = None,
 ) -> Agent:
     """
     Create a chat agent with knowledge base access
@@ -58,9 +59,11 @@ async def create_chat_agent(
             llm = get_llm_agno(model=model)
             use_hybrid = False
 
-        # Get database and memory manager
+        # Get database and memory manager. Long-term memories are per user
+        # (scoped to the org), so skip them for anonymous runs — they would
+        # all share one "default" bucket.
         db_instance = get_agent_db()
-        memory_manager = get_memory_manager()
+        memory_manager = get_memory_manager(organization_id) if user_id else None
 
         # Create knowledge retriever
         knowledge_retriever = create_knowledge_retriever(
@@ -397,6 +400,16 @@ The user has connected these apps: {", ".join(connected_apps)}. You have tools t
         if setup_tools:
             instructions.append(composio_setup_instructions(connected_apps, supported_apps))
 
+        if opening_briefing:
+            # The login briefing is generated outside this agent, so it isn't in
+            # the session history. Tell the agent what it said, so a reply like
+            # "yes, do that" has something to refer to.
+            instructions.append(f"""<opening_briefing>
+You opened this conversation (before the user said anything) with this briefing:
+{opening_briefing[:2000]}
+The user's message may be a reply to it.
+</opening_briefing>""")
+
         # Create agent
         agent = Agent(
             name="Knowledge Assistant",
@@ -412,9 +425,12 @@ The user has connected these apps: {", ".join(connected_apps)}. You have tools t
             num_history_runs=3,
             add_datetime_to_context=True,
             db=db_instance,
+            # Long-term user memory: after each run Agno extracts facts and
+            # preferences from the user's message in the background, and puts
+            # the stored ones into the system prompt on the next run.
             memory_manager=memory_manager,
-            # enable_agentic_memory=True,
-            # enable_user_memories=True,
+            update_memory_on_run=memory_manager is not None,
+            add_memories_to_context=memory_manager is not None,
             debug_mode=True,
             max_tool_calls_from_history=0,
             # Summarize bulky tool results once the context gets large.

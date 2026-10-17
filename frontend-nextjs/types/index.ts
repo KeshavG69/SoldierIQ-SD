@@ -57,6 +57,7 @@ export interface ChatMessage {
   graph?: KnowledgeGraph; // GraphRAG retrieval graph (entities + triples + chunks)
   composioAuth?: ComposioAuthInfo; // setup_composio_service result → "Connect <app>" card
   toolCalls?: ToolCallStep[]; // live timeline of the agent's tool calls
+  briefing?: { suggestions: string[] }; // login briefing → clickable follow-ups
 }
 
 // One tool call in an assistant message's step timeline

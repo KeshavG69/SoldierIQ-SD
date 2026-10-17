@@ -1,4 +1,9 @@
-"""Retrieval endpoint for the LiveKit voice-agent worker.
+"""Voice endpoints.
+
+POST /api/voice/search       Retrieval for the LiveKit voice-agent worker (below).
+POST /api/voice/transcribe   Chat mic-button dictation: one short clip → text.
+
+Retrieval endpoint for the LiveKit voice-agent worker.
 
 The worker runs outside this service (LiveKit Cloud), so it can't use a user's
 Keycloak JWT. It authenticates with a shared secret instead and sends the
@@ -12,16 +17,19 @@ addition is a document_id -> file name map, because chunks carry only document i
 """
 
 import asyncio
+import base64
 import hmac
 import uuid
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Header, HTTPException
+import httpx
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from app.logger import logger
 from app.settings import settings
 from clients.postgres_client import get_postgres_client
+from orgs.dependencies import get_current_context
 from utils.agno_tools import create_knowledge_retriever
 
 router = APIRouter(prefix="/voice", tags=["voice"])
@@ -114,3 +122,69 @@ async def voice_search(
         f"anchors={len(wrapper.get('anchors') or [])} triples={len(wrapper.get('triples') or [])}"
     )
     return wrapper
+
+
+# ------------------------------------------------------------------ dictation
+# The browser does the "live" part: it cuts speech into short segments at
+# pauses and re-sends the segment in progress about once a second, so text
+# appears while the user talks. OpenRouter's STT endpoint is request/response
+# only (no streaming), so near-live is the closest it can get.
+OPENROUTER_STT_URL = "https://openrouter.ai/api/v1/audio/transcriptions"
+# Segments are a few seconds of 16 kHz mono PCM (~32 KB/s); anything near this
+# is a bug or abuse, not dictation.
+MAX_AUDIO_BYTES = 10 * 1024 * 1024
+_FORMATS = {"wav", "webm", "ogg", "mp3", "m4a", "mp4", "flac", "aac"}
+
+_stt_client: Optional[httpx.AsyncClient] = None
+
+
+def _stt_http() -> httpx.AsyncClient:
+    # One pooled client: dictation fires a request every ~second, so reusing
+    # the TLS connection to OpenRouter matters.
+    global _stt_client
+    if _stt_client is None:
+        _stt_client = httpx.AsyncClient(timeout=httpx.Timeout(30.0, connect=10.0))
+    return _stt_client
+
+
+@router.post("/transcribe")
+async def transcribe(
+    audio: UploadFile = File(...),
+    audio_format: str = Form("wav"),
+    language: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_context),
+) -> Dict[str, Any]:
+    if not settings.OPENROUTER_API_KEY:
+        raise HTTPException(status_code=503, detail="Speech-to-text is not configured")
+    fmt = (audio_format or "wav").lower().strip()
+    if fmt not in _FORMATS:
+        raise HTTPException(status_code=400, detail=f"Unsupported audio format: {fmt}")
+
+    data = await audio.read()
+    if not data:
+        return {"text": ""}
+    if len(data) > MAX_AUDIO_BYTES:
+        raise HTTPException(status_code=413, detail="Audio clip too large")
+
+    body: Dict[str, Any] = {
+        "model": settings.VOICE_STT_MODEL,
+        "input_audio": {"data": base64.b64encode(data).decode("ascii"), "format": fmt},
+    }
+    if language:
+        body["language"] = language
+
+    try:
+        resp = await _stt_http().post(
+            OPENROUTER_STT_URL,
+            headers={"Authorization": f"Bearer {settings.OPENROUTER_API_KEY}"},
+            json=body,
+        )
+    except httpx.HTTPError as e:
+        logger.warning(f"STT request failed: {e}")
+        raise HTTPException(status_code=502, detail="Speech-to-text service unreachable")
+
+    if resp.status_code != 200:
+        logger.warning(f"STT {resp.status_code}: {resp.text[:300]}")
+        raise HTTPException(status_code=502, detail="Speech-to-text failed")
+
+    return {"text": (resp.json().get("text") or "").strip()}

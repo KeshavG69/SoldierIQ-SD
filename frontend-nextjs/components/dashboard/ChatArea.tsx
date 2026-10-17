@@ -7,6 +7,7 @@ import type { ChatMessage, KnowledgeGraph } from "@/types";
 import { useDocumentStore } from "@/lib/stores/documentStore";
 import { chatApi, TAKCredentials } from "@/lib/api/documents";
 import { getTAKConfig } from "@/lib/api/tak";
+import { briefingApi } from "@/lib/api/briefing";
 import { usePresignedUrls } from "@/lib/hooks/usePresignedUrls";
 import VideoClipViewer from "./VideoClipViewer";
 import KnowledgeGraphView from "./KnowledgeGraphView";
@@ -15,6 +16,43 @@ import MessageList from "./chat/MessageList";
 import ChatInput from "./chat/ChatInput";
 import MissionSelector, { Mission } from "./chat/MissionSelector";
 import CitationTooltip from "./chat/CitationTooltip";
+
+// The login briefing runs once per sign-in. Keycloak puts a per-login session
+// id (`sid`) in every access token, stable across token refreshes, so a new
+// sign-in gets a new briefing but a page reload doesn't.
+const BRIEFING_LOGIN_KEY = "soldieriq_briefing_login";
+
+function currentLoginId(): string | null {
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) return null;
+    const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const claims = JSON.parse(atob(b64));
+    return String(claims.sid || claims.session_state || claims.auth_time || "") || null;
+  } catch {
+    return null;
+  }
+}
+
+// Browser position if the user allows it; otherwise the backend falls back to
+// a rough IP-based location.
+function getPosition(): Promise<{ latitude: number; longitude: number } | null> {
+  return new Promise((resolve) => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
+    const timer = setTimeout(() => resolve(null), 8000);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        clearTimeout(timer);
+        resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(null);
+      },
+      { enableHighAccuracy: false, timeout: 7000, maximumAge: 10 * 60 * 1000 }
+    );
+  });
+}
 
 export default function ChatArea() {
   const {
@@ -37,7 +75,7 @@ export default function ChatArea() {
     setTAKEnabled,
   } = useChatStore();
 
-  const { selectedDocs, documents } = useDocumentStore();
+  const { selectedDocs, documents, selectionLoaded } = useDocumentStore();
 
   // Collect all sources from messages for the presigned URL hook
   const allSources = useMemo(() => {
@@ -135,6 +173,54 @@ export default function ChatArea() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Login briefing: once the saved selection is loaded, the agent opens a
+  // fresh conversation with a short briefing (selected docs + location + time).
+  const briefingStarted = useRef(false);
+  useEffect(() => {
+    if (!selectionLoaded || briefingStarted.current) return;
+    const loginId = currentLoginId();
+    if (!loginId || localStorage.getItem(BRIEFING_LOGIN_KEY) === loginId) return;
+    briefingStarted.current = true;
+    localStorage.setItem(BRIEFING_LOGIN_KEY, loginId);
+
+    const chat = useChatStore.getState();
+    if (chat.isLoading) return;
+    // Start clean; the previous conversation stays in chat history.
+    if (chat.messages.length > 0) chat.startNewSession();
+
+    const id = `${Date.now()}-briefing`;
+    const patch = (fields: Partial<ChatMessage>) =>
+      useChatStore.setState((st) => ({
+        messages: st.messages.map((m) => (m.id === id ? { ...m, ...fields } : m)),
+      }));
+
+    chat.addMessage({
+      id,
+      role: "assistant",
+      content: "",
+      timestamp: new Date().toISOString(),
+      isStreaming: true,
+    });
+
+    (async () => {
+      try {
+        const position = await getPosition();
+        const briefing = await briefingApi.get({
+          ...(position ?? {}),
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+        patch({
+          content: briefing.greeting,
+          isStreaming: false,
+          briefing: { suggestions: briefing.suggestions },
+        });
+      } catch {
+        // No briefing is fine — drop the placeholder.
+        useChatStore.setState((st) => ({ messages: st.messages.filter((m) => m.id !== id) }));
+      }
+    })();
+  }, [selectionLoaded]);
+
   // --- Handlers ---
 
   const handleSelectMission = useCallback((mission: Mission) => {
@@ -223,12 +309,21 @@ export default function ChatArea() {
   );
 
   const handleSendMessage = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!inputMessage.trim() || isLoading) return;
+    async (e: React.FormEvent | null, text?: string) => {
+      e?.preventDefault();
+      const userMessage = (text ?? inputMessage).trim();
+      if (!userMessage || isLoading) return;
 
-      const userMessage = inputMessage.trim();
-      setInputMessage("");
+      if (text === undefined) setInputMessage("");
+
+      // First reply after a login briefing: send the briefing along so the
+      // agent knows what it opened with.
+      const openingBriefing =
+        messages.length > 0 &&
+        messages[0].briefing &&
+        !messages.some((m) => m.role === "user")
+          ? messages[0].content
+          : undefined;
 
       addMessage({
         id: `${Date.now()}-user`,
@@ -260,7 +355,8 @@ export default function ChatArea() {
           documentIds,
           sessionId,
           selectedModel,
-          takEnabled && takCredentials ? takCredentials : undefined
+          takEnabled && takCredentials ? takCredentials : undefined,
+          openingBriefing
         );
 
         const reader = stream.getReader();
@@ -503,6 +599,7 @@ export default function ChatArea() {
     },
     [
       inputMessage,
+      messages,
       isLoading,
       setInputMessage,
       addMessage,
@@ -516,6 +613,11 @@ export default function ChatArea() {
       updateLastMessage,
       endStreaming,
     ]
+  );
+
+  const handleSuggestion = useCallback(
+    (text: string) => handleSendMessage(null, text),
+    [handleSendMessage]
   );
 
   const handleKeyDown = useCallback(
@@ -558,6 +660,7 @@ export default function ChatArea() {
               onCitationLeave={handleCitationLeave}
               onCitationClick={handleCitationClick}
               onOpenGraph={handleOpenGraph}
+              onSuggestion={handleSuggestion}
             />
           )}
         </div>

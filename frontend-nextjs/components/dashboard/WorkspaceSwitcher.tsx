@@ -39,6 +39,8 @@ export default function WorkspaceSwitcher() {
         try {
           localStorage.removeItem("soldieriq-documents-cache");
           localStorage.removeItem("soldieriq-chat-session");
+          // Selection is per org; the new org's saved one loads after reload.
+          localStorage.removeItem("soldieriq_selected_docs");
         } catch {
           /* ignore */
         }

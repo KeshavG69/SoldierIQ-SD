@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # LLM APIs
     OPENAI_API_KEY: str = ""
     OPENROUTER_API_KEY: str = ""
+    # Chat mic-button dictation model (OpenRouter STT). Deepgram Nova-3 is what
+    # Claude Code's own dictation uses.
+    VOICE_STT_MODEL: str = "deepgram/nova-3"
     GROQ_API_KEY: str = ""
     ELEVENLABS_API_KEY: str = ""
     FUNCTION_API_KEY: str = ""  
