@@ -8,7 +8,22 @@ export interface WorkspaceOrganization {
   is_current: boolean;
 }
 
+export interface SavedSelection {
+  saved: boolean; // false = the user never saved one (keep the local selection)
+  document_ids: string[];
+}
+
 export const workspaceApi = {
+  // Document selection saved server-side (Postgres) for the active org.
+  getSelection: async (): Promise<SavedSelection> => {
+    const res = await apiClient.get<SavedSelection>('/workspace/selection');
+    return res.data;
+  },
+
+  saveSelection: async (documentIds: string[]): Promise<void> => {
+    await apiClient.put('/workspace/selection', { document_ids: documentIds });
+  },
+
   // Organizations the current user belongs to.
   getUserOrganizations: async (): Promise<WorkspaceOrganization[]> => {
     const res = await apiClient.get<WorkspaceOrganization[]>('/workspace/organizations');

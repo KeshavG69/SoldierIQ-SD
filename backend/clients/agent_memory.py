@@ -4,13 +4,19 @@ Provides database and memory management for agents
 """
 
 import threading
-from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from agno.db.mongo import MongoDb
 from agno.db.schemas import UserMemory
 from agno.memory.manager import MemoryManager
+from agno.models.message import Message
 from app.settings import settings
 from app.logger import logger
+from clients.ultimate_llm import get_llm_agno
+
+# Fixed model for extracting memories, so it doesn't depend on (or get pinned
+# to) whichever chat model the first agent happened to use.
+MEMORY_MODEL = "google/gemini-3-flash-preview"
+MAX_MEMORIES_PER_USER = 20
 
 
 # Patch for legacy memory format compatibility
@@ -41,95 +47,7 @@ def _user_memory_from_dict_with_alias(cls, data):
 UserMemory.from_dict = classmethod(_user_memory_from_dict_with_alias)
 
 
-class LimitedMemoryManager(MemoryManager):
-    """Memory manager that enforces a cap on stored memories per user"""
-
-    def __init__(self, max_memories_per_user: int = 20, **kwargs):
-        super().__init__(**kwargs)
-        self.max_memories_per_user = max_memories_per_user
-
-    def add_user_memory(
-        self, memory: UserMemory, user_id: Optional[str] = None
-    ) -> Optional[str]:
-        """Add user memory with retention limit enforcement"""
-        memory_id = super().add_user_memory(memory, user_id)
-
-        # Enforce per-user limit
-        if memory_id and self.db:
-            target_user_id = user_id or memory.user_id or "default"
-            memories = self.db.get_user_memories(user_id=target_user_id)
-
-            if isinstance(memories, tuple):
-                memories = memories[0]
-
-            if memories and len(memories) > self.max_memories_per_user:
-                # Sort by timestamp and keep newest N
-                def memory_timestamp(mem: UserMemory) -> datetime:
-                    return mem.updated_at or datetime.now()
-
-                sorted_memories = sorted(memories, key=memory_timestamp, reverse=False)
-                # Remove oldest memories
-                for stale_memory in sorted_memories[: -self.max_memories_per_user]:
-                    if stale_memory.memory_id:
-                        self.db.delete_user_memory(memory_id=stale_memory.memory_id)
-
-        return memory_id
-
-
-class AgentMemoryManager:
-    """
-    Singleton manager for agent memory and database
-    Thread-safe lazy initialization
-    """
-
-    _instance: Optional["AgentMemoryManager"] = None
-    _lock = threading.Lock()
-
-    def __new__(cls) -> "AgentMemoryManager":
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = super().__new__(cls)
-                    cls._instance._initialized = False
-        return cls._instance
-
-    def __init__(self):
-        if hasattr(self, "_initialized") and self._initialized:
-            return
-
-        self._db_cache: Optional[MongoDb] = None
-        self._memory_manager_cache: Optional[LimitedMemoryManager] = None
-        self._db_lock = threading.Lock()
-        self._memory_lock = threading.Lock()
-        self._initialized = True
-
-    def get_db(self) -> MongoDb:
-        """Get or create shared MongoDb instance for agent storage"""
-        if self._db_cache is None:
-            with self._db_lock:
-                if self._db_cache is None:
-                    logger.info("Initializing MongoDb instance for agent storage")
-                    self._db_cache = MongoDb(
-                        db_url=settings.MONGODB_URL,
-                        db_name=settings.MONGODB_DATABASE,
-                        session_collection="agent_sessions",
-                        memory_collection="agent_memory",
-                        metrics_collection="agent_metrics",
-                        eval_collection="agent_eval_runs",
-                        knowledge_collection="agent_knowledge",
-                    )
-        return self._db_cache
-
-    def get_memory_manager(self) -> LimitedMemoryManager:
-        """Get or create memory manager with retention limits"""
-        if self._memory_manager_cache is None:
-            with self._memory_lock:
-                if self._memory_manager_cache is None:
-                    logger.info("Initializing limited memory manager")
-                    self._memory_manager_cache = LimitedMemoryManager(
-                        max_memories_per_user=20,
-                        db=self.get_db(),
-                        memory_capture_instructions="""
+MEMORY_CAPTURE_INSTRUCTIONS = """
 You are helping users find and work with their knowledge base. Focus on capturing meaningful information to provide personalized, context-aware assistance.
 
 PROFESSIONAL & WORK CONTEXT:
@@ -212,15 +130,160 @@ GUIDING PRINCIPLES:
 - Prioritize professional and productivity-related details
 - Respect privacy and only remember what's useful for assistance
 - Store information that reduces friction in future interactions
-""",
+"""
+
+
+class LimitedMemoryManager(MemoryManager):
+    """
+    Memory manager that scopes memories to an organization and caps how many
+    are stored per user.
+
+    Agno keys memories by user_id only. A user can belong to several orgs, so
+    memories are stored under "<org_id>:<user_id>" to keep one org's context
+    out of another org's chats.
+    """
+
+    def __init__(
+        self,
+        max_memories_per_user: int = MAX_MEMORIES_PER_USER,
+        organization_id: Optional[str] = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.max_memories_per_user = max_memories_per_user
+        self.organization_id = organization_id
+
+    def _scoped(self, user_id: Optional[str]) -> str:
+        user_id = user_id or "default"
+        return f"{self.organization_id}:{user_id}" if self.organization_id else user_id
+
+    def _enforce_limit(self, scoped_user_id: str) -> None:
+        """Delete the oldest memories beyond max_memories_per_user"""
+        if not self.db:
+            return
+        memories = self.db.get_user_memories(user_id=scoped_user_id)
+        if isinstance(memories, tuple):
+            memories = memories[0]
+        if not memories or len(memories) <= self.max_memories_per_user:
+            return
+
+        oldest_first = sorted(memories, key=lambda m: m.updated_at or 0)
+        for stale_memory in oldest_first[: -self.max_memories_per_user]:
+            if stale_memory.memory_id:
+                self.db.delete_user_memory(memory_id=stale_memory.memory_id)
+
+    def get_user_memories(self, user_id: Optional[str] = None) -> Optional[List[UserMemory]]:
+        return super().get_user_memories(user_id=self._scoped(user_id))
+
+    async def aget_user_memories(self, user_id: Optional[str] = None) -> Optional[List[UserMemory]]:
+        return await super().aget_user_memories(user_id=self._scoped(user_id))
+
+    def add_user_memory(
+        self, memory: UserMemory, user_id: Optional[str] = None
+    ) -> Optional[str]:
+        scoped_user_id = self._scoped(user_id or memory.user_id)
+        memory_id = super().add_user_memory(memory, scoped_user_id)
+        if memory_id:
+            self._enforce_limit(scoped_user_id)
+        return memory_id
+
+    # Agno calls these after each run (update_memory_on_run) — they write
+    # through the db directly, so the cap has to be enforced here too.
+    def create_user_memories(
+        self,
+        message: Optional[str] = None,
+        messages: Optional[List[Message]] = None,
+        agent_id: Optional[str] = None,
+        team_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ) -> str:
+        scoped_user_id = self._scoped(user_id)
+        response = super().create_user_memories(
+            message=message, messages=messages, agent_id=agent_id, team_id=team_id, user_id=scoped_user_id
+        )
+        self._enforce_limit(scoped_user_id)
+        return response
+
+    async def acreate_user_memories(
+        self,
+        message: Optional[str] = None,
+        messages: Optional[List[Message]] = None,
+        agent_id: Optional[str] = None,
+        team_id: Optional[str] = None,
+        user_id: Optional[str] = None,
+    ) -> str:
+        scoped_user_id = self._scoped(user_id)
+        response = await super().acreate_user_memories(
+            message=message, messages=messages, agent_id=agent_id, team_id=team_id, user_id=scoped_user_id
+        )
+        self._enforce_limit(scoped_user_id)
+        return response
+
+
+class AgentMemoryManager:
+    """
+    Singleton manager for agent memory and database
+    Thread-safe lazy initialization
+    """
+
+    _instance: Optional["AgentMemoryManager"] = None
+    _lock = threading.Lock()
+
+    def __new__(cls) -> "AgentMemoryManager":
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._initialized = False
+        return cls._instance
+
+    def __init__(self):
+        if hasattr(self, "_initialized") and self._initialized:
+            return
+
+        self._db_cache: Optional[MongoDb] = None
+        self._memory_managers: dict[str, LimitedMemoryManager] = {}
+        self._db_lock = threading.Lock()
+        self._memory_lock = threading.Lock()
+        self._initialized = True
+
+    def get_db(self) -> MongoDb:
+        """Get or create shared MongoDb instance for agent storage"""
+        if self._db_cache is None:
+            with self._db_lock:
+                if self._db_cache is None:
+                    logger.info("Initializing MongoDb instance for agent storage")
+                    self._db_cache = MongoDb(
+                        db_url=settings.MONGODB_URL,
+                        db_name=settings.MONGODB_DATABASE,
+                        session_collection="agent_sessions",
+                        memory_collection="agent_memory",
+                        metrics_collection="agent_metrics",
+                        eval_collection="agent_eval_runs",
+                        knowledge_collection="agent_knowledge",
                     )
-        return self._memory_manager_cache
+        return self._db_cache
+
+    def get_memory_manager(self, organization_id: Optional[str] = None) -> LimitedMemoryManager:
+        """Get or create the memory manager for an organization"""
+        key = organization_id or ""
+        if key not in self._memory_managers:
+            with self._memory_lock:
+                if key not in self._memory_managers:
+                    logger.info(f"Initializing memory manager for org: {organization_id or '-'}")
+                    self._memory_managers[key] = LimitedMemoryManager(
+                        organization_id=organization_id,
+                        model=get_llm_agno(model=MEMORY_MODEL, provider="openrouter"),
+                        db=self.get_db(),
+                        memory_capture_instructions=MEMORY_CAPTURE_INSTRUCTIONS,
+                    )
+        return self._memory_managers[key]
 
     def clear_cache(self):
         """Clear cached instances"""
         with self._db_lock, self._memory_lock:
             self._db_cache = None
-            self._memory_manager_cache = None
+            self._memory_managers = {}
 
     @classmethod
     def reset_singleton(cls):
@@ -253,6 +316,6 @@ def get_agent_db() -> MongoDb:
     return get_agent_memory_manager().get_db()
 
 
-def get_memory_manager() -> LimitedMemoryManager:
-    """Get memory manager instance"""
-    return get_agent_memory_manager().get_memory_manager()
+def get_memory_manager(organization_id: Optional[str] = None) -> LimitedMemoryManager:
+    """Get the memory manager for an organization"""
+    return get_agent_memory_manager().get_memory_manager(organization_id)

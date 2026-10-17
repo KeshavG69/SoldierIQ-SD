@@ -3,12 +3,13 @@ Chat API Endpoints
 Handles conversational AI interactions with knowledge base using SSE streaming
 """
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from services.chat import create_chat_agent
 from services.agent_streaming import stream_agent_response
+from services.login_briefing import generate_briefing
 from utils.streaming import create_sse_event_stream
 from app.logger import logger
 from auth.keycloak_auth import get_current_user_keycloak
@@ -41,6 +42,9 @@ class ChatRequest(BaseModel):
     document_ids: Optional[list[str]] = None
     model: Optional[str] = "anthropic/claude-sonnet-5.5"  # Use "functiongemma:270m" for hybrid mode
     tak_credentials: Optional[TAKCredentials] = None  # Optional TAK integration
+    # The login briefing that opened this conversation, sent with the first
+    # message so the agent can follow up on it.
+    opening_briefing: Optional[str] = None
     # user_id and organization_id are extracted from JWT token by backend
 
 
@@ -89,6 +93,7 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
             tak_credentials=request.tak_credentials,
             user_email=user_email,
             is_admin=is_admin,
+            opening_briefing=request.opening_briefing,
         )
 
         # SSE headers
@@ -114,6 +119,43 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
     except Exception as e:
         logger.error(f"Chat endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+
+
+class BriefingRequest(BaseModel):
+    """Signals from the browser for the login briefing. All optional."""
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    timezone: Optional[str] = None  # IANA name, e.g. "America/New_York"
+
+
+def _client_ip(req: Request) -> Optional[str]:
+    fwd = req.headers.get("x-forwarded-for")
+    if fwd:
+        return fwd.split(",")[0].strip()
+    return req.headers.get("x-real-ip") or (req.client.host if req.client else None)
+
+
+@router.post("/chat/briefing")
+async def chat_briefing(
+    payload: BriefingRequest,
+    req: Request,
+    current_user: dict = Depends(get_current_context),
+):
+    """The agent's opening message after sign-in: a short briefing based on the
+    user's selected documents, where they are, and their local time."""
+    try:
+        return await generate_briefing(
+            organization_id=current_user["organization_id"],
+            user_id=current_user["id"],
+            first_name=current_user.get("firstName"),
+            latitude=payload.latitude,
+            longitude=payload.longitude,
+            timezone_name=payload.timezone,
+            client_ip=_client_ip(req),
+        )
+    except Exception as e:
+        logger.error(f"Briefing failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not generate briefing")
 
 
 @router.get("/chat/sessions")

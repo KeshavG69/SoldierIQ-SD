@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { useDocumentStore } from "@/lib/stores/documentStore";
 import { useDocuments, useKnowledgeBases } from "@/lib/hooks/useDocuments";
 import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
@@ -98,6 +99,12 @@ export default function DashboardPage() {
       router.push("/auth/login");
     }
   }, [user, isInitializing, router]);
+
+  // Restore the user's saved document selection (Postgres) once signed in.
+  const userId = user?.id;
+  useEffect(() => {
+    if (userId) useDocumentStore.getState().loadSavedSelection();
+  }, [userId]);
 
   // Google Drive OAuth redirect fallback: when the popup is blocked, the
   // backend callback redirects here with ?drive_connected=0&drive_message=…

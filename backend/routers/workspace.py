@@ -11,10 +11,12 @@ new active org through `get_current_context`.
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict, List
+from pydantic import BaseModel, Field
 
 from orgs.dependencies import get_current_context
 from orgs.keycloak_orgs import get_orgs_client, KeycloakOrgsError
 from orgs.models import WorkspaceOrganization, SwitchOrganizationRequest
+from clients import document_selection
 from app.logger import logger
 
 router = APIRouter(prefix="/workspace", tags=["workspace"])
@@ -82,3 +84,33 @@ async def switch_organization(
         "token_type": tokens.get("token_type", "bearer"),
         "expires_in": tokens.get("expires_in"),
     }
+
+
+# --------------------------------------------------------- document selection
+class DocumentSelection(BaseModel):
+    document_ids: List[str] = Field(default_factory=list, max_length=5000)
+
+
+@router.get("/selection")
+async def get_document_selection(context: Dict = Depends(get_current_context)):
+    """The user's saved document selection in the active org.
+
+    `saved: false` means nothing was ever saved — the client should keep its
+    local selection (and save it) rather than clearing it.
+    """
+    sel = await document_selection.get_selection(context["organization_id"], context["id"])
+    if sel is None:
+        return {"saved": False, "document_ids": []}
+    return {"saved": True, "document_ids": sel["document_ids"]}
+
+
+@router.put("/selection")
+async def save_document_selection(
+    payload: DocumentSelection,
+    context: Dict = Depends(get_current_context),
+):
+    """Replace the user's saved document selection in the active org."""
+    await document_selection.save_selection(
+        context["organization_id"], context["id"], payload.document_ids
+    )
+    return {"saved": True, "count": len(payload.document_ids)}

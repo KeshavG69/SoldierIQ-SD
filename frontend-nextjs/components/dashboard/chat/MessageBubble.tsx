@@ -16,6 +16,7 @@ interface MessageBubbleProps {
   onCitationLeave: () => void;
   onCitationClick: (source: DocumentSource, url: string | undefined) => void;
   onOpenGraph?: (message: ChatMessage) => void;
+  onSuggestion?: (text: string) => void;
 }
 
 const MessageBubble = React.memo(function MessageBubble({
@@ -26,6 +27,7 @@ const MessageBubble = React.memo(function MessageBubble({
   onCitationLeave,
   onCitationClick,
   onOpenGraph,
+  onSuggestion,
 }: MessageBubbleProps) {
   const hasGraph =
     !!message.graph &&
@@ -113,6 +115,20 @@ const MessageBubble = React.memo(function MessageBubble({
           )}
 
           {message.composioAuth && <ComposioAuthCard info={message.composioAuth} />}
+
+          {onSuggestion && message.briefing && message.briefing.suggestions.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {message.briefing.suggestions.map((sug) => (
+                <button
+                  key={sug}
+                  onClick={() => onSuggestion(sug)}
+                  className="text-[13px] px-3 py-1.5 rounded-full border border-border dark:border-border bg-surface-2 dark:bg-card text-foreground dark:text-foreground hover:bg-secondary dark:hover:bg-accent transition-colors text-left"
+                >
+                  {sug}
+                </button>
+              ))}
+            </div>
+          )}
 
           {hasGraph && !isStreaming && onOpenGraph && (
             <button

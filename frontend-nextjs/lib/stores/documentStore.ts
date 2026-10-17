@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Document, KnowledgeBase } from '@/types';
 import { documentsApi } from '../api/documents';
+import { workspaceApi } from '../api/workspace';
 import { compressVideoForUpload } from '../video/compressVideo';
 import { uploadFileMultipart } from '../upload/uploadFileMultipart';
 
@@ -67,6 +68,25 @@ const loadSelectedDocs = (): Set<string> => {
   return new Set();
 };
 
+// Server-side copy of the selection (Postgres, per user + org) so it survives
+// sign-out, cache resets and other devices. Writes are held back until the
+// saved selection has been loaded once — otherwise an empty local selection
+// right after sign-in would overwrite the saved one.
+let serverSyncReady = false;
+let serverSaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+const scheduleServerSave = (docs: Set<string>) => {
+  if (!serverSyncReady) return;
+  if (serverSaveTimer) clearTimeout(serverSaveTimer);
+  const ids = Array.from(docs);
+  serverSaveTimer = setTimeout(() => {
+    serverSaveTimer = null;
+    workspaceApi.saveSelection(ids).catch(() => {
+      // Non-fatal: localStorage still has it; the next change retries.
+    });
+  }, 600);
+};
+
 const saveSelectedDocs = (docs: Set<string>) => {
   if (typeof window === 'undefined') return;
   try {
@@ -75,6 +95,7 @@ const saveSelectedDocs = (docs: Set<string>) => {
   } catch (e) {
     // Failed to save selected docs
   }
+  scheduleServerSave(docs);
 };
 
 // Helper function for background polling
@@ -161,6 +182,7 @@ interface DocumentState {
   knowledgeBases: KnowledgeBase[];
   selectedKB: string | null;
   selectedDocs: Set<string>;
+  selectionLoaded: boolean; // saved selection fetched from the server
   isLoading: boolean;
   error: string | null;
   uploadStatus: string | null;
@@ -181,6 +203,7 @@ interface DocumentState {
   deleteDocument: (docId: string) => Promise<void>;
   deleteKnowledgeBase: (folderName: string) => Promise<void>;
   setSelectedKB: (kb: string | null) => void;
+  loadSavedSelection: () => Promise<void>;
   toggleDocSelection: (docId: string) => void;
   selectAllDocs: () => void;
   deselectAllDocs: () => void;
@@ -198,6 +221,7 @@ export const useDocumentStore = create<DocumentState>()(
   knowledgeBases: [],
   selectedKB: loadSelectedKB(),
   selectedDocs: loadSelectedDocs(),
+  selectionLoaded: false,
   isLoading: false,
   error: null,
   uploadStatus: null,
@@ -414,6 +438,27 @@ export const useDocumentStore = create<DocumentState>()(
     } finally {
       // Clear deleting state
       set({ deletingKB: null });
+    }
+  },
+
+  loadSavedSelection: async () => {
+    try {
+      const saved = await workspaceApi.getSelection();
+      if (saved.saved) {
+        const docs = new Set(saved.document_ids);
+        saveSelectedDocs(docs); // mirror to localStorage (sync not on yet → no echo PUT)
+        set({ selectedDocs: docs });
+      }
+      serverSyncReady = true;
+      if (!saved.saved && get().selectedDocs.size > 0) {
+        // First time: seed the server with what this browser already had.
+        scheduleServerSave(get().selectedDocs);
+      }
+    } catch {
+      // Backend unreachable — keep the local selection; stay read-only so a
+      // stale local copy can't overwrite the saved one later.
+    } finally {
+      set({ selectionLoaded: true });
     }
   },
 
