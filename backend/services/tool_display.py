@@ -20,6 +20,9 @@ _BUILTIN: Dict[str, tuple] = {
     "place_tak_marker": ("Placing a marker on the TAK map", "Placed a marker on the TAK map", "map"),
     "send_tak_message": ("Sending a TAK message", "Sent a TAK message", "message"),
     "create_tak_route": ("Creating a TAK route", "Created a TAK route", "route"),
+    "search_exa": ("Searching the web", "Searched the web", "search"),
+    "get_contents": ("Reading web pages", "Read web pages", "search"),
+    "build_document": ("Building the document", "Built the document", "tool"),
 }
 
 # Argument keys worth showing under the label, most informative first.
@@ -73,6 +76,9 @@ async def describe_tool(tool_name: Optional[str], tool_args: Optional[Dict[str, 
     name = tool_name or ""
     detail = _detail(tool_args)
     try:
+        if name == "build_document" and isinstance(tool_args, dict):
+            spec = tool_args.get("spec") if isinstance(tool_args.get("spec"), dict) else {}
+            detail = spec.get("filename") or tool_args.get("slug") or detail
         if name in _BUILTIN:
             running, done, icon = _BUILTIN[name]
             return {"label": running, "done_label": done, "detail": detail, "app": None, "logo": None, "icon": icon}

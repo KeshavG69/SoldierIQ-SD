@@ -1,0 +1,10 @@
+# E2B template for SoldierIQ's build_document sandbox (copied from PriceIQ).
+# Until this is built, E2B_TEMPLATE_ID points at PriceIQ's "priceiq-docgen"
+# template (same E2B team); docgen is then uploaded into each fresh box (~2s).
+# Build it (from backend/, with E2B_API_KEY set) and put the printed id in E2B_TEMPLATE_ID:
+#   npx @e2b/cli@2.19.1 template create soldieriq-docgen --dockerfile e2b.Dockerfile \
+#       --cpu-count 2 --memory-mb 4096
+dockerfile = "e2b.Dockerfile"
+template_name = "soldieriq-docgen"
+cpu_count = 2
+memory_mb = 4096   # LibreOffice conversions for docx/pptx layout checks

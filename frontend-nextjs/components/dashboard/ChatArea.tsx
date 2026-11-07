@@ -68,6 +68,7 @@ export default function ChatArea() {
     addMessage,
     updateLastMessage,
     setLastMessageComposioAuth,
+    addLastMessageDocument,
     upsertLastMessageToolCall,
     endStreaming,
     setLoading,
@@ -458,6 +459,27 @@ export default function ChatArea() {
                     resultPreview: summarizeToolResult(d.tool_name, d.result),
                   });
                 }
+                  // build_document → download card under the reply.
+                  if (parsed.data?.tool_name === "build_document" && parsed.data?.result && !parsed.data?.error) {
+                    try {
+                      const r = typeof parsed.data.result === "string" ? JSON.parse(parsed.data.result) : parsed.data.result;
+                      if (r?.success && r?.url && r?.filename) {
+                        addLastMessageDocument({
+                          slug: r.slug || r.filename,
+                          filename: r.filename,
+                          format: r.format,
+                          url: r.url,
+                          object_key: r.object_key,
+                          preview_key: r.preview_key,
+                          size_bytes: r.size_bytes,
+                          version: r.version,
+                        });
+                      }
+                    } catch {
+                      // Not JSON — ignore
+                    }
+                    break;
+                  }
                   // setup_composio_service → "Connect <app>" card under the reply.
                   // select_additional_actions shows it too when access is short (Reconnect).
                   if (
