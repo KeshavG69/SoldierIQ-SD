@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { exportTableToExcel, exportTableToCSV, sanitizeFileName } from "@/lib/chat/exportTable";
 import { ChatMessage } from "@/types";
+import CodeBlock from "./CodeBlock";
 import { DocumentSource } from "@/lib/stores/chatStore";
 
 // Shared markdown renderer for assistant answers, used by both the finished
@@ -69,12 +70,13 @@ const Img = ({ src, alt, ...props }: any) => (
   </span>
 );
 
-// Inline `code` is a pill; a fenced block with a language gets the window-style
-// header (three dots + language label) over a dark body, as in enterprise.
+// Inline `code` is a pill; a fenced block becomes a Claude/ChatGPT-style panel
+// with syntax colours and a copy button (CodeBlock).
 const Code = ({ children, className, ...props }: any) => {
-  const content = String(children ?? "").trim();
+  const raw = String(children ?? "");
+  const content = raw.trim();
   const match = /language-([\w-]+)/.exec(className || "");
-  const isBlock = !!match || content.includes("\n");
+  const isBlock = !!match || raw.includes("\n");
   if (!isBlock || content === "#" || content === "$") {
     return (
       <code className={cx("inline-code", className)} {...strip(props)}>
@@ -82,21 +84,7 @@ const Code = ({ children, className, ...props }: any) => {
       </code>
     );
   }
-  return (
-    <div className="inline-code-container">
-      <div className="inline-code-header">
-        <div className="inline-code-dots">
-          <div className="inline-code-dot inline-code-dot-red" />
-          <div className="inline-code-dot inline-code-dot-yellow" />
-          <div className="inline-code-dot inline-code-dot-green" />
-        </div>
-        <span className="inline-code-label">{match ? match[1] : "Code"}</span>
-      </div>
-      <pre className="inline-code-pre">
-        <code className="inline-code-element">{children}</code>
-      </pre>
-    </div>
-  );
+  return <CodeBlock code={raw} language={match?.[1]} />;
 };
 // The code component draws its own <pre>; don't wrap it in another.
 const Pre = ({ children }: any) => <>{children}</>;

@@ -33,6 +33,7 @@
     "markmap-view": "^0.18.12",
     "mediabunny": "^1.55.1",
     "next": "^15.1.0",
+    "prism-react-renderer": "^2.4.1",
     "react": "^19.0.0",
     "react-calendly": "^4.4.0",
     "react-dom": "^19.0.0",
