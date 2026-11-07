@@ -24,7 +24,23 @@ class Settings(BaseSettings):
     VOICE_STT_MODEL: str = "deepgram/nova-3"
     GROQ_API_KEY: str = ""
     ELEVENLABS_API_KEY: str = ""
-    FUNCTION_API_KEY: str = ""  
+    FUNCTION_API_KEY: str = ""
+
+    # Exa web search (agno ExaTools) for the chat agent. Empty = web search off.
+    EXA_API_KEY: str = ""
+
+    # ── E2B document sandbox (utils/e2b_sandbox.py, utils/document_tool.py) ──
+    # build_document runs docgen in an E2B microVM, one per chat session.
+    E2B_API_KEY: str = ""
+    # Template built from backend/e2b.Dockerfile (docgen + LibreOffice baked in).
+    # Empty = E2B's stock code-interpreter, which lacks the document libraries.
+    E2B_TEMPLATE_ID: str = ""
+    E2B_SANDBOX_TIMEOUT_S: int = 1800
+    E2B_PAUSE_GRACE_S: int = 30
+    E2B_SANDBOX_MAX_IDLE_DAYS: int = 7
+    E2B_ALLOW_INTERNET: bool = False
+    # How long a built document's download link stays valid (iDrive E2 presign max is 7 days).
+    CHAT_DOCUMENT_URL_TTL_S: int = 7 * 24 * 3600
 
 
     # iDrive E2 Storage

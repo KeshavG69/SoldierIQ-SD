@@ -32,6 +32,7 @@ celery_app = Celery(
 # Import task modules to register them with Celery
 # This must happen after celery_app is created
 import tasks.ingestion_tasks  # noqa: E402, F401
+import tasks.sandbox_tasks  # noqa: E402, F401
 
 # Celery configuration
 celery_app.conf.update(
@@ -63,3 +64,12 @@ celery_app.conf.update(
     worker_max_tasks_per_child=200,
     worker_pool_restarts=True,  # Enable pool restarts
 )
+
+# Hourly E2B sandbox reaper (tasks/sandbox_tasks.py). Runs only when a beat
+# process is up: `celery -A app.worker beat`.
+celery_app.conf.beat_schedule = {
+    "e2b-reap-sandboxes": {
+        "task": "e2b.reap_sandboxes",
+        "schedule": 3600.0,
+    },
+}

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ChatMessage, SourceReference, KnowledgeGraph, ComposioAuthInfo, ToolCallStep } from '@/types';
+import { ChatMessage, SourceReference, KnowledgeGraph, ComposioAuthInfo, ToolCallStep, GeneratedDocument } from '@/types';
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -48,6 +48,7 @@ interface ChatState {
     graph?: KnowledgeGraph
   ) => void;
   setLastMessageComposioAuth: (info: ComposioAuthInfo) => void;
+  addLastMessageDocument: (doc: GeneratedDocument) => void;
   upsertLastMessageToolCall: (step: Partial<ToolCallStep> & { id: string }) => void;
   endStreaming: () => void;
   setLoading: (loading: boolean) => void;
@@ -88,6 +89,18 @@ export const useChatStore = create<ChatState>()(
           ...(sources && { sources }),
           ...(graph && { graph }),
         };
+      }
+      return { messages };
+    }),
+
+  // build_document: one card per document; an edit (same slug) replaces its card.
+  addLastMessageDocument: (doc) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        const last = messages[messages.length - 1];
+        const docs = (last.documents || []).filter((d) => d.slug !== doc.slug);
+        messages[messages.length - 1] = { ...last, documents: [...docs, doc] };
       }
       return { messages };
     }),

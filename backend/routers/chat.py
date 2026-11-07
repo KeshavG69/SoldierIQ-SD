@@ -11,6 +11,8 @@ from services.chat import create_chat_agent
 from services.agent_streaming import stream_agent_response
 from services.login_briefing import generate_briefing
 from utils.streaming import create_sse_event_stream
+from utils.sandbox_context import set_session_context
+from utils.e2b_sandbox import pause_session_sandbox
 from app.logger import logger
 from auth.keycloak_auth import get_current_user_keycloak
 from orgs.dependencies import get_current_context
@@ -108,9 +110,18 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
 
         # Stream response
         async def sse_stream():
-            events = stream_agent_response(request.message, agent)
-            async for chunk in create_sse_event_stream(events):
-                yield chunk
+            # The sandbox tools (build_document) read the session and its owner
+            # from ContextVars. Set them inside the generator, which is where the
+            # agent — and its tools — actually run.
+            set_session_context(session_id, organization_id or "", user_id or "")
+            try:
+                events = stream_agent_response(request.message, agent)
+                async for chunk in create_sse_event_stream(events):
+                    yield chunk
+            finally:
+                # Pause the session's E2B box shortly after the turn (no-op if
+                # this turn never built a document).
+                pause_session_sandbox(session_id)
 
         return StreamingResponse(
             sse_stream(),
@@ -562,3 +573,58 @@ async def rename_chat_session(
 async def health_check():
     """Health check endpoint for chat service"""
     return {"status": "healthy", "service": "chat"}
+
+
+@router.get("/chat/documents/download-url")
+async def chat_document_download_url(
+    key: str,
+    current_user: dict = Depends(get_current_context),
+) -> Dict[str, Any]:
+    """A fresh download link for a document the chat agent built (build_document).
+
+    The tool's own link is presigned and expires, so the chat's download card asks
+    here when it is clicked. Only keys under the caller's own org prefix are signed.
+    """
+    from clients.idrivee2_client import get_idrivee2_client
+    from utils.document_tool import DOCUMENT_KEY_PREFIX
+
+    org_id = current_user.get("organization_id") or ""
+    prefix = f"{DOCUMENT_KEY_PREFIX}/{org_id}/"
+    if not org_id or not key.startswith(prefix) or ".." in key:
+        raise HTTPException(status_code=404, detail="Document not found")
+    filename = key.rsplit("/", 1)[-1].split("_", 1)[-1]
+    url = await get_idrivee2_client().generate_presigned_url(
+        key, expiration=3600, download_filename=filename)
+    return {"url": url, "filename": filename}
+
+
+
+@router.get("/chat/documents/preview")
+async def chat_document_preview(
+    key: str,
+    current_user: dict = Depends(get_current_context),
+):
+    """The PDF rendering of a built document, for the chat's preview pane.
+
+    Streamed through the API (not a presigned link) so the browser's PDF viewer can
+    fetch it with the user's token and no bucket CORS rules are needed. Only PDFs
+    under the caller's own org prefix are served.
+    """
+    from fastapi.responses import Response
+    from clients.idrivee2_client import get_idrivee2_client
+    from utils.document_tool import DOCUMENT_KEY_PREFIX
+
+    org_id = current_user.get("organization_id") or ""
+    prefix = f"{DOCUMENT_KEY_PREFIX}/{org_id}/"
+    if not org_id or not key.startswith(prefix) or ".." in key or not key.lower().endswith(".pdf"):
+        raise HTTPException(status_code=404, detail="Preview not found")
+    try:
+        data = await get_idrivee2_client().download_file(key)
+    except Exception as e:
+        logger.warning(f"Preview fetch failed for {key}: {e}")
+        raise HTTPException(status_code=404, detail="Preview not found")
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "inline", "Cache-Control": "private, max-age=300"},
+    )

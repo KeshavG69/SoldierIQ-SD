@@ -56,8 +56,21 @@ export interface ChatMessage {
   sources?: any[]; // Sources specific to this message
   graph?: KnowledgeGraph; // GraphRAG retrieval graph (entities + triples + chunks)
   composioAuth?: ComposioAuthInfo; // setup_composio_service result → "Connect <app>" card
+  documents?: GeneratedDocument[]; // build_document results → download cards
   toolCalls?: ToolCallStep[]; // live timeline of the agent's tool calls
   briefing?: { suggestions: string[] }; // login briefing → clickable follow-ups
+}
+
+// A file the agent built with build_document (stored in iDrive E2)
+export interface GeneratedDocument {
+  slug: string;
+  filename: string;
+  format?: string; // pdf | docx | pptx | xlsx
+  url: string; // presigned link from the tool (expires)
+  object_key?: string; // used to sign a fresh link on download
+  preview_key?: string | null; // PDF rendering for the preview pane
+  size_bytes?: number;
+  version?: number;
 }
 
 // One tool call in an assistant message's step timeline

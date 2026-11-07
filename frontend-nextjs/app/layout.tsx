@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
+import "./markdown-renderer.css";
 import AuthInitializer from "@/components/auth/AuthInitializer";
 import ThemeProvider from "@/components/ThemeProvider";
 import { Providers } from "@/components/Providers";

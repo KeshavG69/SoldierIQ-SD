@@ -13,10 +13,16 @@ import ChatSkeleton from "@/components/skeletons/ChatSkeleton";
 import SidebarSkeleton from "@/components/skeletons/SidebarSkeleton";
 import WorkflowSkeleton from "@/components/skeletons/WorkflowSkeleton";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useFilePreviewStore } from "@/lib/stores/filePreviewStore";
 
 // Lazy load heavy workflow panel
 const WorkflowPanel = lazy(
   () => import("@/components/dashboard/WorkflowPanel")
+);
+
+// Preview pane for documents the agent built (loads react-pdf only when opened)
+const FilePreviewPane = lazy(
+  () => import("@/components/dashboard/preview/FilePreviewPane")
 );
 
 // Lazy load voice session (only loaded when user starts a voice call)
@@ -31,6 +37,8 @@ const DEFAULT_RIGHT_WIDTH = 320;
 const COLLAPSED_WIDTH = 56;
 const MOBILE_BREAKPOINT = 768;
 const TABLET_BREAKPOINT = 1024;
+const MIN_PREVIEW_WIDTH = 360;
+const DEFAULT_PREVIEW_FRACTION = 0.5; // of the window, like enterprise's 50–60%
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -46,6 +54,10 @@ export default function DashboardPage() {
   const [isTablet, setIsTablet] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [workflowOpen, setWorkflowOpen] = useState(false);
+  const [previewWidth, setPreviewWidth] = useState<number | null>(null);
+  const [isResizingPreview, setIsResizingPreview] = useState(false);
+  const previewOpen = useFilePreviewStore((s) => s.isOpen && !!s.doc);
+  const previewExpanded = useFilePreviewStore((s) => s.isExpanded);
 
   const actualRightWidth = isWorkflowCollapsed ? COLLAPSED_WIDTH : rightWidth;
 
@@ -63,12 +75,15 @@ export default function DashboardPage() {
 
   // Resize handler
   useEffect(() => {
-    if (!isResizingLeft && !isResizingRight) return;
+    if (!isResizingLeft && !isResizingRight && !isResizingPreview) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (isResizingLeft) {
         const w = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, e.clientX));
         setLeftWidth(w);
+      } else if (isResizingPreview) {
+        const max = Math.round(window.innerWidth * 0.8);
+        setPreviewWidth(Math.min(max, Math.max(MIN_PREVIEW_WIDTH, window.innerWidth - e.clientX)));
       } else if (isResizingRight && !isWorkflowCollapsed) {
         const w = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, window.innerWidth - e.clientX));
         setRightWidth(w);
@@ -78,6 +93,7 @@ export default function DashboardPage() {
     const handleMouseUp = () => {
       setIsResizingLeft(false);
       setIsResizingRight(false);
+      setIsResizingPreview(false);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -91,7 +107,7 @@ export default function DashboardPage() {
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
-  }, [isResizingLeft, isResizingRight, isWorkflowCollapsed]);
+  }, [isResizingLeft, isResizingRight, isResizingPreview, isWorkflowCollapsed]);
 
   // Auth redirect
   useEffect(() => {
@@ -211,6 +227,17 @@ export default function DashboardPage() {
           </ErrorBoundary>
         </div>
 
+        {/* Document preview: full screen on a phone */}
+        {previewOpen && (
+          <div className="fixed inset-0 z-40 bg-background">
+            <ErrorBoundary>
+              <Suspense fallback={null}>
+                <FilePreviewPane />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+
         {voiceSession}
       </div>
     );
@@ -258,15 +285,46 @@ export default function DashboardPage() {
           </Sheet>
         )}
 
-        {/* Chat Area */}
-        <ErrorBoundary>
-          <Suspense fallback={<ChatSkeleton />}>
-            <ChatArea />
-          </Suspense>
-        </ErrorBoundary>
+        {/* Chat Area (hidden while the preview is expanded to full width) */}
+        <div className={previewOpen && previewExpanded ? "hidden" : "contents"}>
+          <ErrorBoundary>
+            <Suspense fallback={<ChatSkeleton />}>
+              <ChatArea />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+
+        {/* Document preview pane: takes the workflow panel's place while open */}
+        {previewOpen && (
+          <div
+            className={`relative flex ${previewExpanded ? "flex-1 min-w-0" : "flex-shrink-0"}`}
+            style={
+              previewExpanded
+                ? undefined
+                : { width: previewWidth ?? Math.round(window.innerWidth * DEFAULT_PREVIEW_FRACTION) }
+            }
+          >
+            {!previewExpanded && (
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-secondary dark:hover:bg-secondary transition-colors z-10"
+                onMouseDown={() => setIsResizingPreview(true)}
+              >
+                <div className="absolute inset-y-0 -left-1 -right-1" />
+              </div>
+            )}
+            <ErrorBoundary>
+              <Suspense fallback={null}>
+                <FilePreviewPane />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
 
         {/* Right Workflow Panel */}
-        <div className="relative flex flex-shrink-0" style={{ width: actualRightWidth }}>
+        <div
+          className={previewOpen ? "hidden" : "relative flex flex-shrink-0"}
+          style={{ width: actualRightWidth }}
+        >
           {!isWorkflowCollapsed && (
             <div
               className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-secondary dark:hover:bg-secondary transition-colors z-10"

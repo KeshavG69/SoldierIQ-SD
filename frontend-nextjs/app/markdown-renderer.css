@@ -1,0 +1,314 @@
+/*
+ * Chat Markdown styles, ported from Kroolo enterprise's renderer
+ * (kroolo-md-renderer-es-updated.css + chat/ui/typography/MarkdownRenderer/styles.tsx).
+ * Kept local instead of loading enterprise's hosted stylesheet, so SoldierIQ works
+ * offline. Enterprise's --text-color maps to SoldierIQ's --foreground.
+ */
+
+.siq-md-renderer {
+  gap: 12px;
+  display: flex;
+  width: 100%;
+  max-width: none;
+  flex-direction: column;
+  border-radius: 4px;
+  color: var(--foreground);
+}
+
+/* prose margins fight the flex gap above — enterprise relies on the gap */
+.siq-md-renderer > * {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.siq-md-renderer .heading-1,
+.siq-md-renderer .heading-2,
+.siq-md-renderer .heading-3,
+.siq-md-renderer .heading-4,
+.siq-md-renderer .heading-5,
+.siq-md-renderer .heading-6 {
+  color: var(--foreground);
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+.siq-md-renderer .heading-1 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.siq-md-renderer .heading-2 {
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.siq-md-renderer .heading-3 {
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+.siq-md-renderer .heading-4 { font-size: 0.95rem; }
+.siq-md-renderer .heading-5 { font-size: 0.85rem; }
+.siq-md-renderer .heading-6 { font-size: 0.75rem; }
+
+.siq-md-renderer .paragraph-body {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14.5px;
+  font-weight: 400;
+  line-height: 1.8rem;
+  letter-spacing: 0.2px;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.siq-md-renderer .unordered-list {
+  display: flex;
+  list-style-type: disc;
+  flex-direction: column;
+  padding-left: 2.5rem;
+  margin: 0;
+}
+
+.siq-md-renderer .ordered-list {
+  display: flex;
+  list-style-type: decimal;
+  flex-direction: column;
+  padding-left: 2.5rem;
+  margin: 0;
+}
+
+.siq-md-renderer li {
+  margin: 0;
+  color: var(--foreground);
+}
+
+.siq-md-renderer li > p {
+  margin: 0;
+}
+
+.siq-md-renderer li::marker {
+  color: var(--muted-foreground);
+}
+
+.siq-md-renderer .emphasized-text,
+.siq-md-renderer .strong-text,
+.siq-md-renderer .bold-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.siq-md-renderer .italic-text,
+.siq-md-renderer .blockquote-text {
+  font-style: normal;
+}
+
+.siq-md-renderer .blockquote-text {
+  border-left: 2px solid var(--border);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+}
+
+.siq-md-renderer .underlined-text {
+  text-decoration: underline;
+}
+
+.siq-md-renderer .deleted-text {
+  color: var(--muted-foreground);
+  text-decoration: line-through;
+}
+
+.siq-md-renderer .horizontal-rule {
+  display: none;
+}
+
+.siq-md-renderer .anchor-link {
+  cursor: pointer;
+  font-size: 14.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--foreground);
+}
+
+.siq-md-renderer .image-container {
+  width: 100%;
+  max-width: 36rem;
+}
+
+.siq-md-renderer .image-element {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+/* Inline `code` (no language) */
+.siq-md-renderer .inline-code {
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  overflow-wrap: break-word;
+}
+
+.siq-md-renderer .inline-code::before,
+.siq-md-renderer .inline-code::after {
+  content: none;
+}
+
+/* Fenced code block: window-style header (three dots + language) over a dark body */
+.siq-md-renderer .inline-code-container {
+  position: relative;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  background: linear-gradient(to bottom right, #f9fafb, #f3f4f6);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .siq-md-renderer .inline-code-container {
+  border-color: #374151;
+  background: linear-gradient(to bottom right, #1f2937, #111827);
+}
+
+.siq-md-renderer .inline-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border-bottom: 1px solid #d1d5db;
+  background-color: #f3f4f6;
+  padding: 0.5rem 0.75rem;
+}
+
+.dark .siq-md-renderer .inline-code-header {
+  border-bottom-color: #374151;
+  background-color: #1f2937;
+}
+
+.siq-md-renderer .inline-code-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.siq-md-renderer .inline-code-dot {
+  height: 0.75rem;
+  width: 0.75rem;
+  border-radius: 50%;
+}
+
+.siq-md-renderer .inline-code-dot-red { background-color: #f87171; }
+.siq-md-renderer .inline-code-dot-yellow { background-color: #facc15; }
+.siq-md-renderer .inline-code-dot-green { background-color: #4ade80; }
+
+.siq-md-renderer .inline-code-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: capitalize;
+}
+
+.dark .siq-md-renderer .inline-code-label {
+  color: #9ca3af;
+}
+
+.siq-md-renderer .inline-code-pre {
+  margin: 0;
+  overflow-x: auto;
+  border-radius: 0 0 0.5rem 0.5rem;
+  background-color: #282c34;
+  padding: 1rem;
+  color: white;
+}
+
+.siq-md-renderer .inline-code-element {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14.5px;
+  line-height: 1.625;
+  white-space: pre-wrap;
+  color: #f3f4f6;
+  background: transparent;
+  padding: 0;
+}
+
+/* Tables: outlined, ruled between rows and columns, export button underneath */
+.siq-md-renderer .table-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.siq-md-renderer .table-container {
+  border: 1px solid var(--foreground);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 0.375rem;
+}
+
+.siq-md-renderer .table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.siq-md-renderer .table-element {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.siq-md-renderer .table-head {
+  border-bottom: 1px solid var(--foreground);
+  background-color: transparent;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.siq-md-renderer .table-head-cell {
+  padding: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--foreground);
+  text-align: left;
+  border-left: 1px solid var(--foreground);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.siq-md-renderer .table-head-cell:first-child,
+.siq-md-renderer .table-cell:first-child {
+  border-left: 0;
+}
+
+.siq-md-renderer .table-body {
+  font-size: 14px;
+}
+
+.siq-md-renderer .table-row {
+  border-bottom: 1px solid var(--foreground);
+}
+
+.siq-md-renderer .table-row:last-child {
+  border-bottom: 0;
+}
+
+.siq-md-renderer .table-cell {
+  padding: 0.5rem;
+  font-weight: 400;
+  color: var(--foreground);
+  border-left: 1px solid var(--foreground);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}

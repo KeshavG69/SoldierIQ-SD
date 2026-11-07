@@ -7,6 +7,7 @@ import MarkdownContent from "./MarkdownContent";
 import SmoothStreamingText from "./SmoothStreamingText";
 import ComposioAuthCard from "./ComposioAuthCard";
 import ToolCallTimeline from "./ToolCallTimeline";
+import DocumentCard from "./DocumentCard";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -113,6 +114,8 @@ const MessageBubble = React.memo(function MessageBubble({
               Thinking…
             </div>
           )}
+
+          {message.documents?.map((doc) => <DocumentCard key={doc.slug} doc={doc} />)}
 
           {message.composioAuth && <ComposioAuthCard info={message.composioAuth} />}
 
