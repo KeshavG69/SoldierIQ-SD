@@ -3,6 +3,7 @@
 /**
  * Connectors — connect third-party apps (Composio) and choose which of each
  * app's actions the chat agent may use (mirrors enterprise's actions tab).
+ * A second tab holds the TAK server settings (TAKSettingsPanel).
  *
  *   - Connect opens Composio's hosted OAuth flow in a popup (useConnectorPopup).
  *   - Each connected app has an on/off switch and an expandable list of its
@@ -15,12 +16,16 @@ import { connectorsApi, Connector, ConnectorAction, ConnectorsResponse } from "@
 import { Z_INDEX } from "@/lib/constants/zIndex";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { useConnectorPopup } from "@/lib/hooks/useConnectorPopup";
+import TAKSettingsPanel from "./TAKSettingsPanel";
+
+type Tab = "apps" | "tak";
 
 // Last list seen in this tab, per organization: reopening the modal shows it
 // instantly while a fresh copy loads in the background.
 let lastLoaded: { orgId: string; data: ConnectorsResponse } | null = null;
 
 export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
+  const [tab, setTab] = useState<Tab>("apps");
   const orgId = useAuthStore((s) => s.user?.organization_id) || "";
   const [data, setDataState] = useState<ConnectorsResponse | null>(
     lastLoaded?.orgId === orgId ? lastLoaded.data : null
@@ -171,11 +176,13 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
             <div>
               <h2 className="text-base font-semibold text-foreground">Connectors</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Connect apps and choose which actions the assistant can use.
+                {tab === "apps"
+                  ? "Connect apps and choose which actions the assistant can use."
+                  : "Connect the assistant to a TAK (Team Awareness Kit) server."}
               </p>
             </div>
             <div className="flex items-center gap-3">
-              {data && (
+              {tab === "apps" && data && (
                 <span
                   className={`px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${
                     atLimit ? "bg-amber-500/15 text-amber-500" : "bg-secondary text-muted-foreground"
@@ -190,6 +197,35 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
+          <div className="px-6 border-b border-border flex gap-5" role="tablist" aria-label="Connector type">
+            {(
+              [
+                ["apps", "Apps"],
+                ["tak", "TAK"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+                className={`-mb-px py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab === id
+                    ? "border-brand text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {tab === "tak" ? (
+            <div className="overflow-y-auto p-6">
+              <TAKSettingsPanel onClose={onClose} />
+            </div>
+          ) : (
+          <>
           <div className="px-6 pt-4">
             <input
               className="w-full px-3 py-2 rounded-lg bg-surface-2 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all"
@@ -222,6 +258,8 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
               </>
             )}
           </div>
+          </>
+          )}
         </div>
       </div>
     </>

@@ -28,6 +28,7 @@ async def create_chat_agent(
     user_email: Optional[str] = None,
     is_admin: bool = False,
     opening_briefing: Optional[str] = None,
+    osint_enabled: bool = False,
 ) -> Agent:
     """
     Create a chat agent with knowledge base access
@@ -146,6 +147,17 @@ async def create_chat_agent(
             if e2b_configured() and user_id and organization_id:
                 from utils.document_tool import build_document
                 doc_tools = [build_document]
+
+        # Visuals: charts always (outside hybrid mode); the live intelligence map
+        # only when the user switched OSINT mode on in the chat input.
+        visual_tools = []
+        if not use_hybrid:
+            from utils.visual_tools import create_chart, show_map
+            visual_tools = [create_chart] + ([show_map] if osint_enabled else [])
+            if osint_enabled:
+                # The whole OSINT catalog behind two fixed tools (search + run), see osint/dispatch.py.
+                from utils.osint_tools import run_osint_tool, search_osint_tools
+                visual_tools += [search_osint_tools, run_osint_tool]
 
         # Agent instructions
         instructions = [
@@ -431,6 +443,12 @@ You can create real files with build_document: PDF reports, Word documents, Powe
 - After building, briefly say what the document contains. Do not paste the download URL; the card shows it.
 </documents>""")
 
+        if visual_tools:
+            from utils.visual_tools import OSINT_INSTRUCTIONS, VISUALS_INSTRUCTIONS
+            instructions.append(VISUALS_INSTRUCTIONS)
+            if osint_enabled:
+                instructions.append(OSINT_INSTRUCTIONS)
+
         if opening_briefing:
             # The login briefing is generated outside this agent, so it isn't in
             # the session history. Tell the agent what it said, so a reply like
@@ -449,7 +467,7 @@ The user's message may be a reply to it.
             session_id=session_id,
             user_id=user_id,
             knowledge_retriever=knowledge_retriever,
-            tools=(tak_tools + app_tools + setup_tools + web_tools + doc_tools) or None,
+            tools=(tak_tools + app_tools + setup_tools + web_tools + doc_tools + visual_tools) or None,
             instructions=instructions,
             markdown=True,
             add_history_to_context=True,

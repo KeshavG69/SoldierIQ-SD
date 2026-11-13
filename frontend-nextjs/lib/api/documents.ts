@@ -298,7 +298,8 @@ export const chatApi = {
     sessionId: string,
     model: string,
     takCredentials?: TAKCredentials,
-    openingBriefing?: string
+    openingBriefing?: string,
+    osintEnabled?: boolean
   ): Promise<ReadableStream> => {
     // Use fetchWithRefresh for automatic token refresh on 401
     const response = await fetchWithRefresh(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
@@ -310,6 +311,7 @@ export const chatApi = {
         model,
         tak_credentials: takCredentials,
         opening_briefing: openingBriefing,
+        osint_enabled: !!osintEnabled,
       }),
     });
 
@@ -341,7 +343,17 @@ export interface ChatMessage {
   created_at: number;
   model?: string;
   sources?: any[];
+  maps?: import('@/types').MapCardInfo[];
+  charts?: import('@/types').ChartSpec[];
 }
+
+export const visualsApi = {
+  // Full map payload for a show_map card (kept server-side for 30 days).
+  getMap: async (mapId: string): Promise<import('@/types').MapPayload> => {
+    const response = await apiClient.get<import('@/types').MapPayload>(`/visuals/maps/${encodeURIComponent(mapId)}`);
+    return response.data;
+  },
+};
 
 export interface SessionHistory {
   success: boolean;

@@ -11,6 +11,9 @@ interface ChatInputProps {
   selectedDocsCount: number;
   takEnabled: boolean;
   takCredentials: TAKCredentials | null;
+  osintEnabled: boolean;
+  onToggleOsint: () => void;
+  activity?: string | null; // label of the tool the agent is running right now
   onSend: (e: React.FormEvent) => void;
   onChange: (value: string) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -22,6 +25,9 @@ const ChatInput = React.memo(function ChatInput({
   selectedDocsCount,
   takEnabled,
   takCredentials,
+  osintEnabled,
+  onToggleOsint,
+  activity,
   onSend,
   onChange,
   onKeyDown,
@@ -75,10 +81,33 @@ const ChatInput = React.memo(function ChatInput({
                   : dictation === "finishing"
                     ? "Finishing…"
                     : isLoading
-                      ? "Thinking…"
+                      ? activity
+                        ? `${activity}…`
+                        : "Thinking…"
                       : "Ready"}
               </span>
             )}
+            <button
+              type="button"
+              onClick={onToggleOsint}
+              aria-pressed={osintEnabled}
+              title={
+                osintEnabled
+                  ? "OSINT on: the assistant can use live open-source intelligence and draw the intelligence map"
+                  : "Turn on OSINT: live open-source intelligence and the intelligence map"
+              }
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-medium transition-colors ${
+                osintEnabled
+                  ? "border-amber-300 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300"
+                  : "border-border bg-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="9" />
+                <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+              </svg>
+              OSINT {osintEnabled ? "on" : "off"}
+            </button>
             {takEnabled && takCredentials && (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/30 text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

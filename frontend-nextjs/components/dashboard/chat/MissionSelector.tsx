@@ -53,7 +53,7 @@ const MissionSelector = React.memo(function MissionSelector({
 
   return (
     <div className="border-b border-border dark:border-border bg-white dark:bg-[#0a0a0a] px-4 py-2.5">
-      <div className="flex items-center gap-2 max-w-4xl mx-auto">
+      <div className="flex items-center gap-2">
         <span className="text-xs font-medium text-muted-foreground dark:text-muted-foreground">
           Mission
         </span>

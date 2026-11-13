@@ -72,7 +72,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
         }
       }
     } catch (e: any) {
-      setError(e?.response?.data?.detail || "Failed to load team.");
+      setError(e?.response?.data?.detail || "Failed to load organization.");
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
         <div className="rounded-2xl bg-card border border-border shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
           <div className="px-6 py-4 border-b border-border flex items-center justify-between">
             <div>
-              <h2 className="text-base font-semibold text-foreground">Team</h2>
+              <h2 className="text-base font-semibold text-foreground">Organization</h2>
               <p className="text-xs text-muted-foreground mt-0.5">{user?.organization_name}</p>
             </div>
             <button onClick={onClose} className="p-1.5 rounded-md text-muted-foreground hover:bg-accent transition-colors" aria-label="Close">
@@ -209,7 +209,7 @@ export default function TeamModal({ onClose }: { onClose: () => void }) {
             {/* Invite (Admin or System Owner; System Owner may only invite Users) */}
             {canInvite && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Invite a teammate</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Invite a member</h3>
                 <form onSubmit={handleInvite} className="flex gap-2">
                   <input
                     className={`flex-1 ${inputCls}`}

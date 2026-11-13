@@ -64,11 +64,15 @@ export default function ChatArea() {
     selectedModel,
     takCredentials,
     takEnabled,
+    osintEnabled,
+    setOsintEnabled,
     setInputMessage,
     addMessage,
     updateLastMessage,
     setLastMessageComposioAuth,
     addLastMessageDocument,
+    addLastMessageMap,
+    addLastMessageChart,
     upsertLastMessageToolCall,
     endStreaming,
     setLoading,
@@ -357,7 +361,8 @@ export default function ChatArea() {
           sessionId,
           selectedModel,
           takEnabled && takCredentials ? takCredentials : undefined,
-          openingBriefing
+          openingBriefing,
+          osintEnabled
         );
 
         const reader = stream.getReader();
@@ -459,6 +464,35 @@ export default function ChatArea() {
                     resultPreview: summarizeToolResult(d.tool_name, d.result),
                   });
                 }
+                  // show_map → interactive intelligence map card; create_chart → chart card.
+                  if (
+                    (parsed.data?.tool_name === "show_map" || parsed.data?.tool_name === "create_chart") &&
+                    parsed.data?.result &&
+                    !parsed.data?.error
+                  ) {
+                    try {
+                      const r = typeof parsed.data.result === "string" ? JSON.parse(parsed.data.result) : parsed.data.result;
+                      if (r && !r.error) {
+                        if (parsed.data.tool_name === "show_map" && r.map_id) {
+                          addLastMessageMap({
+                            map_id: r.map_id,
+                            title: r.title,
+                            region: r.region,
+                            bbox: r.bbox ?? null,
+                            hours: r.hours,
+                            icon_count: r.icon_count,
+                            layers: r.layers || [],
+                            notes: r.notes || [],
+                          });
+                        } else if (parsed.data.tool_name === "create_chart" && r.kind) {
+                          addLastMessageChart(r);
+                        }
+                      }
+                    } catch {
+                      // Not JSON — ignore
+                    }
+                    break;
+                  }
                   // build_document → download card under the reply.
                   if (parsed.data?.tool_name === "build_document" && parsed.data?.result && !parsed.data?.error) {
                     try {
@@ -632,6 +666,7 @@ export default function ChatArea() {
       selectedModel,
       takEnabled,
       takCredentials,
+      osintEnabled,
       updateLastMessage,
       endStreaming,
     ]
@@ -695,6 +730,13 @@ export default function ChatArea() {
         selectedDocsCount={selectedDocs.size}
         takEnabled={takEnabled}
         takCredentials={takCredentials}
+        osintEnabled={osintEnabled}
+        onToggleOsint={() => setOsintEnabled(!osintEnabled)}
+        activity={
+          isLoading
+            ? [...(messages[messages.length - 1]?.toolCalls || [])].reverse().find((c) => c.status === "running")?.label ?? null
+            : null
+        }
         onSend={handleSendMessage}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}

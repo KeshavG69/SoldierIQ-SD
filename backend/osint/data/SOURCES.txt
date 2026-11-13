@@ -1,0 +1,2 @@
+Country boundaries derived from Natural Earth 1:50m Admin 0 Countries (public domain), https://www.naturalearthdata.com/ . Polygons simplified (outer rings only, decimated) for point-in-country checks.
+Cities (name, ISO2, lat, lon, pop_max >= 20,000) from Natural Earth 1:10m Populated Places Simple (public domain).

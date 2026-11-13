@@ -49,6 +49,8 @@ class ChatRequest(BaseModel):
     # The login briefing that opened this conversation, sent with the first
     # message so the agent can follow up on it.
     opening_briefing: Optional[str] = None
+    # OSINT mode (toggle in the chat input): adds the live intelligence map tool.
+    osint_enabled: bool = False
     # user_id and organization_id are extracted from JWT token by backend
 
 
@@ -98,6 +100,7 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
             user_email=user_email,
             is_admin=is_admin,
             opening_briefing=request.opening_briefing,
+            osint_enabled=request.osint_enabled,
         )
 
         # SSE headers
@@ -374,6 +377,7 @@ async def get_chat_session(
                     # If this is an assistant message with content, find associated tool calls
                     if message_role == "assistant":
                         sources = []
+                        visual_maps, visual_charts = [], []
 
                         # Look backward to find the most recent assistant message with tool_calls
                         for prev_idx in range(msg_idx - 1, -1, -1):
@@ -387,6 +391,17 @@ async def get_chat_session(
 
                                     if tool_call_id and tool_call_id in tool_results_map:
                                         tool_info = tool_results_map[tool_call_id]
+
+                                        # Map / chart cards (utils/visual_tools.py)
+                                        vis_name = tool_info["tool_name"] or tool_function_name
+                                        if vis_name in ("show_map", "create_chart"):
+                                            try:
+                                                vis = json.loads(tool_info["result"])
+                                                if isinstance(vis, dict) and not vis.get("error"):
+                                                    (visual_maps if vis_name == "show_map" else visual_charts).append(vis)
+                                            except (json.JSONDecodeError, TypeError):
+                                                pass
+                                            continue
 
                                         # Check if it's search_knowledge_base
                                         if tool_info["tool_name"] == "search_knowledge_base" or tool_function_name == "search_knowledge_base":
@@ -420,6 +435,10 @@ async def get_chat_session(
                         if sources:
                             message_data["sources"] = sources
                             logger.info(f"Added {len(sources)} sources to assistant message")
+                        if visual_maps:
+                            message_data["maps"] = visual_maps
+                        if visual_charts:
+                            message_data["charts"] = visual_charts
 
                     messages.append(message_data)
 
