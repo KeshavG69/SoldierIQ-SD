@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { ChatMessage, SourceReference, KnowledgeGraph, ComposioAuthInfo, ToolCallStep, GeneratedDocument } from '@/types';
+import { ChatMessage, SourceReference, KnowledgeGraph, ComposioAuthInfo, ToolCallStep, GeneratedDocument, MapCardInfo, ChartSpec } from '@/types';
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -37,6 +37,7 @@ interface ChatState {
   selectedModel: string;
   takCredentials: TAKCredentials | null;
   takEnabled: boolean;
+  osintEnabled: boolean; // OSINT mode: live intelligence map + OSINT tools for the agent
 
   // Actions
   setInputMessage: (message: string) => void;
@@ -49,6 +50,8 @@ interface ChatState {
   ) => void;
   setLastMessageComposioAuth: (info: ComposioAuthInfo) => void;
   addLastMessageDocument: (doc: GeneratedDocument) => void;
+  addLastMessageMap: (map: MapCardInfo) => void;
+  addLastMessageChart: (chart: ChartSpec) => void;
   upsertLastMessageToolCall: (step: Partial<ToolCallStep> & { id: string }) => void;
   endStreaming: () => void;
   setLoading: (loading: boolean) => void;
@@ -58,6 +61,7 @@ interface ChatState {
   loadSession: (sessionId: string, messages: ChatMessage[]) => void;
   setTAKCredentials: (credentials: TAKCredentials | null) => void;
   setTAKEnabled: (enabled: boolean) => void;
+  setOsintEnabled: (enabled: boolean) => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -71,6 +75,7 @@ export const useChatStore = create<ChatState>()(
   selectedModel: 'anthropic/claude-sonnet-5.5', // Default model
   takCredentials: null,
   takEnabled: false,
+  osintEnabled: false,
 
   setInputMessage: (message) => set({ inputMessage: message }),
 
@@ -101,6 +106,28 @@ export const useChatStore = create<ChatState>()(
         const last = messages[messages.length - 1];
         const docs = (last.documents || []).filter((d) => d.slug !== doc.slug);
         messages[messages.length - 1] = { ...last, documents: [...docs, doc] };
+      }
+      return { messages };
+    }),
+
+  // show_map: one card per map (the payload itself is fetched by map_id).
+  addLastMessageMap: (map) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        const last = messages[messages.length - 1];
+        const maps = (last.maps || []).filter((m) => m.map_id !== map.map_id);
+        messages[messages.length - 1] = { ...last, maps: [...maps, map] };
+      }
+      return { messages };
+    }),
+
+  addLastMessageChart: (chart) =>
+    set((state) => {
+      const messages = [...state.messages];
+      if (messages.length > 0) {
+        const last = messages[messages.length - 1];
+        messages[messages.length - 1] = { ...last, charts: [...(last.charts || []), chart] };
       }
       return { messages };
     }),
@@ -166,6 +193,8 @@ export const useChatStore = create<ChatState>()(
   setTAKCredentials: (credentials) => set({ takCredentials: credentials }),
 
   setTAKEnabled: (enabled) => set({ takEnabled: enabled }),
+
+  setOsintEnabled: (enabled) => set({ osintEnabled: enabled }),
     }),
     {
       // Keep the current conversation (and chosen model) across reloads so the
@@ -186,6 +215,7 @@ export const useChatStore = create<ChatState>()(
         messages: state.messages,
         sessionId: state.sessionId,
         selectedModel: state.selectedModel,
+        osintEnabled: state.osintEnabled,
       }),
     }
   )

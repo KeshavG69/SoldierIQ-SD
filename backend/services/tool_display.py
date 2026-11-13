@@ -23,6 +23,9 @@ _BUILTIN: Dict[str, tuple] = {
     "search_exa": ("Searching the web", "Searched the web", "search"),
     "get_contents": ("Reading web pages", "Read web pages", "search"),
     "build_document": ("Building the document", "Built the document", "tool"),
+    "show_map": ("Plotting the intelligence map", "Plotted the intelligence map", "map"),
+    "create_chart": ("Drawing the chart", "Drew the chart", "tool"),
+    "search_osint_tools": ("Finding intelligence sources", "Found intelligence sources", "search"),
 }
 
 # Argument keys worth showing under the label, most informative first.
@@ -79,6 +82,13 @@ async def describe_tool(tool_name: Optional[str], tool_args: Optional[Dict[str, 
         if name == "build_document" and isinstance(tool_args, dict):
             spec = tool_args.get("spec") if isinstance(tool_args.get("spec"), dict) else {}
             detail = spec.get("filename") or tool_args.get("slug") or detail
+        if name == "run_osint_tool" and isinstance(tool_args, dict):
+            # "get_chokepoint_status" -> "Checking chokepoint status"
+            inner = str(tool_args.get("tool_name") or "intelligence source")
+            words = inner.removeprefix("get_").removeprefix("list_").replace("_", " ")
+            args = tool_args.get("arguments") if isinstance(tool_args.get("arguments"), dict) else {}
+            return {"label": f"Checking {words}", "done_label": f"Checked {words}",
+                    "detail": _detail(args) if args else None, "app": None, "logo": None, "icon": "search"}
         if name in _BUILTIN:
             running, done, icon = _BUILTIN[name]
             return {"label": running, "done_label": done, "detail": detail, "app": None, "logo": None, "icon": icon}

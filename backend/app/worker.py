@@ -33,6 +33,7 @@ celery_app = Celery(
 # This must happen after celery_app is created
 import tasks.ingestion_tasks  # noqa: E402, F401
 import tasks.sandbox_tasks  # noqa: E402, F401
+import tasks.osint_tasks  # noqa: E402, F401
 
 # Celery configuration
 celery_app.conf.update(
@@ -71,5 +72,14 @@ celery_app.conf.beat_schedule = {
     "e2b-reap-sandboxes": {
         "task": "e2b.reap_sandboxes",
         "schedule": 3600.0,
+    },
+    # OSINT history (tasks/osint_tasks.py): timelines, surge and anomaly baselines.
+    "osint-collect": {
+        "task": "osint.collect",
+        "schedule": 900.0,
+    },
+    "osint-daily-risk": {
+        "task": "osint.daily_risk",
+        "schedule": 86400.0,
     },
 }

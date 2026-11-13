@@ -8,6 +8,11 @@ import SmoothStreamingText from "./SmoothStreamingText";
 import ComposioAuthCard from "./ComposioAuthCard";
 import ToolCallTimeline from "./ToolCallTimeline";
 import DocumentCard from "./DocumentCard";
+import dynamic from "next/dynamic";
+import MapCard from "../visuals/MapCard";
+
+// Recharts is only loaded when a reply actually carries a chart.
+const ChartCard = dynamic(() => import("../visuals/ChartCard"), { ssr: false });
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -116,6 +121,14 @@ const MessageBubble = React.memo(function MessageBubble({
           )}
 
           {message.documents?.map((doc) => <DocumentCard key={doc.slug} doc={doc} />)}
+
+          {message.maps?.map((m) => (
+            <MapCard key={m.map_id} info={m} onAsk={onSuggestion} />
+          ))}
+
+          {message.charts?.map((c, i) => (
+            <ChartCard key={`${c.title}-${i}`} spec={c} />
+          ))}
 
           {message.composioAuth && <ComposioAuthCard info={message.composioAuth} />}
 

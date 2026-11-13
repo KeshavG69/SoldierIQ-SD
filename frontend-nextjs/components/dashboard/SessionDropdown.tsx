@@ -51,6 +51,8 @@ export default function SessionDropdown({ hasUserMessages }: SessionDropdownProp
           timestamp: new Date(msg.created_at * 1000).toISOString(),
           ...(msg.model && { model: msg.model }),
           ...(msg.sources && { sources: msg.sources }),
+          ...(msg.maps && { maps: msg.maps }),
+          ...(msg.charts && { charts: msg.charts }),
         }));
 
       loadSession(session.session_id, formattedMessages);

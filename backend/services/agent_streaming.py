@@ -200,10 +200,12 @@ async def stream_agent_response(
                 continue
 
             if agno_event == RunEvent.run_error.value:
+                raw = payload.get("error") or payload.get("content") or ""
+                logger.error(f"Agent run error: {raw}")
                 yield {
                     "event": "error",
                     "data": {
-                        "error": payload.get("error", "Unknown error"),
+                        "error": _user_facing_error(str(raw)),
                         "error_type": payload.get("error_type", "AgentError"),
                     }
                 }
@@ -232,7 +234,24 @@ async def stream_agent_response(
         yield {
             "event": "error",
             "data": {
-                "error": str(e),
+                "error": _user_facing_error(str(e)),
                 "error_type": "StreamingError",
             }
         }
+
+
+def _user_facing_error(raw: str) -> str:
+    """A reason the user can act on, without provider URLs or key ids."""
+    low = raw.lower()
+    if "key limit exceeded" in low or "monthly limit" in low or "insufficient credits" in low or "402" in low:
+        return ("The AI service has reached its usage limit, so no answer could be generated. "
+                "Ask an administrator to raise the model provider's spending limit.")
+    if "rate limit" in low or "429" in low:
+        return "The AI service is rate-limiting requests right now. Please try again in a minute."
+    if "timeout" in low or "timed out" in low:
+        return "The AI service took too long to respond. Please try again."
+    if "401" in low or "invalid api key" in low or "unauthorized" in low:
+        return "The AI service rejected the server's credentials. Ask an administrator to check the model API key."
+    if not raw.strip():
+        return "Something went wrong while generating the answer. Please try again."
+    return raw[:300]

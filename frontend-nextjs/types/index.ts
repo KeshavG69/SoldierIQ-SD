@@ -59,6 +59,74 @@ export interface ChatMessage {
   documents?: GeneratedDocument[]; // build_document results → download cards
   toolCalls?: ToolCallStep[]; // live timeline of the agent's tool calls
   briefing?: { suggestions: string[] }; // login briefing → clickable follow-ups
+  maps?: MapCardInfo[]; // show_map results → interactive intelligence map cards
+  charts?: ChartSpec[]; // create_chart results → chart / timeline cards
+}
+
+// ── Visual answers (backend/utils/visual_tools.py) ──────────────────────────
+
+export type IntelSeverity = 'critical' | 'high' | 'elevated' | 'moderate' | 'low' | 'info';
+
+export interface MapLayerInfo {
+  id: string; // strikes | aircraft | conflict | chokepoints | hotspots | quakes | disasters | outages | fires | ships
+  label: string;
+  icon: string;
+  count: number;
+}
+
+// What the chat message keeps (small); the full payload is fetched by map_id.
+export interface MapCardInfo {
+  map_id: string;
+  title: string;
+  region: string;
+  bbox: [number, number, number, number] | null; // west, south, east, north
+  hours: number;
+  icon_count: number;
+  layers: MapLayerInfo[];
+  notes?: string[];
+}
+
+export interface MapFeature {
+  id: string;
+  layer: string;
+  lat: number;
+  lon: number;
+  title: string;
+  time: string | null;
+  severity: IntelSeverity;
+  verdict?: string | null;
+  heading?: number | null;
+  source: string;
+  url?: string | null;
+  text?: string | null;
+  radius_km?: number;
+  details: Record<string, string | number | boolean | null>;
+}
+
+export interface MapPayload {
+  type: 'map';
+  title: string;
+  region: string;
+  bbox: [number, number, number, number] | null;
+  hours: number;
+  layers: MapLayerInfo[];
+  features: MapFeature[];
+  sources: { name: string; ok: boolean; fetched_at?: string | null }[];
+  notes: string[];
+}
+
+export interface ChartSpec {
+  type: 'chart';
+  kind: 'bar' | 'column' | 'line' | 'area' | 'donut' | 'timeline';
+  title: string;
+  subtitle?: string | null;
+  source?: string | null;
+  categories?: string[];
+  series?: { name: string; data: (number | null)[] }[];
+  x_title?: string | null;
+  y_title?: string | null;
+  value_format?: 'number' | 'percent' | 'currency';
+  events?: { time: string; label: string; detail?: string | null; severity?: IntelSeverity | null }[];
 }
 
 // A file the agent built with build_document (stored in iDrive E2)

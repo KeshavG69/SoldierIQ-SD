@@ -29,6 +29,26 @@ class Settings(BaseSettings):
     # Exa web search (agno ExaTools) for the chat agent. Empty = web search off.
     EXA_API_KEY: str = ""
 
+    # OSINT tools (backend/osint). Every key is optional: a tool whose key is
+    # missing is hidden from the agent; keyless tools always work.
+    # search_osint_tools ranks tools with Jev (OpenRouter decision model); "none" = keyword ranking only.
+    OSINT_TOOL_SEARCH_MODEL: str = "typesafe/jev-1.14"
+    OSINT_TOOL_SEARCH_TIMEOUT_S: float = 4.0
+    FIRMS_MAP_KEY: str = ""            # NASA FIRMS active fires / thermal anomalies
+    AISSTREAM_API_KEY: str = ""        # aisstream.io live AIS ship positions
+    UCDP_API_TOKEN: str = ""           # UCDP GED conflict events (x-ucdp-access-token)
+    ACLED_USERNAME: str = ""           # ACLED account email
+    ACLED_PASSWORD: str = ""           # ACLED account password (OAuth token grant)
+    WINDY_API_KEY: str = ""            # Windy public webcams
+    EIA_API_KEY: str = ""              # US Energy Information Administration
+    ABUSECH_AUTH_KEY: str = ""         # abuse.ch URLhaus / ThreatFox
+    CLOUDFLARE_RADAR_TOKEN: str = ""   # Cloudflare Radar internet outages (optional; IODA is keyless)
+    COPERNICUS_CLIENT_ID: str = ""     # Copernicus Data Space (Sentinel-5P NO2)
+    COPERNICUS_CLIENT_SECRET: str = ""
+    GOOGLE_FACTCHECK_API_KEY: str = "" # Google Fact Check Tools (optional, for verify_claim)
+    REDDIT_CLIENT_ID: str = ""         # Reddit app (script/installed), official OAuth API
+    REDDIT_CLIENT_SECRET: str = ""
+
     # ── E2B document sandbox (utils/e2b_sandbox.py, utils/document_tool.py) ──
     # build_document runs docgen in an E2B microVM, one per chat session.
     E2B_API_KEY: str = ""
