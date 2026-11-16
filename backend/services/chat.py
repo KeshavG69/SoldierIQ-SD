@@ -159,6 +159,12 @@ async def create_chat_agent(
                 from utils.osint_tools import run_osint_tool, search_osint_tools
                 visual_tools += [search_osint_tools, run_osint_tool]
 
+        # Live sensors (Connectors -> Sensors): phones + GPS trackers of this org.
+        sensor_tools = []
+        if not use_hybrid and organization_id and settings.SENSOR_HUB_SECRET:
+            from utils.sensor_tools import SENSOR_TOOLS
+            sensor_tools = list(SENSOR_TOOLS)
+
         # Agent instructions
         instructions = [
             """You are an intelligent AI assistant specialized in powerful knowledge base search and information retrieval. Your purpose is to help users instantly find, analyze, and understand information across their uploaded documents, images, and videos.
@@ -449,6 +455,10 @@ You can create real files with build_document: PDF reports, Word documents, Powe
             if osint_enabled:
                 instructions.append(OSINT_INSTRUCTIONS)
 
+        if sensor_tools:
+            from utils.sensor_tools import SENSORS_INSTRUCTIONS
+            instructions.append(SENSORS_INSTRUCTIONS)
+
         if opening_briefing:
             # The login briefing is generated outside this agent, so it isn't in
             # the session history. Tell the agent what it said, so a reply like
@@ -467,7 +477,7 @@ The user's message may be a reply to it.
             session_id=session_id,
             user_id=user_id,
             knowledge_retriever=knowledge_retriever,
-            tools=(tak_tools + app_tools + setup_tools + web_tools + doc_tools + visual_tools) or None,
+            tools=(tak_tools + app_tools + setup_tools + web_tools + doc_tools + visual_tools + sensor_tools) or None,
             instructions=instructions,
             markdown=True,
             add_history_to_context=True,

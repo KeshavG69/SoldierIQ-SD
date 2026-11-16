@@ -26,13 +26,17 @@ _BUILTIN: Dict[str, tuple] = {
     "show_map": ("Plotting the intelligence map", "Plotted the intelligence map", "map"),
     "create_chart": ("Drawing the chart", "Drew the chart", "tool"),
     "search_osint_tools": ("Finding intelligence sources", "Found intelligence sources", "search"),
+    "list_sensors": ("Checking live sensors", "Checked live sensors", "map"),
+    "get_sensor_reading": ("Reading the sensor", "Read the sensor", "map"),
+    "look_at_camera": ("Looking through the camera", "Looked through the camera", "search"),
+    "sensor_history": ("Tracing the sensor's movement", "Traced the sensor's movement", "route"),
 }
 
 # Argument keys worth showing under the label, most informative first.
 _DETAIL_KEYS = (
     "query", "q", "search", "subject", "recipient_email", "to", "channel", "title",
     "summary", "name", "message", "text", "issue_key", "callsign", "route_name",
-    "service_name", "task_description",
+    "service_name", "task_description", "sensor",
 )
 _MAX_DETAIL = 90
 

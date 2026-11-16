@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sensor Hub (debug)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg: #0b0f0c; --panel: #121915; --panel2: #0f1512; --line: #222d27; --text: #e6efe8; --muted: #84948a;
+    --ok: #4cc38a; --warn: #e5b84b; --bad: #e5664b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; letter-spacing: .02em; }
+  header .sub { color: var(--muted); font-size: 13px; }
+  header .spacer { flex: 1; }
+  .pill { font-size: 12px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+  .pill.live { color: var(--ok); border-color: #2c5a43; }
+  .pill.stale { color: var(--warn); border-color: #5a4c2c; }
+  .pill.offline { color: var(--bad); border-color: #5a2f2c; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; padding: 16px 20px; }
+  @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .panel h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .sensor { margin-bottom: 16px; }
+  .sensor .top { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .sensor .top b { font-weight: 600; }
+  .sensor .top .id { color: var(--muted); font: 12px ui-monospace, Menlo, monospace; }
+  .sensor .body { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  @media (max-width: 760px) { .sensor .body { grid-template-columns: 1fr; } }
+  .feed { background: #000; height: min(62vh, 560px); min-height: 260px; display: grid; place-items: center; color: var(--muted); position: relative; overflow: hidden; }
+  .feed img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+  .feed .badge { z-index: 1; }
+  .feed .badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.6); padding: 2px 8px; border-radius: 6px; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .side { display: grid; grid-template-rows: 200px auto; border-left: 1px solid var(--line); }
+  .map { height: 200px; background: var(--panel2); }
+  .readings { padding: 10px 14px; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+  .readings dt { color: var(--muted); }
+  .readings dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+  .connect { padding: 14px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+  .connect code { font: 13px ui-monospace, Menlo, monospace; background: var(--panel2); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); word-break: break-all; }
+  #qr { background: #fff; padding: 10px; border-radius: 10px; }
+  .connect p { margin: 0; color: var(--muted); font-size: 12px; }
+  .events { font: 11.5px/1.5 ui-monospace, Menlo, monospace; max-height: 420px; overflow: auto; padding: 8px 12px; }
+  .events div { white-space: pre-wrap; word-break: break-all; border-bottom: 1px dashed var(--line); padding: 4px 0; color: #b8c7bd; }
+  .events .k { color: var(--ok); }
+  .leaflet-container { background: var(--panel2); }
+  .heading-arrow { width: 22px; height: 22px; display: grid; place-items: center; }
+  .heading-arrow svg { filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+</style>
+</head>
+<body>
+<header>
+  <h1>SoldierIQ Sensor Hub</h1>
+  <span class="sub" id="summary">waiting for sensors…</span>
+  <span class="spacer"></span>
+  <span class="pill" id="hubconn">connecting</span>
+</header>
+
+<main>
+  <section id="sensors">
+    <div class="panel empty" id="empty">No sensors connected. Add sensors in SoldierIQ → Connectors → Sensors.</div>
+  </section>
+
+  <aside>
+    <div class="panel">
+      <h2>Normalized messages (live)</h2>
+      <div class="events" id="events"></div>
+    </div>
+  </aside>
+</main>
+
+<script>
+const sensors = new Map(); // id -> {el, map, marker, data}
+const $ = (s, root = document) => root.querySelector(s);
+const fmt = (v, d = 1, unit = "") => v == null ? "–" : `${(+v).toFixed(d)}${unit}`;
+const ago = (ms) => { if (!ms) return "–"; const s = (Date.now() - ms) / 1000; return s < 1 ? "now" : s < 60 ? `${s.toFixed(0)}s ago` : `${(s / 60).toFixed(0)}m ago`; };
+
+
+function arrowIcon(deg) {
+  return L.divIcon({ className: "", iconSize: [22, 22], iconAnchor: [11, 11], html:
+    `<div class="heading-arrow" style="transform:rotate(${deg || 0}deg)"><svg width="22" height="22" viewBox="0 0 22 22">
+      <path d="M11 1 L18 19 L11 15 L4 19 Z" fill="#4cc38a" stroke="#06130b" stroke-width="1.2"/></svg></div>` });
+}
+
+function ensureSensor(s) {
+  let entry = sensors.get(s.sensor_id);
+  if (entry) { entry.data = { ...entry.data, ...s }; return entry; }
+  $("#empty")?.remove();
+  const el = document.createElement("div");
+  el.className = "panel sensor";
+  el.innerHTML = `
+    <div class="top"><b class="name"></b><span class="id"></span><span class="spacer" style="flex:1"></span><span class="pill status"></span></div>
+    <div class="body">
+      <div class="feed"><span>waiting for camera…</span><span class="badge"></span></div>
+      <div class="side">
+        <div class="map"></div>
+        <dl class="readings">
+          <dt>Position</dt><dd class="r-pos">–</dd>
+          <dt>Accuracy</dt><dd class="r-acc">–</dd>
+          <dt>Altitude</dt><dd class="r-alt">–</dd>
+          <dt>Heading</dt><dd class="r-head">–</dd>
+          <dt>Pitch / roll</dt><dd class="r-tilt">–</dd>
+          <dt>Speed</dt><dd class="r-speed">–</dd>
+          <dt>Battery</dt><dd class="r-bat">–</dd>
+          <dt>Last seen</dt><dd class="r-seen">–</dd>
+        </dl>
+      </div>
+    </div>`;
+  $("#sensors").appendChild(el);
+  const map = L.map($(".map", el), { zoomControl: false, attributionControl: true }).setView([20, 0], 2);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(map);
+  entry = { el, map, marker: null, circle: null, data: { latest: {}, ...s }, centered: false, streaming: false };
+  sensors.set(s.sensor_id, entry);
+  return entry;
+}
+
+function render(entry) {
+  const d = entry.data, el = entry.el, latest = d.latest || {};
+  $(".name", el).textContent = d.name || d.sensor_id;
+  $(".id", el).textContent = d.sensor_id;
+  const st = $(".status", el); st.textContent = d.status || "live"; st.className = "pill status " + (d.status || "live");
+
+  // live camera: fetch newest frame -> show -> repeat (never builds a backlog)
+  const feed = $(".feed", el);
+  if (d.camera?.frames > 0 && !entry.streaming && d.status !== "offline") {
+    entry.streaming = true;
+    feed.querySelector("span:not(.badge)")?.remove();
+    const img = document.createElement("img");
+    feed.prepend(img);
+    (async () => {
+      let seq = -1, url = null;
+      while (entry.streaming) {
+        try {
+          const r = await fetch(`/api/sensors/${encodeURIComponent(d.sensor_id)}/frame.jpg?after=${seq}`, { cache: "no-store" });
+          if (!r.ok) throw new Error(r.status);
+          seq = +r.headers.get("X-Frame-Seq");
+          entry.delay = Date.now() - +r.headers.get("X-Captured-Ts");
+          const next = URL.createObjectURL(await r.blob());
+          img.src = next; if (url) URL.revokeObjectURL(url); url = next;
+        } catch { await new Promise(res => setTimeout(res, 1000)); }
+      }
+      img.remove();
+    })();
+  }
+  $(".badge", feed).textContent = d.camera ? `${d.camera.fps} fps · ${Math.round((d.camera.frame_bytes || 0) / 1024)} KB/frame` +
+    (entry.delay != null ? ` · ${entry.delay} ms delay` : "") : "";
+
+  const p = latest.position?.data, o = latest.orientation?.data, s = latest.status?.data;
+  if (p) {
+    $(".r-pos", el).textContent = `${p.lat.toFixed(6)}, ${p.lon.toFixed(6)}`;
+    $(".r-acc", el).textContent = fmt(p.accuracy_m, 0, " m");
+    $(".r-alt", el).textContent = fmt(p.alt_m, 0, " m");
+    $(".r-speed", el).textContent = fmt(p.speed_mps, 1, " m/s");
+    const ll = [p.lat, p.lon];
+    if (!entry.marker) {
+      entry.marker = L.marker(ll, { icon: arrowIcon(o?.heading_deg) }).addTo(entry.map);
+      entry.circle = L.circle(ll, { radius: p.accuracy_m || 10, color: "#4cc38a", weight: 1, fillOpacity: .12 }).addTo(entry.map);
+    } else { entry.marker.setLatLng(ll); entry.circle.setLatLng(ll).setRadius(p.accuracy_m || 10); }
+    if (!entry.centered) { entry.map.setView(ll, 17); entry.centered = true; }
+  }
+  if (o) {
+    $(".r-head", el).textContent = o.heading_deg == null ? "–" : `${Math.round(o.heading_deg)}° (${o.heading_source})`;
+    $(".r-tilt", el).textContent = `${fmt(o.pitch_deg, 0, "°")} / ${fmt(o.roll_deg, 0, "°")}`;
+    if (entry.marker && o.heading_deg != null) entry.marker.setIcon(arrowIcon(o.heading_deg));
+  }
+  if (s) $(".r-bat", el).textContent = s.battery_pct == null ? "n/a" : `${s.battery_pct}%${s.charging ? " ⚡" : ""}`;
+  $(".r-seen", el).textContent = ago(d.last_seen);
+}
+
+function addEvent(e) {
+  if (e.kind === "motion") return; // too chatty for the log
+  const box = $("#events");
+  const div = document.createElement("div");
+  div.innerHTML = `<span class="k">${e.kind}</span> ${JSON.stringify(e)}`;
+  box.prepend(div);
+  while (box.childElementCount > 60) box.lastChild.remove();
+}
+
+function onMessage(msg) {
+  if (msg.kind === "snapshot") { msg.sensors.forEach(s => render(ensureSensor(s))); return; }
+  const entry = ensureSensor({ sensor_id: msg.sensor_id, sensor_type: msg.sensor_type });
+  if (msg.kind === "connected") { entry.data.status = "live"; entry.data.name = msg.data.name; }
+  else if (msg.kind === "disconnected") { entry.data.status = "offline"; entry.streaming = false; $(".feed img", entry.el)?.remove(); }
+  else { entry.data.latest = { ...entry.data.latest, [msg.kind]: msg }; entry.data.last_seen = msg.received_ts; }
+  addEvent(msg);
+  render(entry);
+}
+
+// camera fps / status refresh from the REST summary
+setInterval(async () => {
+  try {
+    const { sensors: list } = await (await fetch("/api/sensors")).json();
+    list.forEach(s => { const e = ensureSensor(s); e.data = { ...e.data, ...s }; render(e); });
+    const live = list.filter(s => s.status === "live").length;
+    $("#summary").textContent = `${list.length} sensor${list.length === 1 ? "" : "s"} · ${live} live`;
+  } catch {}
+}, 1000);
+
+function connect() {
+  const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/events`);
+  ws.onopen = () => { $("#hubconn").textContent = "hub connected"; $("#hubconn").className = "pill live"; };
+  ws.onmessage = (ev) => onMessage(JSON.parse(ev.data));
+  ws.onclose = () => { $("#hubconn").textContent = "hub offline"; $("#hubconn").className = "pill offline"; setTimeout(connect, 1500); };
+}
+connect();
+</script>
+</body>
+</html>

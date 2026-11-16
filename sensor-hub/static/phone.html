@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f0c">
+<title>SoldierIQ Sensor</title>
+<style>
+  :root {
+    --bg: #0b0f0c; --panel: #131a15; --line: #24302a; --text: #e6efe8; --muted: #8a9a90;
+    --ok: #4cc38a; --warn: #e5b84b; --bad: #e5664b; --accent: #4cc38a;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.4 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; }
+  body { padding: env(safe-area-inset-top) 16px calc(16px + env(safe-area-inset-bottom)); }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 10px; }
+  h1 { font-size: 17px; margin: 0; letter-spacing: .02em; }
+  .pill { font-size: 12px; padding: 4px 10px; border-radius: 99px; background: var(--panel);
+    border: 1px solid var(--line); color: var(--muted); }
+  .pill.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 40%, transparent); }
+  .pill.warn { color: var(--warn); }
+  .pill.bad { color: var(--bad); }
+  .cam { position: relative; background: #000; border-radius: 12px; overflow: hidden;
+    aspect-ratio: 16/9; border: 1px solid var(--line); }
+  video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cam .rec { position: absolute; top: 10px; left: 10px; font-size: 12px; padding: 3px 8px;
+    border-radius: 6px; background: rgba(0,0,0,.55); display: none; }
+  .cam .rec.on { display: block; }
+  .cam .rec::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--bad); margin-right: 6px; vertical-align: 1px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .stat .v { font-size: 16px; font-variant-numeric: tabular-nums; margin-top: 2px; word-break: break-word; }
+  .row { display: flex; gap: 8px; }
+  button, select { font: inherit; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--text); padding: 12px 14px; }
+  button.primary { flex: 1; background: var(--accent); color: #06130b; border: 0; font-weight: 600; font-size: 16px; }
+  button.stop { flex: 1; background: var(--bad); color: #1a0703; border: 0; font-weight: 600; font-size: 16px; }
+  .settings { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  label { font-size: 12px; color: var(--muted); display: grid; gap: 4px; }
+  input { font: inherit; border-radius: 10px; border: 1px solid var(--line); background: var(--panel);
+    color: var(--text); padding: 10px 12px; width: 100%; }
+  .log { margin-top: 12px; font: 12px/1.45 ui-monospace, Menlo, monospace; color: var(--muted);
+    white-space: pre-wrap; max-height: 120px; overflow: auto; }
+  .hidden { display: none !important; }
+  .notice { margin-top: 12px; padding: 12px 14px; border-radius: 10px; border: 1px solid #5a4c2c;
+    background: #1d1a10; color: var(--warn); font-size: 14px; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>SoldierIQ Sensor</h1><div class="sub" id="sname">not paired</div></div>
+  <span id="conn" class="pill">offline</span>
+</header>
+
+<div class="cam">
+  <video id="video" playsinline muted autoplay></video>
+  <div id="rec" class="rec">STREAMING</div>
+</div>
+
+<div class="grid">
+  <div class="stat"><div class="k">Camera</div><div class="v" id="s-cam">–</div></div>
+  <div class="stat"><div class="k">Sent</div><div class="v" id="s-sent">–</div></div>
+  <div class="stat"><div class="k">GPS</div><div class="v" id="s-gps">–</div></div>
+  <div class="stat"><div class="k">Heading</div><div class="v" id="s-head">–</div></div>
+</div>
+
+<div class="row">
+  <button id="start" class="primary">Start sensor</button>
+  <button id="stop" class="stop hidden">Stop</button>
+  <button id="flip" title="Switch camera">Flip</button>
+</div>
+
+<div id="unpaired" class="notice hidden">
+  This phone is not paired. In SoldierIQ go to <b>Connectors → Sensors → Add sensor → Phone</b> and scan the QR code with your camera app.
+</div>
+
+<div class="settings">
+  <label>Frame rate
+    <select id="fps"><option>2</option><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+  </label>
+  <label>Resolution
+    <select id="res"><option value="640">Low (640 px)</option><option value="960" selected>Medium (960 px)</option><option value="1280">High (1280 px)</option><option value="1920">Max (1920 px)</option></select>
+  </label>
+  <label>JPEG quality
+    <select id="q"><option value="0.5">Low</option><option value="0.7" selected>Medium</option><option value="0.85">High</option></select>
+  </label>
+</div>
+
+<div id="log" class="log"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const log = (m) => { const el = $("log"); el.textContent = `${new Date().toLocaleTimeString()}  ${m}\n` + el.textContent.slice(0, 2000); };
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } }
+// Pairing token comes from the QR code SoldierIQ shows (…/phone?t=TOKEN); remembered for next time.
+const urlToken = new URLSearchParams(location.search).get("t");
+if (urlToken) { store("pair_token", urlToken); history.replaceState(null, "", location.pathname); }
+const pairToken = urlToken || store("pair_token");
+if (!pairToken) { $("unpaired").classList.remove("hidden"); $("start").disabled = true; }
+const STOP_REASONS = {
+  unpaired: "This pairing link is no longer valid. Scan the QR code again in SoldierIQ.",
+  removed: "This sensor was removed or re-paired in SoldierIQ. Scan the new QR code.",
+  paused: "This sensor is paused in SoldierIQ. Resume it there, then tap Start.",
+  replaced: "This sensor was opened on another device.",
+};
+
+let ws = null, stream = null, running = false, facing = "environment";
+let geoWatch = null, wakeLock = null, reconnectDelay = 1000;
+let sentFrames = 0, sentBytes = 0, lastStatT = performance.now();
+let lastOrient = 0, lastMotion = 0;
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+function setConn(text, cls) { const el = $("conn"); el.textContent = text; el.className = "pill " + (cls || ""); }
+function send(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+function reading(kind, data) { send({ kind, ts: Date.now(), data }); }
+
+// ---------- connection
+function connect() {
+  const url = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws/sensor`;
+  ws = new WebSocket(url);
+  ws.binaryType = "arraybuffer";
+  setConn("connecting…", "warn");
+  let stopReason = null;
+  ws.onopen = () => {
+    send({ kind: "hello", token: pairToken });
+    setConn("pairing…", "warn");
+  };
+  ws.onmessage = (ev) => {
+    if (typeof ev.data !== "string") return;
+    const m = JSON.parse(ev.data);
+    if (m.kind === "welcome") {
+      reconnectDelay = 1000;
+      $("sname").textContent = m.name;
+      setConn("connected", "ok");
+      log(`connected as "${m.name}"`);
+      sendStatus();
+    } else if (m.kind === "error") {
+      stopReason = m.reason;
+    }
+  };
+  ws.onclose = (ev) => {
+    const reason = stopReason || { 4001: "unpaired", 4002: "removed", 4003: "paused", 4004: "replaced" }[ev.code];
+    if (reason && reason !== "soldieriq_unreachable") {
+      log(STOP_REASONS[reason] || reason);
+      if (reason === "unpaired" || reason === "removed") { store("pair_token", ""); }
+      stopSensor();
+      setConn(reason === "paused" ? "paused" : "not paired", "bad");
+      if (reason === "unpaired" || reason === "removed") { $("unpaired").classList.remove("hidden"); $("start").disabled = true; }
+      return;
+    }
+    setConn(running ? "reconnecting…" : "offline", running ? "warn" : "");
+    if (running) { setTimeout(connect, reconnectDelay); reconnectDelay = Math.min(reconnectDelay * 2, 10000); }
+  };
+  ws.onerror = () => log("connection error");
+}
+
+// ---------- camera
+async function openCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  const w = +$("res").value;
+  stream = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: { facingMode: { ideal: facing }, width: { ideal: w }, height: { ideal: Math.round(w * 9 / 16) } },
+  });
+  $("video").srcObject = stream;
+  await $("video").play().catch(() => {});
+  const s = stream.getVideoTracks()[0].getSettings();
+  $("s-cam").textContent = `${s.width}×${s.height} ${facing === "environment" ? "rear" : "front"}`;
+  sendStatus();
+}
+
+// Low latency: never queue frames. A new frame is captured only once the previous one has
+// fully left the phone, so on slow Wi-Fi the frame rate drops instead of the delay growing.
+let lastCapture = 0;
+function captureLoop() {
+  if (!running) return;
+  const v = $("video");
+  const minGap = 1000 / +$("fps").value;
+  const wait = minGap - (performance.now() - lastCapture);
+  if (!ws || ws.readyState !== 1 || !v.videoWidth || ws.bufferedAmount > 0 || wait > 0) {
+    return setTimeout(captureLoop, Math.max(10, Math.min(wait, 50)));
+  }
+  lastCapture = performance.now();
+  const capturedAt = Date.now();
+  const maxSide = +$("res").value;  // longest side, so portrait and landscape get the same size
+  const scale = Math.min(1, maxSide / Math.max(v.videoWidth, v.videoHeight));
+  canvas.width = Math.round(v.videoWidth * scale);
+  canvas.height = Math.round(v.videoHeight * scale);
+  ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+  canvas.toBlob(async (blob) => {
+    if (blob && ws && ws.readyState === 1) {
+      // 8-byte capture time (ms, little-endian float64) + JPEG; lets the hub measure delay
+      const jpeg = new Uint8Array(await blob.arrayBuffer());
+      const msg = new Uint8Array(8 + jpeg.length);
+      new DataView(msg.buffer).setFloat64(0, capturedAt, true);
+      msg.set(jpeg, 8);
+      ws.send(msg.buffer);
+      sentFrames++; sentBytes += blob.size;
+    }
+    captureLoop();
+  }, "image/jpeg", +$("q").value);
+}
+
+setInterval(() => {
+  const t = performance.now(), dt = (t - lastStatT) / 1000;
+  if (running) $("s-sent").textContent = `${(sentFrames / dt).toFixed(1)} fps · ${Math.round(sentBytes / 1024 / dt)} KB/s`;
+  sentFrames = 0; sentBytes = 0; lastStatT = t;
+}, 1000);
+
+// ---------- GPS
+function startGps() {
+  if (!navigator.geolocation) { $("s-gps").textContent = "not available"; return; }
+  geoWatch = navigator.geolocation.watchPosition((p) => {
+    const c = p.coords;
+    $("s-gps").textContent = `${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)} ±${Math.round(c.accuracy)}m`;
+    reading("position", { lat: c.latitude, lon: c.longitude, accuracy: c.accuracy, altitude: c.altitude,
+      altitudeAccuracy: c.altitudeAccuracy, heading: c.heading, speed: c.speed });
+  }, (e) => { $("s-gps").textContent = e.code === 1 ? "permission denied" : "no fix"; log("GPS: " + e.message); },
+  { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+}
+
+// ---------- compass + motion
+async function askMotionPermission() {
+  // iOS needs an explicit permission prompt, triggered by a tap
+  for (const E of [window.DeviceOrientationEvent, window.DeviceMotionEvent]) {
+    if (E && typeof E.requestPermission === "function") {
+      try { await E.requestPermission(); } catch (e) { log("motion permission: " + e.message); }
+    }
+  }
+}
+function onOrientation(e) {
+  const t = performance.now(); if (t - lastOrient < 200) return; lastOrient = t;
+  let heading = null, src = null;
+  if (typeof e.webkitCompassHeading === "number") { heading = e.webkitCompassHeading; src = "compass"; }
+  else if (e.absolute && e.alpha != null) { heading = (360 - e.alpha) % 360; src = "absolute"; }
+  else if (e.alpha != null) { heading = (360 - e.alpha) % 360; src = "relative"; }
+  if (heading != null) $("s-head").textContent = `${Math.round(heading)}° ${src === "relative" ? "(rel)" : ""}`;
+  reading("orientation", { heading, headingSource: src, beta: e.beta, gamma: e.gamma });
+}
+function onMotion(e) {
+  const t = performance.now(); if (t - lastMotion < 100) return; lastMotion = t;
+  const a = e.acceleration || e.accelerationIncludingGravity || {};
+  const r = e.rotationRate || {};
+  reading("motion", { accel: { x: a.x, y: a.y, z: a.z }, rotation: { alpha: r.alpha, beta: r.beta, gamma: r.gamma } });
+}
+
+// ---------- status (battery etc.)
+async function sendStatus() {
+  const s = stream && stream.getVideoTracks()[0] ? stream.getVideoTracks()[0].getSettings() : {};
+  let battery = null, charging = null;
+  try { if (navigator.getBattery) { const b = await navigator.getBattery(); battery = Math.round(b.level * 100); charging = b.charging; } } catch {}
+  reading("status", { battery, charging, camera: facing === "environment" ? "rear" : "front",
+    resolution: s.width ? `${s.width}x${s.height}` : null, fps: +$("fps").value });
+}
+setInterval(() => running && sendStatus(), 30000);
+
+// ---------- start / stop
+$("start").onclick = async () => {
+  if (!window.isSecureContext) { log("This page must be opened over https:// for camera and GPS."); return; }
+  await askMotionPermission();
+  try { await openCamera(); } catch (e) { log("camera: " + e.message); setConn("camera blocked", "bad"); return; }
+  running = true;
+  connect();
+  startGps();
+  addEventListener("deviceorientationabsolute", onOrientation);
+  addEventListener("deviceorientation", onOrientation);
+  addEventListener("devicemotion", onMotion);
+  try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
+  $("start").classList.add("hidden"); $("stop").classList.remove("hidden"); $("rec").classList.add("on");
+  captureLoop();
+};
+
+$("stop").onclick = () => { stopSensor(); setConn("offline"); };
+
+function stopSensor() {
+  running = false;
+  if (ws && ws.readyState <= 1) ws.close();
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (geoWatch != null) navigator.geolocation.clearWatch(geoWatch);
+  removeEventListener("deviceorientationabsolute", onOrientation);
+  removeEventListener("deviceorientation", onOrientation);
+  removeEventListener("devicemotion", onMotion);
+  try { wakeLock?.release(); } catch {}
+  $("start").classList.remove("hidden"); $("stop").classList.add("hidden"); $("rec").classList.remove("on");
+}
+
+$("flip").onclick = async () => {
+  facing = facing === "environment" ? "user" : "environment";
+  if (running) { try { await openCamera(); } catch (e) { log("camera: " + e.message); } }
+};
+$("res").onchange = () => running && openCamera().catch(e => log("camera: " + e.message));
+$("fps").onchange = () => running && sendStatus();
+
+// re-acquire wake lock when coming back to the tab
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "visible" && running) { try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {} }
+});
+</script>
+</body>
+</html>

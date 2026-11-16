@@ -1,0 +1,18 @@
+# Traccar: open-source GPS tracking server. Decodes 200+ GPS tracker protocols.
+# SoldierIQ registers devices through its REST API; the sensor hub polls positions.
+services:
+  traccar:
+    image: traccar/traccar:latest
+    container_name: soldieriq-traccar
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8082:8082"   # REST API + web UI (local only)
+      - "5055:5055"             # OsmAnd protocol: Traccar Client phone app
+      - "5027:5027"             # Teltonika trackers
+      - "5023:5023"             # GT06 / Concox trackers
+    volumes:
+      - traccar-data:/opt/traccar/data
+      - traccar-logs:/opt/traccar/logs
+volumes:
+  traccar-data:
+  traccar-logs:
