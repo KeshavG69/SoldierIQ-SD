@@ -242,7 +242,8 @@ async def look_at_camera(sensor: str) -> ToolResult:
         return ToolResult(content=json.dumps({"error": f"'{s['name']}' is a GPS tracker; it has no camera."}))
     try:
         async with httpx.AsyncClient(timeout=10) as c:
-            r = await c.get(f"{settings.SENSOR_HUB_URL.rstrip('/')}/api/sensors/{s['id']}/frame.jpg")
+            r = await c.get(f"{settings.SENSOR_HUB_URL.rstrip('/')}/api/sensors/{s['id']}/frame.jpg",
+                            headers={"X-Sensor-Hub-Secret": settings.SENSOR_HUB_SECRET})
     except httpx.HTTPError as e:
         logger.warning(f"[sensor_tools] hub unreachable: {e}")
         return ToolResult(content=json.dumps({"error": "The sensor hub is not reachable, so the camera can't be read right now."}))

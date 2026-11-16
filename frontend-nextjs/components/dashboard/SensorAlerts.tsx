@@ -46,7 +46,8 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   // Compare what the user chooses (on/off + which things), not server-filled defaults like the question text.
-  const key = (w: WatchConfig) => JSON.stringify([w.enabled, w.rules.map((r) => r.label.toLowerCase()).sort()]);
+  const key = (w: WatchConfig) =>
+    JSON.stringify([w.enabled, w.interval_s ?? 3, w.motion_only !== false, w.rules.map((r) => r.label.toLowerCase()).sort()]);
   const dirty = key(watch) !== key(saved);
 
   const save = async (next: WatchConfig) => {
@@ -80,7 +81,8 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
             Camera alerts
           </div>
           <p className="text-[11px] text-muted-foreground">
-            A decision model checks the camera every {watch.interval_s ?? 3}s and alerts when it sees what you choose.
+            A decision model checks the camera every {watch.interval_s ?? 3}s
+            {watch.motion_only !== false ? " when something moves" : ""} and alerts when it sees what you choose.
           </p>
         </div>
         {isAdmin && (
@@ -122,6 +124,28 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
 
       {isAdmin && (
         <>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px]">
+            <label className="inline-flex items-center gap-2 text-muted-foreground">
+              Check every
+              <select
+                className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-foreground"
+                value={watch.interval_s ?? 3}
+                onChange={(e) => setWatch({ ...watch, interval_s: Number(e.target.value) })}
+              >
+                {[2, 3, 5, 10, 30].map((n) => (
+                  <option key={n} value={n}>{n} seconds</option>
+                ))}
+              </select>
+            </label>
+            <label className="inline-flex items-center gap-2 text-muted-foreground cursor-pointer" title="Skips the AI check when the picture hasn't changed. A check still runs once a minute.">
+              <input
+                type="checkbox"
+                checked={watch.motion_only !== false}
+                onChange={(e) => setWatch({ ...watch, motion_only: e.target.checked })}
+              />
+              Only check when something moves (saves cost)
+            </label>
+          </div>
           {unused.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {unused.map((s) => (

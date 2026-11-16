@@ -111,7 +111,9 @@ class Settings(BaseSettings):
 
     # Sensors (sensor-hub gateway + Traccar GPS server). See sensor-hub/README.md.
     # SENSOR_HUB_SECRET is shared with the hub; empty = sensors feature off.
-    SENSOR_HUB_URL: str = "http://127.0.0.1:8090"       # backend -> hub (local API)
+    # Railway: SENSOR_HUB_URL = hub's private URL (http://sensor-hub.railway.internal:<PORT>),
+    #          SENSOR_HUB_VIEW_URL = hub's public https URL.
+    SENSOR_HUB_URL: str = "http://127.0.0.1:8090"       # backend -> hub
     SENSOR_HUB_VIEW_URL: str = "http://localhost:8090"  # browser -> hub (live video)
     SENSOR_HUB_SECRET: str = ""
     TRACCAR_URL: str = "http://127.0.0.1:8082"

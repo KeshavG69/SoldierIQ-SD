@@ -26,8 +26,10 @@ second. Camera video stays here; SoldierIQ gives browsers a signed URL to
 /api/sensors/{id}/stream.mjpg.
 
 Listeners (same state):
-  https://0.0.0.0:8443   phones on the LAN: /phone, /ws/sensor, signed video URLs only
-  http://127.0.0.1:8090  this machine: everything (SoldierIQ backend, debug viewer at /)
+  local mode:  https://0.0.0.0:8443   phones on the LAN: /phone, /ws/sensor, signed video URLs only
+               http://127.0.0.1:8090  this machine: everything (SoldierIQ backend, debug viewer at /)
+  cloud mode (PORT set, e.g. Railway): one listener on $PORT behind the platform's HTTPS; anything
+               beyond the phone page / signed video needs the X-Sensor-Hub-Secret header.
 
 Camera alerts: cameras with "watch" on (rules set in SoldierIQ) are checked by a
 decision model (Perplexity Decider v1.2 via OpenRouter); only alerts reach SoldierIQ.
@@ -81,6 +83,11 @@ TRACCAR_USER = os.environ.get("TRACCAR_USER", "")
 TRACCAR_PASSWORD = os.environ.get("TRACCAR_PASSWORD", "")
 HTTPS_PORT = int(os.environ.get("HUB_HTTPS_PORT", "8443"))
 HTTP_PORT = int(os.environ.get("HUB_HTTP_PORT", "8090"))
+# Cloud mode (Railway etc.): the platform sets PORT and terminates HTTPS. One plain-HTTP listener,
+# no self-signed cert; trust comes only from the shared secret / signed links, never from the port.
+CLOUD_PORT = int(os.environ["PORT"]) if os.environ.get("PORT") else None
+PUBLIC_URL = os.environ.get("PUBLIC_URL", "").rstrip("/")          # e.g. https://sensor-hub.up.railway.app
+TRACKER_HOST = os.environ.get("TRACKER_HOST", "")                  # host GPS trackers send to (Traccar)
 STALE_AFTER_S = 5.0
 KNOTS_TO_MPS = 0.514444
 
@@ -295,6 +302,7 @@ class Sensor:
                        "uplink_delay_ms": round(self.uplink_ms) if self.uplink_ms is not None else None,
                        "frame_bytes": len(self.frame) if self.frame else 0} if self.type == "phone" else None,
             "latest": self.latest,
+            "watch": {k: _watch_state[self.id][k] for k in ("sent", "skipped")} if self.id in _watch_state else None,
         }
 
 
@@ -317,8 +325,21 @@ def publish(env: dict) -> None:
 # ---------------------------------------------------------------- access control
 
 def is_local(scope) -> bool:
+    """Request came in on the localhost-only listener (local mode only; never true in cloud mode)."""
+    if CLOUD_PORT:
+        return False
     server = scope.get("server") or ("", 0)
     return server[1] == HTTP_PORT
+
+
+def has_secret(headers, query=None) -> bool:
+    given = headers.get("x-sensor-hub-secret", "") or ((query or {}).get("key") or "")
+    return bool(SECRET) and hmac.compare_digest(given, SECRET)
+
+
+def trusted(request) -> bool:
+    """SoldierIQ backend or this machine: the localhost listener, or the shared secret."""
+    return is_local(request.scope) or has_secret(request.headers)
 
 
 def signed_ok(sensor_id: str, exp: str | None, sig: str | None) -> bool:
@@ -328,13 +349,13 @@ def signed_ok(sensor_id: str, exp: str | None, sig: str | None) -> bool:
     return hmac.compare_digest(want, sig)
 
 
-PUBLIC_PATHS = {"/phone", "/api/info", "/favicon.ico"}
+PUBLIC_PATHS = {"/phone", "/api/info", "/favicon.ico", "/health"}
 
 
 @app.middleware("http")
 async def lan_guard(request: Request, call_next):
-    """The LAN (HTTPS) listener only serves the phone page and signed video URLs."""
-    if not is_local(request.scope):
+    """Public listeners only serve the phone page and signed video URLs; the rest needs the secret."""
+    if not trusted(request):
         path = request.url.path
         signed_video = path.startswith("/api/sensors/") and path.endswith(("/stream.mjpg", "/frame.jpg"))
         if path not in PUBLIC_PATHS and not signed_video:
@@ -343,8 +364,7 @@ async def lan_guard(request: Request, call_next):
 
 
 def check_internal(request: Request) -> None:
-    if not is_local(request.scope) or not SECRET or not hmac.compare_digest(
-            request.headers.get("x-sensor-hub-secret", ""), SECRET):
+    if not has_secret(request.headers):
         raise HTTPException(401, "unauthorized")
 
 
@@ -552,6 +572,9 @@ async def _check(sensor: "Sensor", watch: dict, st: dict) -> None:
                                            {rules[k]["label"]: round(p, 3) for k, p in probs.items() if k in rules}},
                      ts=captured))
     now = time.time()
+    if any(p >= rules[k]["threshold"] and now - st["alerted"].get(k, 0) > ALERT_COOLDOWN_S
+           for k, p in probs.items() if k in rules):
+        st["active_until"] = now + MOTION_HOLD_S  # something new of interest: keep checking until confirmed
     for rid, p in probs.items():
         rule = rules.get(rid)
         if not rule:
@@ -573,6 +596,33 @@ async def _send_alert(sensor: "Sensor", rule: dict, p: float, captured: int, jpe
         log(f"alert not stored by SoldierIQ ({code})")
 
 
+# Motion check: before paying for a model call, compare the frame with the last one the model saw
+# (tiny grayscale thumbnail, no AI). Static scene -> skip. After a change, keep checking for
+# MOTION_HOLD_S so the "2 of 3" rule can confirm; a heartbeat check still runs every HEARTBEAT_S.
+MOTION_THRESHOLD = float(os.environ.get("MOTION_THRESHOLD", "6"))  # mean abs pixel change, 0-255
+MOTION_HOLD_S = float(os.environ.get("MOTION_HOLD_S", "12"))
+HEARTBEAT_S = float(os.environ.get("HEARTBEAT_S", "60"))
+
+
+def _thumb(jpeg: bytes) -> bytes | None:
+    from io import BytesIO
+
+    from PIL import Image
+
+    try:
+        im = Image.open(BytesIO(jpeg))
+        im.draft("L", (64, 64))  # JPEG decodes at 1/8 scale: ~1 ms
+        return im.convert("L").resize((32, 24)).tobytes()
+    except Exception:  # noqa: BLE001 - a bad frame just counts as "changed"
+        return None
+
+
+def _motion(a: bytes | None, b: bytes | None) -> float:
+    if not a or not b or len(a) != len(b):
+        return 255.0
+    return sum(abs(x - y) for x, y in zip(a, b)) / len(a)
+
+
 async def camera_watcher() -> None:
     if not OPENROUTER_API_KEY:
         log("OPENROUTER_API_KEY not set - camera alerts disabled")
@@ -584,10 +634,21 @@ async def camera_watcher() -> None:
             s = SENSORS.get(sid)
             if not watch.get("rules") or not s or not s.connected or not s.frame or now * 1000 - s.frame_ts > 5000:
                 continue
-            st = _watch_state.setdefault(sid, {"last": 0.0, "busy": False, "hits": {}, "alerted": {}})
+            st = _watch_state.setdefault(sid, {"last": 0.0, "busy": False, "hits": {}, "alerted": {}, "ref": None,
+                                               "active_until": 0.0, "last_sent": 0.0, "sent": 0, "skipped": 0})
             if st["busy"] or now - st["last"] < watch.get("interval_s", 3):
                 continue
-            st["busy"], st["last"] = True, now
+            st["last"] = now
+            thumb = await asyncio.to_thread(_thumb, s.frame)
+            change = _motion(thumb, st["ref"])
+            if change >= MOTION_THRESHOLD:
+                st["active_until"] = now + MOTION_HOLD_S
+            if (watch.get("motion_only", True) and now >= st["active_until"]
+                    and now - st["last_sent"] < HEARTBEAT_S):
+                st["skipped"] += 1  # nothing moved: no model call
+                continue
+            st["ref"], st["last_sent"], st["busy"] = thumb, now, True
+            st["sent"] += 1
             asyncio.create_task(_check(s, watch, st))
 
 
@@ -601,7 +662,7 @@ def _get(sensor_id: str) -> Sensor:
 
 
 def _video_access(request: Request, sensor_id: str) -> Sensor:
-    if not is_local(request.scope) and not signed_ok(sensor_id, request.query_params.get("exp"),
+    if not trusted(request) and not signed_ok(sensor_id, request.query_params.get("exp"),
                                                      request.query_params.get("sig")):
         raise HTTPException(403, "invalid or expired link")
     return _get(sensor_id)
@@ -663,7 +724,7 @@ def recent_events(limit: int = 100, sensor_id: str | None = None):
 
 @app.websocket("/ws/events")
 async def ws_events(ws: WebSocket):
-    if not is_local(ws.scope):
+    if not (is_local(ws.scope) or has_secret(ws.headers, ws.query_params)):
         await ws.close(code=4404)
         return
     await ws.accept()
@@ -681,9 +742,17 @@ async def ws_events(ws: WebSocket):
 
 @app.get("/api/info")
 def info():
+    if CLOUD_PORT:
+        return {"phone_url": f"{PUBLIC_URL}/phone" if PUBLIC_URL else None, "viewer_url": None,
+                "lan_ip": TRACKER_HOST or None, "soldieriq_linked": bool(SECRET), "mode": "cloud"}
     ip = lan_ip()
     return {"phone_url": f"https://{ip}:{HTTPS_PORT}/phone", "viewer_url": f"http://localhost:{HTTP_PORT}/",
-            "lan_ip": ip, "soldieriq_linked": bool(SECRET)}
+            "lan_ip": TRACKER_HOST or ip, "soldieriq_linked": bool(SECRET), "mode": "local"}
+
+
+@app.get("/health")
+def health():
+    return {"ok": True, "sensors": len(SENSORS), "live": sum(1 for x in SENSORS.values() if x.connected)}
 
 
 @app.get("/")
@@ -730,6 +799,16 @@ async def main() -> None:
     if not SECRET:
         raise SystemExit("SENSOR_HUB_SECRET is not set (sensor-hub/.env) - it must match SoldierIQ's backend/.env")
     _http = httpx.AsyncClient()
+    workers = (forwarder(), traccar_poller(), watch_config_poller(), camera_watcher())
+    if CLOUD_PORT:
+        if not PUBLIC_URL:
+            log("PUBLIC_URL is not set - SoldierIQ can't build phone pairing links")
+        server = uvicorn.Server(uvicorn.Config(app, host="0.0.0.0", port=CLOUD_PORT, log_level="warning",
+                                               proxy_headers=True, forwarded_allow_ips="*"))
+        print(f"\n  SoldierIQ Sensor Hub (cloud mode) on :{CLOUD_PORT}  public: {PUBLIC_URL or '?'}", flush=True)
+        print(f"  SoldierIQ API -> {SOLDIERIQ_API_URL}\n", flush=True)
+        await asyncio.gather(server.serve(), *workers)
+        return
     ip = lan_ip()
     cert, key = ensure_cert(ip)
     https = uvicorn.Server(uvicorn.Config(app, host="0.0.0.0", port=HTTPS_PORT, ssl_certfile=str(cert),
@@ -740,8 +819,7 @@ async def main() -> None:
     print(f"  Trackers -> {ip}:5055 (Traccar Client app / OsmAnd), other ports per protocol", flush=True)
     print(f"  SoldierIQ API -> {SOLDIERIQ_API_URL}", flush=True)
     print(f"  Debug viewer  -> http://localhost:{HTTP_PORT}/\n", flush=True)
-    await asyncio.gather(https.serve(), http.serve(), forwarder(), traccar_poller(), watch_config_poller(),
-                         camera_watcher())
+    await asyncio.gather(https.serve(), http.serve(), *workers)
 
 
 if __name__ == "__main__":

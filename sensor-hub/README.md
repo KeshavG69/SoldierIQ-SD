@@ -52,6 +52,43 @@ question per item. An item alerts when it is above its threshold in 2 of the las
 quiet for 60 s (`ALERT_COOLDOWN_S`). Alerts (with the frame) appear as pop-ups in SoldierIQ, in the
 Sensors tab, and to the chat assistant (`list_alerts`).
 
+## Cost control: motion check
+
+Before each model call the hub compares the frame with the last one the model saw (32x24 grayscale
+thumbnail, ~1.4 ms, no AI). If nothing changed it skips the call; after a change it keeps checking for 12 s,
+and a heartbeat check still runs once a minute. Per camera in SoldierIQ: **Check every** 2-30 s and
+**Only check when something moves** (on by default). Env knobs: `MOTION_THRESHOLD` (6),
+`MOTION_HOLD_S` (12), `HEARTBEAT_S` (60).
+
+## Deploy on Railway
+
+The hub switches to **cloud mode** when `PORT` is set: one plain-HTTP listener (Railway terminates HTTPS,
+so phones get no certificate warning) and everything except the phone page, `/health` and signed video
+links needs the `X-Sensor-Hub-Secret` header.
+
+1. New service from this repo, **Root Directory** `sensor-hub` (uses `Dockerfile` + `railway.json`:
+   1 replica, health check `/health`). Generate a public domain.
+2. Hub variables:
+   ```
+   SENSOR_HUB_SECRET=<same as backend>
+   PUBLIC_URL=https://<hub-domain>             # phone pairing links
+   SOLDIERIQ_API_URL=http://${{backend.RAILWAY_PRIVATE_DOMAIN}}:${{backend.PORT}}
+   OPENROUTER_API_KEY=<key>                    # camera alerts
+   # GPS trackers only: TRACCAR_URL / TRACCAR_USER / TRACCAR_PASSWORD, TRACKER_HOST=<traccar public host>
+   ```
+3. Backend variables:
+   ```
+   SENSOR_HUB_URL=http://${{sensor-hub.RAILWAY_PRIVATE_DOMAIN}}:${{sensor-hub.PORT}}
+   SENSOR_HUB_VIEW_URL=https://<hub-domain>    # browsers load live video from here
+   SENSOR_HUB_SECRET=<same>
+   PUBLIC_API_URL=https://<backend-domain>     # signed snapshot / alert image links in chat
+   ```
+4. Keep it at **one replica**: live frames and phone connections are held in memory. To grow, run more
+   hubs and split organizations between them.
+5. Traccar (only for GPS trackers) is a separate service from `traccar/traccar` with a volume on
+   `/opt/traccar/data`. The Traccar Client phone app uses HTTP (port 5055), so a normal Railway domain works;
+   hardware trackers need Railway's TCP proxy.
+
 ## Ports
 
 | Port | What | Who connects |

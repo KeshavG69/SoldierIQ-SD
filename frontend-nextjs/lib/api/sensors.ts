@@ -60,6 +60,7 @@ export interface WatchRule {
 export interface WatchConfig {
   enabled: boolean;
   interval_s?: number;
+  motion_only?: boolean; // only ask the model when the picture changed (saves cost)
   rules: WatchRule[];
 }
 

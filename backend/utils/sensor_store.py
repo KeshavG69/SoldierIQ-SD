@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS public.sensor_positions (
 );
 CREATE INDEX IF NOT EXISTS idx_sensor_positions_sensor_ts ON public.sensor_positions (sensor_id, ts DESC);
 
--- Camera watch (decision model): {"enabled": bool, "interval_s": n, "rules": [{"id","label","question","threshold"}]}
+-- Camera watch (decision model): {"enabled", "interval_s", "motion_only", "rules": [{"id","label","question","threshold"}]}
 ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS watch JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS public.sensor_alerts (
@@ -317,6 +317,8 @@ def normalize_watch(w: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         })
     return {"enabled": bool(w.get("enabled")),
             "interval_s": min(30.0, max(1.0, float(w.get("interval_s") or DEFAULT_INTERVAL_S))),
+            # skip the model when the picture hasn't changed (cheap pixel check in the hub)
+            "motion_only": w.get("motion_only") is not False,
             "rules": clean}
 
 
