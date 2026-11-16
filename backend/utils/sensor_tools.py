@@ -6,6 +6,7 @@ The org's sensors (Connectors -> Sensors) are readable here:
   look_at_camera      hand the newest camera frame of a phone sensor to the chat model as an
                       image (agno ToolResult); the frame is also saved as a snapshot the reply shows
   sensor_history      where a sensor has been over the last N minutes
+  show_sensors_map    sensors (+ trails) on the chat map card (same card as show_map)
 
 Org and user come from the chat request context (utils/sandbox_context), so the
 agent can only see its own organization's sensors. Readings come from the
@@ -52,6 +53,9 @@ knowledge base.
   security-relevant; say what can't be determined). It returns `snapshot_markdown`: put that line in your
   reply exactly as given so the user sees the frame you looked at. Only phone sensors have cameras.
 - sensor_history(sensor, minutes): where the sensor has been (track summary).
+- show_sensors_map(sensor=None, minutes=30): draws the sensors on an interactive map card under your reply
+  (arrow = facing direction, line = recent trail; the user can tap a sensor and send it to TAK). Use it
+  whenever the user asks where sensors are or wants a map. Never paste the map JSON.
 
 Always say how fresh the data is (e.g. "as of 5 seconds ago"). If a sensor is offline, say when it was
 last seen and give its last known data. Coordinates: give them with 5 decimals; the user can open them
@@ -303,6 +307,97 @@ async def sensor_history(sensor: str, minutes: int = 60) -> str:
     })
 
 
+@tool(stop_after_tool_call=False)
+async def show_sensors_map(sensor: Optional[str] = None, minutes: int = 30, title: Optional[str] = None) -> str:
+    """Draw this organization's sensors on an interactive map under your reply: each sensor as an arrow
+    pointing the way it faces (green = live, grey = offline) with its recent trail. The user can tap a sensor
+    for details and send it to TAK. Use it whenever the user asks where sensors are or wants to see them on a
+    map. After calling, describe the positions in a sentence or two; do not repeat every number.
+
+    Args:
+        sensor: Only this sensor (name or id). Omit to show all sensors.
+        minutes: Trail length in minutes, 0-1440 (default 30). 0 = no trail.
+        title: Optional map title.
+    """
+    from osint.visuals import store_map
+
+    org = _org()
+    if not org:
+        return json.dumps({"type": "map", "error": "No organization in this chat; sensors are unavailable."})
+    if sensor:
+        s, rows = await _find(sensor)
+        if not s:
+            return _not_found(sensor, rows)
+        chosen = [s]
+    else:
+        chosen = await sensor_store.list_sensors(org)
+    minutes = max(0, min(int(minutes if minutes is not None else 30), 1440))
+
+    features, trails, all_pts, missing = [], [], [], []
+    since = datetime.now(timezone.utc) - timedelta(minutes=minutes)
+    for s in chosen:
+        info = _summary(s)
+        pos = info.get("position")
+        if not pos:
+            missing.append(s["name"])
+            continue
+        status = info["status"]
+        heading = info.get("facing_deg")
+        if heading is None and pos.get("course_deg") is not None and (pos.get("speed_kmh") or 0) > 1:
+            heading = pos["course_deg"]  # trackers: direction of travel
+        latest_pos = (s.get("latest") or {}).get("position") or {}
+        features.append({
+            "id": f"sensor-{s['id']}", "layer": "sensors", "lat": pos["lat"], "lon": pos["lon"],
+            "title": s["name"], "severity": "low" if status == "live" else "info",
+            "time": datetime.fromtimestamp((latest_pos.get("received_ts") or 0) / 1000, tz=timezone.utc).isoformat()
+            if latest_pos.get("received_ts") else None,
+            "heading": heading, "source": f"SoldierIQ sensor ({info['type']})",
+            "details": {k: v for k, v in {
+                "Status": status, "Last seen": info["last_seen"], "Accuracy": f"±{round(pos['accuracy_m'])} m" if pos.get("accuracy_m") else None,
+                "Facing": f"{info['facing']} ({info['facing_deg']}°)" if info.get("facing") else None,
+                "Speed": f"{pos['speed_kmh']} km/h" if pos.get("speed_kmh") is not None else None,
+                "Altitude": f"{round(pos['altitude_m'])} m" if pos.get("altitude_m") is not None else None,
+                "Battery": f"{round(info['battery_pct'])}%" if info.get("battery_pct") is not None else None,
+                "Camera": "yes" if info["has_camera"] else None,
+            }.items() if v is not None},
+        })
+        all_pts.append((pos["lat"], pos["lon"]))
+        if minutes:
+            hist = await sensor_store.recent_positions(s["id"], s["organization_id"], limit=1500)
+            coords = [[p["lon"], p["lat"]] for p in reversed(hist) if datetime.fromisoformat(p["ts"]) >= since]
+            if len(coords) > 1:
+                trails.append({"sensor_id": s["id"], "name": s["name"], "live": status == "live", "coords": coords})
+                all_pts += [(c[1], c[0]) for c in coords]
+
+    if not features:
+        return json.dumps({"type": "map", "error": "No sensor has reported a position yet." if chosen else
+                           "This organization has no sensors yet."})
+    lats, lons = [p[0] for p in all_pts], [p[1] for p in all_pts]
+    pad_lat = max(0.002, (max(lats) - min(lats)) * 0.15)
+    pad_lon = max(0.002, (max(lons) - min(lons)) * 0.15)
+    bbox = [min(lons) - pad_lon, min(lats) - pad_lat, max(lons) + pad_lon, max(lats) + pad_lat]
+    notes = ["Arrows point where each phone camera faces (or a tracker's direction of travel).",
+             "Positions are as accurate as the device's GPS (see Accuracy)."]
+    if missing:
+        notes.append("No position yet: " + ", ".join(missing))
+    payload = {
+        "type": "map", "title": title or ("Sensor: " + chosen[0]["name"] if sensor else "Sensors"),
+        "region": "sensors", "bbox": bbox, "hours": round(minutes / 60, 2),
+        "layers": [{"id": "sensors", "label": "Sensors", "icon": "sensor", "count": len(features)}],
+        "features": features, "trails": trails, "notes": notes,
+        "sources": [{"name": "SoldierIQ sensors", "ok": True, "fetched_at": datetime.now(timezone.utc).isoformat()}],
+    }
+    owner = f"{org}:{get_session_context().get('user_id')}"
+    map_id = await store_map(payload, owner)
+    return json.dumps({
+        "type": "map", "map_id": map_id, "title": payload["title"], "region": "sensors", "bbox": bbox,
+        "hours": payload["hours"], "icon_count": len(features), "layers": payload["layers"], "notes": notes,
+        "sensors": [{"name": f["title"], "status": f["details"]["Status"], "lat": f["lat"], "lon": f["lon"],
+                     "facing": f["details"].get("Facing")} for f in features],
+        "trail_minutes": minutes, "trails_drawn": len(trails),
+    })
+
+
 def _haversine_m(a: dict, b: dict) -> float:
     r = 6371000.0
     p1, p2 = math.radians(a["lat"]), math.radians(b["lat"])
@@ -311,4 +406,4 @@ def _haversine_m(a: dict, b: dict) -> float:
     return 2 * r * math.asin(math.sqrt(h))
 
 
-SENSOR_TOOLS = [list_sensors, get_sensor_reading, look_at_camera, sensor_history]
+SENSOR_TOOLS = [list_sensors, get_sensor_reading, look_at_camera, sensor_history, show_sensors_map]

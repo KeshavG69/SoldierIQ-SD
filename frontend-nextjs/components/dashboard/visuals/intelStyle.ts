@@ -40,12 +40,15 @@ const PATHS: Record<string, string> = {
   outage: "M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0M12 19h.01M3 3l18 18",
   fire: "M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 1.5 1 3 3 3 5 0-3 0-5 0-8z",
   ship: "M3 17l2 4h14l2-4-9-3zM12 3v11M8 7h8l-1 4H9z",
+  // Sensors: arrow = which way the camera faces / direction of travel; dot = no heading known.
+  sensor: "M12 2l7 19-7-4-7 4z",
+  sensor_dot: "M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0",
 };
 
 export function iconSvg(icon: string, color: string, size = 18, rotate?: number | null): string {
   const d = PATHS[icon] || PATHS.hotspot;
-  const filled = icon === "aircraft" || icon === "strike";
-  const rot = rotate != null && icon === "aircraft" ? ` style="transform:rotate(${rotate}deg)"` : "";
+  const filled = icon === "aircraft" || icon === "strike" || icon === "sensor" || icon === "sensor_dot";
+  const rot = rotate != null && (icon === "aircraft" || icon === "sensor") ? ` style="transform:rotate(${rotate}deg)"` : "";
   return `<svg width="${size}" height="${size}" viewBox="0 0 24 24"${rot} fill="${filled ? color : "none"}" stroke="${
     filled ? "#0B0F0E" : color
   }" stroke-width="${filled ? 1 : 2.2}" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
@@ -62,7 +65,14 @@ export const LAYER_ICON: Record<string, string> = {
   outages: "outage",
   fires: "fire",
   ships: "ship",
+  sensors: "sensor",
 };
+
+/** Icon for one feature: sensors without a known heading get a dot instead of an arrow. */
+export function featureIcon(f: { layer: string; heading?: number | null }): string {
+  if (f.layer === "sensors" && f.heading == null) return "sensor_dot";
+  return LAYER_ICON[f.layer] || "hotspot";
+}
 
 export function formatTime(t: string | null | undefined): string {
   if (!t) return "";

@@ -30,6 +30,7 @@ _BUILTIN: Dict[str, tuple] = {
     "get_sensor_reading": ("Reading the sensor", "Read the sensor", "map"),
     "look_at_camera": ("Looking through the camera", "Looked through the camera", "search"),
     "sensor_history": ("Tracing the sensor's movement", "Traced the sensor's movement", "route"),
+    "show_sensors_map": ("Plotting sensors on the map", "Plotted sensors on the map", "map"),
 }
 
 # Argument keys worth showing under the label, most informative first.

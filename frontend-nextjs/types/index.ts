@@ -113,6 +113,8 @@ export interface MapPayload {
   features: MapFeature[];
   sources: { name: string; ok: boolean; fetched_at?: string | null }[];
   notes: string[];
+  // Sensor maps: recent track of each sensor, [lon, lat] points oldest first.
+  trails?: { sensor_id: string; name: string; live: boolean; coords: [number, number][] }[];
 }
 
 export interface ChartSpec {

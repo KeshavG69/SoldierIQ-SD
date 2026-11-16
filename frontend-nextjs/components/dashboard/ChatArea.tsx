@@ -466,14 +466,16 @@ export default function ChatArea() {
                 }
                   // show_map → interactive intelligence map card; create_chart → chart card.
                   if (
-                    (parsed.data?.tool_name === "show_map" || parsed.data?.tool_name === "create_chart") &&
+                    (parsed.data?.tool_name === "show_map" ||
+                      parsed.data?.tool_name === "show_sensors_map" ||
+                      parsed.data?.tool_name === "create_chart") &&
                     parsed.data?.result &&
                     !parsed.data?.error
                   ) {
                     try {
                       const r = typeof parsed.data.result === "string" ? JSON.parse(parsed.data.result) : parsed.data.result;
                       if (r && !r.error) {
-                        if (parsed.data.tool_name === "show_map" && r.map_id) {
+                        if ((parsed.data.tool_name === "show_map" || parsed.data.tool_name === "show_sensors_map") && r.map_id) {
                           addLastMessageMap({
                             map_id: r.map_id,
                             title: r.title,
