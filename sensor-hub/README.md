@@ -33,6 +33,7 @@ GPS tracker / Traccar Client app ──► Traccar ───┼─► normalized
    TRACCAR_URL=http://127.0.0.1:8082
    TRACCAR_USER=soldieriq@local
    TRACCAR_PASSWORD=<the password above>
+   OPENROUTER_API_KEY=<key>   # camera alerts (decision model); optional
    ```
 
 3. **Backend config**: add the same values to `backend/.env`:
@@ -41,6 +42,15 @@ GPS tracker / Traccar Client app ──► Traccar ───┼─► normalized
 
 4. Start the hub: `uv --directory sensor-hub run python server.py` (or the `sensor-hub`
    entry in `.claude/launch.json`), then the backend and frontend as usual.
+
+## Camera alerts (decision model)
+
+In SoldierIQ → Connectors → Sensors, open a phone sensor → **Camera alerts**: switch on and choose what
+to alert on (Person, Vehicle, Bird, or anything typed). Every few seconds the hub sends the newest frame to
+Perplexity Decider v1.2 (OpenRouter decisions API, `DECISION_MODEL` in the backend) with one yes/no
+question per item. An item alerts when it is above its threshold in 2 of the last 3 checks, then stays
+quiet for 60 s (`ALERT_COOLDOWN_S`). Alerts (with the frame) appear as pop-ups in SoldierIQ, in the
+Sensors tab, and to the chat assistant (`list_alerts`).
 
 ## Ports
 

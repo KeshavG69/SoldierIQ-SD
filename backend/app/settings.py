@@ -119,6 +119,7 @@ class Settings(BaseSettings):
     TRACCAR_PASSWORD: str = ""
     TRACCAR_OSMAND_PORT: int = 5055  # port GPS apps/trackers send to (Traccar Client app)
     SENSOR_HISTORY_DAYS: int = 30  # position history older than this is deleted; 0 = keep forever
+    DECISION_MODEL: str = "perplexity/pplx-decider-v1.2"  # camera watch (OpenRouter decisions API)
     # This backend's address as the browser sees it (signed camera snapshot links in chat replies).
     PUBLIC_API_URL: str = "http://localhost:8010"
 

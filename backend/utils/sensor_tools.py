@@ -56,6 +56,10 @@ knowledge base.
 - show_sensors_map(sensor=None, minutes=30): draws the sensors on an interactive map card under your reply
   (arrow = facing direction, line = recent trail; the user can tap a sensor and send it to TAK). Use it
   whenever the user asks where sensors are or wants a map. Never paste the map JSON.
+- list_alerts(minutes=60, sensor=None): camera alerts the decision model raised (person, vehicle, bird, ...
+  whatever each camera is set to watch for). Use for "any alerts?", "what happened at the gate?". Show the
+  most relevant alert's `image_markdown` line exactly as given. Alerts are what the cameras are set up to
+  watch for; if none are on, say how to turn them on.
 
 Always say how fresh the data is (e.g. "as of 5 seconds ago"). If a sensor is offline, say when it was
 last seen and give its last known data. Coordinates: give them with 5 decimals; the user can open them
@@ -398,6 +402,46 @@ async def show_sensors_map(sensor: Optional[str] = None, minutes: int = 30, titl
     })
 
 
+@tool(stop_after_tool_call=False)
+async def list_alerts(minutes: int = 60, sensor: Optional[str] = None) -> str:
+    """Camera alerts raised by the decision model (e.g. a person, vehicle or bird seen on a camera), newest first.
+    Each alert has what was seen, which camera, when, how sure the model was, where the camera was, whether
+    someone marked it as seen, and `image_markdown` (the frame that triggered it) to show in your reply.
+
+    Args:
+        minutes: How far back to look, 1-10080 (default 60).
+        sensor: Only alerts from this camera (name or id). Omit for all cameras.
+    """
+    from routers.sensors import alert_public
+
+    org = _org()
+    if not org:
+        return json.dumps({"error": "No organization in this chat; sensors are unavailable."})
+    sid = None
+    if sensor:
+        s, rows = await _find(sensor)
+        if not s:
+            return _not_found(sensor, rows)
+        sid = s["id"]
+    minutes = max(1, min(int(minutes or 60), 10080))
+    rows = await sensor_store.list_alerts(org, since=datetime.now(timezone.utc) - timedelta(minutes=minutes),
+                                          sensor_id=sid, limit=30)
+    alerts = []
+    for a in rows:
+        p = alert_public(a)
+        alerts.append({
+            "what": p["label"], "camera": p["sensor_name"], "when": _ago(_age_s(p["created_at"])),
+            "time_utc": p["created_at"][11:19], "confidence_pct": round(p["probability"] * 100),
+            "seen_by_someone": p["acknowledged"],
+            "position": {"lat": round(p["lat"], 6), "lon": round(p["lon"], 6)} if p["lat"] is not None else None,
+            "image_markdown": f"![{p['label']} - {p['sensor_name']}]({p['image_url']})",
+        })
+    watching = [s["name"] for s in await sensor_store.list_sensors(org) if (s.get("watch") or {}).get("enabled")]
+    return json.dumps({"minutes": minutes, "count": len(alerts), "alerts": alerts,
+                       "cameras_watching": watching,
+                       "note": None if watching else "No camera has alerts turned on (Connectors -> Sensors -> Camera alerts)."})
+
+
 def _haversine_m(a: dict, b: dict) -> float:
     r = 6371000.0
     p1, p2 = math.radians(a["lat"]), math.radians(b["lat"])
@@ -406,4 +450,4 @@ def _haversine_m(a: dict, b: dict) -> float:
     return 2 * r * math.asin(math.sqrt(h))
 
 
-SENSOR_TOOLS = [list_sensors, get_sensor_reading, look_at_camera, sensor_history, show_sensors_map]
+SENSOR_TOOLS = [list_sensors, get_sensor_reading, look_at_camera, sensor_history, show_sensors_map, list_alerts]

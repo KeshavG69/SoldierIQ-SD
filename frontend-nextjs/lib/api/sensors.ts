@@ -50,6 +50,36 @@ export interface SensorSetup {
   device_id?: string;
 }
 
+export interface WatchRule {
+  id?: string;
+  label: string; // what to alert on, e.g. "Person", "Bird"
+  question?: string; // precise yes/no question for the decision model
+  threshold?: number;
+}
+
+export interface WatchConfig {
+  enabled: boolean;
+  interval_s?: number;
+  rules: WatchRule[];
+}
+
+export interface SensorAlert {
+  id: string;
+  sensor_id: string;
+  sensor_name: string;
+  rule_id: string;
+  label: string;
+  probability: number;
+  model: string;
+  captured_at: string;
+  created_at: string;
+  lat: number | null;
+  lon: number | null;
+  heading: number | null;
+  acknowledged: boolean;
+  image_url: string;
+}
+
 export interface Sensor {
   id: string;
   name: string;
@@ -64,7 +94,9 @@ export interface Sensor {
     position?: SensorEnvelope<PositionData>;
     orientation?: SensorEnvelope<OrientationData>;
     status?: SensorEnvelope<StatusData>;
+    detection?: SensorEnvelope<{ model: string; probabilities: Record<string, number> }>;
   };
+  watch?: WatchConfig | null;
   setup?: SensorSetup;
 }
 
@@ -79,7 +111,7 @@ export const sensorsApi = {
   create: async (body: { name: string; sensor_type: SensorType; identifier?: string }): Promise<Sensor> =>
     (await apiClient.post<Sensor>("/sensors", body)).data,
 
-  update: async (id: string, body: { name?: string; enabled?: boolean }): Promise<Sensor> =>
+  update: async (id: string, body: { name?: string; enabled?: boolean; watch?: WatchConfig }): Promise<Sensor> =>
     (await apiClient.patch<Sensor>(`/sensors/${id}`, body)).data,
 
   remove: async (id: string): Promise<void> => {
@@ -87,6 +119,13 @@ export const sensorsApi = {
   },
 
   newPairing: async (id: string): Promise<Sensor> => (await apiClient.post<Sensor>(`/sensors/${id}/pairing`)).data,
+
+  alerts: async (params: { since?: string; sensor_id?: string; limit?: number } = {}): Promise<{ alerts: SensorAlert[]; server_time: string }> =>
+    (await apiClient.get("/sensors/alerts", { params })).data,
+
+  acknowledge: async (alertId: string): Promise<void> => {
+    await apiClient.post(`/sensors/alerts/${alertId}/ack`);
+  },
 
   streamUrl: async (id: string): Promise<{ stream_url: string; frame_url: string; expires: number }> =>
     (await apiClient.get(`/sensors/${id}/stream-url`)).data,

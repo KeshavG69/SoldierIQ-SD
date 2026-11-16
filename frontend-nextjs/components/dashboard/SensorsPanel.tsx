@@ -17,6 +17,7 @@ import {
   ArrowLeft, Check, ChevronDown, Copy, MapPin, Pause, Pencil, Play, Plus, QrCode, RefreshCw, Smartphone, Trash2,
 } from "lucide-react";
 import { sensorsApi, Sensor, SensorType } from "@/lib/api/sensors";
+import { AlertWatchEditor, DetectionReadout, RecentAlerts } from "./SensorAlerts";
 
 const inputCls =
   "w-full px-3 py-2 rounded-lg bg-surface-2 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-brand/60 focus:ring-2 focus:ring-brand/15 transition-all";
@@ -254,6 +255,8 @@ function SensorRow({
             {sensor.has_camera && <LiveVideo sensor={sensor} />}
             <Readings sensor={sensor} />
           </div>
+          {sensor.has_camera && <DetectionReadout sensor={sensor} />}
+          {sensor.has_camera && <AlertWatchEditor sensor={sensor} isAdmin={isAdmin} onSaved={() => onChanged()} />}
           {isAdmin && (
             <div className="flex flex-wrap gap-2">
               <button type="button" className={btnCls} onClick={onSetup} disabled={busy}>
@@ -589,6 +592,8 @@ export default function SensorsPanel() {
           </p>
         </div>
       )}
+
+      <RecentAlerts />
 
       <div className="space-y-2">
         {sensors.map((s) => (

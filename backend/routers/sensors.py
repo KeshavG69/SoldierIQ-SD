@@ -16,6 +16,13 @@ Member endpoints (anyone in the org):
 Internal (sensor hub -> backend, header X-Sensor-Hub-Secret):
   POST   /api/sensors/internal/resolve        pairing token / tracker ID -> sensor
   POST   /api/sensors/internal/readings       normalized readings to store
+  GET    /api/sensors/internal/watches        cameras to run the decision model on (+ their alert rules)
+  POST   /api/sensors/internal/alerts         decision model fired: store the alert + frame
+
+Alerts (camera watch, anyone in the org):
+  GET    /api/sensors/alerts?since=&sensor_id=   newest alerts
+  GET    /api/sensors/alerts/{id}.jpg?s=         the frame that triggered it (signed link)
+  POST   /api/sensors/alerts/{id}/ack            mark as seen
 
 Data path: phone / GPS tracker -> sensor hub (+ Traccar for trackers) -> normalized
 readings -> here. Camera video stays on the hub; the browser loads it with a signed URL.
@@ -124,7 +131,8 @@ async def _public(s: dict, admin: bool) -> Dict[str, Any]:
         "last_seen": s["last_seen"].isoformat() if s["last_seen"] else None,
         "created_at": s["created_at"].isoformat(),
         "has_camera": s["sensor_type"] == "phone",
-        "latest": {k: latest[k] for k in ("position", "orientation", "status") if k in latest},
+        "latest": {k: latest[k] for k in ("position", "orientation", "status", "detection") if k in latest},
+        "watch": sensor_store.normalize_watch(s.get("watch")) if s["sensor_type"] == "phone" else None,
     }
     if admin:
         out["setup"] = await _setup(s)
@@ -154,6 +162,60 @@ async def snapshot(snap_file: str, s: str = "") -> Response:
         raise HTTPException(404, "Snapshot expired")
     return Response(base64.b64decode(snap["jpeg_b64"]), media_type="image/jpeg",
                     headers={"Cache-Control": "private, max-age=86400"})
+
+
+# ---------------------------------------------------------------- alerts (camera watch)
+
+def _alert_sig(alert_id: str) -> str:
+    return hmac.new(settings.SENSOR_HUB_SECRET.encode(), f"alert.{alert_id}".encode(), hashlib.sha256).hexdigest()[:20]
+
+
+def alert_image_url(alert_id: str) -> str:
+    return f"{settings.PUBLIC_API_URL.rstrip('/')}/api/sensors/alerts/{alert_id}.jpg?s={_alert_sig(alert_id)}"
+
+
+def alert_public(a: dict) -> Dict[str, Any]:
+    return {
+        "id": a["id"], "sensor_id": a["sensor_id"], "sensor_name": a["sensor_name"], "rule_id": a["rule_id"],
+        "label": a["label"], "probability": round(a["probability"] or 0, 3), "model": a["model"],
+        "captured_at": a["captured_at"].isoformat(), "created_at": a["created_at"].isoformat(),
+        "lat": a["lat"], "lon": a["lon"], "heading": a["heading"],
+        "acknowledged": a["acknowledged_at"] is not None,
+        "image_url": alert_image_url(a["id"]),
+    }
+
+
+@router.get("/alerts")
+async def list_alerts(since: Optional[str] = None, sensor_id: Optional[str] = None, limit: int = 30,
+                      ctx: dict = Depends(get_current_context)) -> Dict[str, Any]:
+    _require_enabled()
+    since_dt = None
+    if since:
+        try:
+            since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+        except ValueError:
+            raise HTTPException(422, "since must be an ISO timestamp")
+    rows = await sensor_store.list_alerts(_org(ctx), since=since_dt, sensor_id=sensor_id, limit=limit)
+    return {"alerts": [alert_public(a) for a in rows], "server_time": datetime.now(timezone.utc).isoformat()}
+
+
+@router.get("/alerts/{alert_file}")
+async def alert_image(alert_file: str, s: str = "") -> Response:
+    """The frame that triggered an alert. Signed link, so it works in <img>."""
+    alert_id = alert_file.removesuffix(".jpg")
+    if not settings.SENSOR_HUB_SECRET or not hmac.compare_digest(_alert_sig(alert_id), s or ""):
+        raise HTTPException(403, "Invalid link")
+    jpeg = await sensor_store.alert_snapshot(alert_id)
+    if not jpeg:
+        raise HTTPException(404, "No image")
+    return Response(bytes(jpeg), media_type="image/jpeg", headers={"Cache-Control": "private, max-age=86400"})
+
+
+@router.post("/alerts/{alert_id}/ack")
+async def acknowledge(alert_id: str, ctx: dict = Depends(get_current_context)) -> Dict[str, Any]:
+    _require_enabled()
+    ok = await sensor_store.acknowledge_alert(alert_id, _org(ctx), ctx["id"])
+    return {"acknowledged": ok}
 
 
 # ---------------------------------------------------------------- member endpoints
@@ -200,9 +262,23 @@ class CreateSensor(BaseModel):
     identifier: Optional[str] = Field(None, description="GPS tracker device ID / IMEI; generated if empty")
 
 
+class WatchRule(BaseModel):
+    id: Optional[str] = None
+    label: str = Field(..., min_length=1, max_length=40, description="What to alert on, e.g. 'Person', 'Bird'")
+    question: Optional[str] = Field(None, max_length=200, description="Precise yes/no question for the model")
+    threshold: Optional[float] = Field(None, ge=0.5, le=0.99)
+
+
+class WatchConfig(BaseModel):
+    enabled: bool = False
+    interval_s: Optional[float] = Field(None, ge=1, le=30)
+    rules: Optional[List[WatchRule]] = Field(None, max_length=12)
+
+
 class UpdateSensor(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=60)
     enabled: Optional[bool] = None
+    watch: Optional[WatchConfig] = None
 
 
 @router.post("", status_code=201)
@@ -254,6 +330,10 @@ async def update_sensor(sensor_id: str, body: UpdateSensor, ctx: dict = Depends(
     if body.enabled is not None:
         fields["enabled"] = body.enabled
     s = await sensor_store.update_sensor(sensor_id, org, **fields)
+    if body.watch is not None:
+        if s["sensor_type"] != "phone":
+            raise HTTPException(400, "Only camera sensors can watch for alerts")
+        s = await sensor_store.set_watch(sensor_id, org, body.watch.model_dump(exclude_none=True))
     if "name" in fields and s["traccar_device_id"]:
         try:
             await traccar_client.rename_device(s["traccar_device_id"], s["name"], s["identifier"])
@@ -330,3 +410,34 @@ async def internal_resolve(body: ResolveRequest, x_sensor_hub_secret: Optional[s
 async def internal_readings(body: ReadingsRequest, x_sensor_hub_secret: Optional[str] = Header(None)) -> Dict[str, Any]:
     _check_hub(x_sensor_hub_secret)
     return {"stored": await sensor_store.apply_readings(body.events)}
+
+
+@router.get("/internal/watches")
+async def internal_watches(x_sensor_hub_secret: Optional[str] = Header(None)) -> Dict[str, Any]:
+    """Which cameras the hub should run the decision model on, and for what."""
+    _check_hub(x_sensor_hub_secret)
+    return {"watches": await sensor_store.active_watches(), "model": settings.DECISION_MODEL}
+
+
+class AlertRequest(BaseModel):
+    sensor_id: str
+    rule_id: str
+    label: str = Field(..., max_length=40)
+    probability: float
+    model: str = ""
+    captured_ts: float  # ms
+    jpeg_b64: Optional[str] = Field(None, max_length=4_000_000)
+
+
+@router.post("/internal/alerts")
+async def internal_alert(body: AlertRequest, x_sensor_hub_secret: Optional[str] = Header(None)) -> Dict[str, Any]:
+    _check_hub(x_sensor_hub_secret)
+    s = await sensor_store.get_sensor(body.sensor_id)
+    if not s or not s["enabled"]:
+        raise HTTPException(404, "Unknown sensor")
+    a = await sensor_store.insert_alert(
+        sensor=s, rule_id=body.rule_id, label=body.label, probability=body.probability, model=body.model,
+        captured_at=datetime.fromtimestamp(body.captured_ts / 1000, tz=timezone.utc),
+        jpeg=base64.b64decode(body.jpeg_b64) if body.jpeg_b64 else None)
+    logger.info(f"[sensors] ALERT {a['id']}: {body.label} ({body.probability:.2f}) on {s['name']}")
+    return {"alert_id": a["id"]}

@@ -14,6 +14,7 @@ status, connection); `sensor_positions` keeps position history: one point per
 
 from __future__ import annotations
 
+import asyncio
 import json
 import secrets
 import time
@@ -59,27 +60,57 @@ CREATE TABLE IF NOT EXISTS public.sensor_positions (
     data JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 CREATE INDEX IF NOT EXISTS idx_sensor_positions_sensor_ts ON public.sensor_positions (sensor_id, ts DESC);
+
+-- Camera watch (decision model): {"enabled": bool, "interval_s": n, "rules": [{"id","label","question","threshold"}]}
+ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS watch JSONB NOT NULL DEFAULT '{}'::jsonb;
+
+CREATE TABLE IF NOT EXISTS public.sensor_alerts (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL,
+    sensor_id TEXT NOT NULL REFERENCES public.sensors(id) ON DELETE CASCADE,
+    rule_id TEXT,
+    label TEXT NOT NULL,
+    probability DOUBLE PRECISION,
+    model TEXT,
+    captured_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    lat DOUBLE PRECISION,
+    lon DOUBLE PRECISION,
+    heading DOUBLE PRECISION,
+    snapshot BYTEA,
+    acknowledged_by TEXT,
+    acknowledged_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_sensor_alerts_org_time ON public.sensor_alerts (organization_id, created_at DESC);
 """
 _TABLE_READY = False
 
 _COLUMNS = ("id, organization_id, name, sensor_type, identifier, pairing_token, traccar_device_id, "
-            "enabled, last_seen, latest, created_by, created_at, updated_at")
+            "enabled, last_seen, latest, watch, created_by, created_at, updated_at")
+
+
+_DDL_LOCK = asyncio.Lock()
+_DDL_ADVISORY_KEY = 7_405_311  # serialises the DDL across processes (several workers / reloads)
 
 
 async def _pool():
     global _TABLE_READY
     pool = await get_postgres_client().get_pool()
     if not _TABLE_READY:
-        async with pool.acquire() as conn:
-            await conn.execute(_DDL)
-        _TABLE_READY = True
+        async with _DDL_LOCK:  # one request in this process runs the DDL; the rest wait for it
+            if not _TABLE_READY:
+                async with pool.acquire() as conn, conn.transaction():
+                    await conn.execute("SELECT pg_advisory_xact_lock($1)", _DDL_ADVISORY_KEY)
+                    await conn.execute(_DDL)
+                _TABLE_READY = True
     return pool
 
 
 def _row(r) -> Dict[str, Any]:
     d = dict(r)
-    if isinstance(d.get("latest"), str):
-        d["latest"] = json.loads(d["latest"])
+    for k in ("latest", "watch"):
+        if isinstance(d.get(k), str):
+            d[k] = json.loads(d[k])
     return d
 
 
@@ -233,6 +264,9 @@ async def _maybe_prune(pool) -> None:
         res = await pool.execute(
             "DELETE FROM public.sensor_positions WHERE ts < now() - make_interval(days => $1)",
             int(settings.SENSOR_HISTORY_DAYS))
+        await pool.execute(
+            "DELETE FROM public.sensor_alerts WHERE created_at < now() - make_interval(days => $1)",
+            int(settings.SENSOR_HISTORY_DAYS))
         logger.info(f"[sensors] pruned history older than {settings.SENSOR_HISTORY_DAYS} days: {res}")
     except Exception as e:  # noqa: BLE001 - pruning must never break ingest
         logger.warning(f"[sensors] history prune failed: {e}")
@@ -247,3 +281,109 @@ async def recent_positions(sensor_id: str, organization_id: str, limit: int = 20
     )
     return [{"ts": r["ts"].isoformat(), "lat": r["lat"], "lon": r["lon"],
              "data": json.loads(r["data"]) if isinstance(r["data"], str) else r["data"]} for r in rows]
+
+
+# ---------------------------------------------------------------- camera watch + alerts
+
+DEFAULT_RULES = [
+    {"id": "person", "label": "Person", "question": "Is at least one person visible?"},
+    {"id": "vehicle", "label": "Vehicle", "question": "Is a car, truck, motorcycle or other vehicle visible?"},
+    {"id": "weapon", "label": "Weapon", "question": "Is a gun, knife or other weapon visible?"},
+    {"id": "drone", "label": "Drone / aircraft", "question": "Is a drone or small aircraft visible?"},
+    {"id": "fire", "label": "Fire / smoke", "question": "Is fire or smoke visible?"},
+]
+DEFAULT_THRESHOLD = 0.85
+DEFAULT_INTERVAL_S = 3.0
+
+
+def normalize_watch(w: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    w = dict(w or {})
+    rules = w.get("rules")
+    if rules is None:
+        rules = DEFAULT_RULES
+    clean, seen = [], set()
+    for r in rules[:12]:
+        label = str(r.get("label") or "").strip()[:40]
+        if not label:
+            continue
+        rid = str(r.get("id") or "".join(c if c.isalnum() else "_" for c in label.lower())).strip("_")[:40] or "rule"
+        while rid in seen:
+            rid += "_"
+        seen.add(rid)
+        clean.append({
+            "id": rid, "label": label,
+            "question": (str(r.get("question") or "").strip() or f"Is there any {label.lower()} visible in the image?")[:200],
+            "threshold": min(0.99, max(0.5, float(r.get("threshold") or DEFAULT_THRESHOLD))),
+        })
+    return {"enabled": bool(w.get("enabled")),
+            "interval_s": min(30.0, max(1.0, float(w.get("interval_s") or DEFAULT_INTERVAL_S))),
+            "rules": clean}
+
+
+async def set_watch(sensor_id: str, organization_id: str, watch: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    pool = await _pool()
+    row = await pool.fetchrow(
+        f"UPDATE public.sensors SET watch = $3::jsonb, updated_at = now() WHERE id = $1 AND organization_id = $2 RETURNING {_COLUMNS}",
+        sensor_id, organization_id, json.dumps(normalize_watch(watch)))
+    return _row(row) if row else None
+
+
+async def active_watches() -> Dict[str, Dict[str, Any]]:
+    """sensor_id -> watch config, for every enabled sensor with watch on (all orgs; the hub asks)."""
+    pool = await _pool()
+    rows = await pool.fetch(
+        "SELECT id, watch FROM public.sensors WHERE enabled AND sensor_type = 'phone' AND (watch->>'enabled')::boolean IS TRUE")
+    return {r["id"]: normalize_watch(json.loads(r["watch"]) if isinstance(r["watch"], str) else r["watch"]) for r in rows}
+
+
+_ALERT_COLS = ("a.id, a.organization_id, a.sensor_id, s.name AS sensor_name, a.rule_id, a.label, a.probability, a.model, "
+               "a.captured_at, a.created_at, a.lat, a.lon, a.heading, a.acknowledged_by, a.acknowledged_at")
+
+
+async def insert_alert(*, sensor: Dict[str, Any], rule_id: str, label: str, probability: float, model: str,
+                       captured_at: datetime, jpeg: Optional[bytes]) -> Dict[str, Any]:
+    latest = sensor.get("latest") or {}
+    pos = (latest.get("position") or {}).get("data") or {}
+    ori = (latest.get("orientation") or {}).get("data") or {}
+    pool = await _pool()
+    alert_id = "alr_" + secrets.token_hex(8)
+    await pool.execute(
+        """INSERT INTO public.sensor_alerts (id, organization_id, sensor_id, rule_id, label, probability, model,
+                                            captured_at, lat, lon, heading, snapshot)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)""",
+        alert_id, sensor["organization_id"], sensor["id"], rule_id, label, probability, model, captured_at,
+        pos.get("lat"), pos.get("lon"), ori.get("heading_deg"), jpeg)
+    return await get_alert(alert_id, sensor["organization_id"])
+
+
+async def get_alert(alert_id: str, organization_id: str) -> Optional[Dict[str, Any]]:
+    pool = await _pool()
+    row = await pool.fetchrow(
+        f"SELECT {_ALERT_COLS} FROM public.sensor_alerts a JOIN public.sensors s ON s.id = a.sensor_id "
+        "WHERE a.id = $1 AND a.organization_id = $2", alert_id, organization_id)
+    return dict(row) if row else None
+
+
+async def list_alerts(organization_id: str, *, since: Optional[datetime] = None, sensor_id: Optional[str] = None,
+                      limit: int = 50) -> List[Dict[str, Any]]:
+    pool = await _pool()
+    rows = await pool.fetch(
+        f"""SELECT {_ALERT_COLS} FROM public.sensor_alerts a JOIN public.sensors s ON s.id = a.sensor_id
+            WHERE a.organization_id = $1 AND ($2::timestamptz IS NULL OR a.created_at > $2)
+              AND ($3::text IS NULL OR a.sensor_id = $3)
+            ORDER BY a.created_at DESC LIMIT $4""",
+        organization_id, since, sensor_id, max(1, min(limit, 200)))
+    return [dict(r) for r in rows]
+
+
+async def alert_snapshot(alert_id: str) -> Optional[bytes]:
+    pool = await _pool()
+    return await pool.fetchval("SELECT snapshot FROM public.sensor_alerts WHERE id = $1", alert_id)
+
+
+async def acknowledge_alert(alert_id: str, organization_id: str, user_id: str) -> bool:
+    pool = await _pool()
+    res = await pool.execute(
+        "UPDATE public.sensor_alerts SET acknowledged_by = $3, acknowledged_at = now() "
+        "WHERE id = $1 AND organization_id = $2 AND acknowledged_at IS NULL", alert_id, organization_id, user_id)
+    return res.endswith("1")
