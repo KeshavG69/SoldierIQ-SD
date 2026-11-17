@@ -9,8 +9,8 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, BellOff, Check, Plus, X } from "lucide-react";
-import { sensorsApi, Sensor, SensorAlert, WatchConfig, WatchRule } from "@/lib/api/sensors";
+import { Bell, BellOff, Bot, Check, Loader2, Plus, X } from "lucide-react";
+import { AlertAssessment, sensorsApi, Sensor, SensorAlert, WatchConfig, WatchRule } from "@/lib/api/sensors";
 import { Z_INDEX } from "@/lib/constants/zIndex";
 
 const SUGGESTIONS: WatchRule[] = [
@@ -222,6 +222,38 @@ export function DetectionReadout({ sensor }: { sensor: Sensor }) {
   );
 }
 
+const THREAT_STYLE: Record<string, string> = {
+  high: "bg-red-500/15 text-red-500",
+  medium: "bg-amber-500/15 text-amber-600",
+  low: "bg-emerald-500/15 text-emerald-600",
+};
+
+/** What the SoldierIQ agent made of the alert frame (it reviews every alert by itself). */
+function AgentAssessment({ x, clamp }: { x: AlertAssessment | null; clamp?: boolean }) {
+  if (!x || x.status === "skipped") return null;
+  if (x.status === "reviewing")
+    return (
+      <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+        <Loader2 className="w-3 h-3 animate-spin" /> SoldierIQ is reviewing the image…
+      </div>
+    );
+  if (x.status === "failed")
+    return <div className="mt-1 text-[11.5px] text-muted-foreground">SoldierIQ couldn&apos;t review this alert.</div>;
+  return (
+    <div className="mt-1.5 text-[12px] leading-snug text-foreground">
+      <span className="inline-flex items-center gap-1 mr-1.5 align-middle">
+        <Bot className="w-3 h-3 text-muted-foreground" />
+        {x.threat && (
+          <span className={`px-1.5 py-px rounded text-[10px] font-semibold uppercase tracking-wide ${THREAT_STYLE[x.threat] ?? ""}`}>
+            {x.threat}
+          </span>
+        )}
+      </span>
+      <span className={clamp ? "line-clamp-3" : "whitespace-pre-line"}>{x.text}</span>
+    </div>
+  );
+}
+
 function AlertItem({ a, onAck }: { a: SensorAlert; onAck: () => void }) {
   return (
     <div className={`flex gap-3 rounded-lg border p-2 ${a.acknowledged ? "border-border opacity-70" : "border-red-500/40 bg-red-500/5"}`}>
@@ -249,6 +281,7 @@ function AlertItem({ a, onAck }: { a: SensorAlert; onAck: () => void }) {
             </>
           )}
         </div>
+        <AgentAssessment x={a.assessment} />
       </div>
       {!a.acknowledged && (
         <button type="button" className={`${btn} self-center`} onClick={onAck}>
@@ -290,6 +323,8 @@ export function RecentAlerts() {
 /** New alerts pop up wherever the user is in SoldierIQ. Polls every 4 s; shows up to 3 at once. */
 export function SensorAlertToaster() {
   const [toasts, setToasts] = useState<SensorAlert[]>([]);
+  const toastsRef = useRef<SensorAlert[]>([]);
+  toastsRef.current = toasts;
   const since = useRef<string | null>(null);
   const disabled = useRef(false);
 
@@ -307,6 +342,14 @@ export function SensorAlertToaster() {
         if (r.alerts.length) {
           since.current = r.alerts[0].created_at;
           setToasts((t) => [...r.alerts.filter((a) => !a.acknowledged).reverse(), ...t].slice(0, 3));
+        }
+        // The agent's review lands a few seconds after the alert: refresh the pop-ups still waiting for it.
+        const waiting = toastsRef.current.filter((a) => a.assessment?.status === "reviewing").map((a) => a.id);
+        if (waiting.length) {
+          const fresh = (await sensorsApi.alerts({ ids: waiting.join(","), limit: waiting.length })).alerts;
+          if (stop) return;
+          const byId = new Map(fresh.map((a) => [a.id, a]));
+          setToasts((t) => t.map((a) => byId.get(a.id) ?? a));
         }
       } catch (e: any) {
         if (e?.response?.status === 503) disabled.current = true; // sensors not configured on this server
@@ -336,6 +379,7 @@ export function SensorAlertToaster() {
               <div className="text-[12px] text-muted-foreground truncate">
                 {a.sensor_name} · {Math.round(a.probability * 100)}% sure · {timeAgo(a.created_at)}
               </div>
+              <AgentAssessment x={a.assessment} clamp />
             </div>
             <button
               type="button"

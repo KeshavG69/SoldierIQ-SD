@@ -50,7 +50,13 @@ to alert on (Person, Vehicle, Bird, or anything typed). Every few seconds the hu
 Perplexity Decider v1.2 (OpenRouter decisions API, `DECISION_MODEL` in the backend) with one yes/no
 question per item. An item alerts when it is above its threshold in 2 of the last 3 checks, then stays
 quiet for 60 s (`ALERT_COOLDOWN_S`). Alerts (with the frame) appear as pop-ups in SoldierIQ, in the
-Sensors tab, and to the chat assistant (`list_alerts`).
+Sensors tab, and to the chat assistant (`list_alerts`, which also hands it the newest frames).
+
+**The agent reacts by itself.** Right after an alert is stored, the backend runs the SoldierIQ agent
+(`backend/services/alert_agent.py`, the chat agent's default model, read-only: no connected apps, documents or
+memory) with the alert frame. It writes a short assessment (threat LOW / MEDIUM / HIGH, what it sees, what to
+do), shown in the pop-up and the alert list a few seconds later. One review at a time per camera; alerts that
+arrive meanwhile are coalesced so only the newest is reviewed.
 
 ## Cost control: motion check
 

@@ -82,6 +82,8 @@ CREATE TABLE IF NOT EXISTS public.sensor_alerts (
     acknowledged_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_sensor_alerts_org_time ON public.sensor_alerts (organization_id, created_at DESC);
+-- the SoldierIQ agent's read of the alert (it looks at the frame in the background)
+ALTER TABLE public.sensor_alerts ADD COLUMN IF NOT EXISTS assessment JSONB;
 """
 _TABLE_READY = False
 
@@ -339,7 +341,14 @@ async def active_watches() -> Dict[str, Dict[str, Any]]:
 
 
 _ALERT_COLS = ("a.id, a.organization_id, a.sensor_id, s.name AS sensor_name, a.rule_id, a.label, a.probability, a.model, "
-               "a.captured_at, a.created_at, a.lat, a.lon, a.heading, a.acknowledged_by, a.acknowledged_at")
+               "a.captured_at, a.created_at, a.lat, a.lon, a.heading, a.acknowledged_by, a.acknowledged_at, a.assessment")
+
+
+def _alert_row(r) -> Dict[str, Any]:
+    d = dict(r)
+    if isinstance(d.get("assessment"), str):
+        d["assessment"] = json.loads(d["assessment"])
+    return d
 
 
 async def insert_alert(*, sensor: Dict[str, Any], rule_id: str, label: str, probability: float, model: str,
@@ -363,19 +372,26 @@ async def get_alert(alert_id: str, organization_id: str) -> Optional[Dict[str, A
     row = await pool.fetchrow(
         f"SELECT {_ALERT_COLS} FROM public.sensor_alerts a JOIN public.sensors s ON s.id = a.sensor_id "
         "WHERE a.id = $1 AND a.organization_id = $2", alert_id, organization_id)
-    return dict(row) if row else None
+    return _alert_row(row) if row else None
 
 
 async def list_alerts(organization_id: str, *, since: Optional[datetime] = None, sensor_id: Optional[str] = None,
-                      limit: int = 50) -> List[Dict[str, Any]]:
+                      limit: int = 50, ids: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     pool = await _pool()
     rows = await pool.fetch(
         f"""SELECT {_ALERT_COLS} FROM public.sensor_alerts a JOIN public.sensors s ON s.id = a.sensor_id
             WHERE a.organization_id = $1 AND ($2::timestamptz IS NULL OR a.created_at > $2)
               AND ($3::text IS NULL OR a.sensor_id = $3)
+              AND ($5::text[] IS NULL OR a.id = ANY($5))
             ORDER BY a.created_at DESC LIMIT $4""",
-        organization_id, since, sensor_id, max(1, min(limit, 200)))
-    return [dict(r) for r in rows]
+        organization_id, since, sensor_id, max(1, min(limit, 200)), ids)
+    return [_alert_row(r) for r in rows]
+
+
+async def set_alert_assessment(alert_id: str, assessment: Dict[str, Any]) -> None:
+    pool = await _pool()
+    await pool.execute("UPDATE public.sensor_alerts SET assessment = $2::jsonb WHERE id = $1",
+                       alert_id, json.dumps(assessment))
 
 
 async def alert_snapshot(alert_id: str) -> Optional[bytes]:

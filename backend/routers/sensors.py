@@ -195,11 +195,24 @@ def alert_public(a: dict) -> Dict[str, Any]:
         "lat": a["lat"], "lon": a["lon"], "heading": a["heading"],
         "acknowledged": a["acknowledged_at"] is not None,
         "image_url": alert_image_url(a["id"]),
+        "assessment": _assessment_public(a),
     }
+
+
+def _assessment_public(a: dict) -> Optional[Dict[str, Any]]:
+    """The agent's read of the alert. status: reviewing (in progress) | done | failed | skipped."""
+    x = a.get("assessment")
+    if not x:
+        age = (datetime.now(timezone.utc) - a["created_at"]).total_seconds()
+        return {"status": "reviewing"} if age < 300 else None
+    if x.get("status") == "done":
+        return {"status": "done", "threat": x.get("threat"), "text": x.get("text"), "model": x.get("model")}
+    return {"status": x.get("status", "failed")}
 
 
 @router.get("/alerts")
 async def list_alerts(since: Optional[str] = None, sensor_id: Optional[str] = None, limit: int = 30,
+                      ids: Optional[str] = None,
                       ctx: dict = Depends(get_current_context)) -> Dict[str, Any]:
     _require_enabled()
     since_dt = None
@@ -208,7 +221,8 @@ async def list_alerts(since: Optional[str] = None, sensor_id: Optional[str] = No
             since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
         except ValueError:
             raise HTTPException(422, "since must be an ISO timestamp")
-    rows = await sensor_store.list_alerts(_org(ctx), since=since_dt, sensor_id=sensor_id, limit=limit)
+    id_list = [i for i in (ids or "").split(",") if i][:20] or None  # refresh specific alerts (agent review)
+    rows = await sensor_store.list_alerts(_org(ctx), since=since_dt, sensor_id=sensor_id, limit=limit, ids=id_list)
     return {"alerts": [alert_public(a) for a in rows], "server_time": datetime.now(timezone.utc).isoformat()}
 
 
@@ -454,4 +468,9 @@ async def internal_alert(body: AlertRequest, x_sensor_hub_secret: Optional[str] 
         captured_at=datetime.fromtimestamp(body.captured_ts / 1000, tz=timezone.utc),
         jpeg=base64.b64decode(body.jpeg_b64) if body.jpeg_b64 else None)
     logger.info(f"[sensors] ALERT {a['id']}: {body.label} ({body.probability:.2f}) on {s['name']}")
+    if body.jpeg_b64:
+        from services.alert_agent import schedule_review
+        schedule_review(a)  # the agent looks at the frame in the background; the hub doesn't wait
+    else:
+        await sensor_store.set_alert_assessment(a["id"], {"status": "skipped", "error": "no image"})
     return {"alert_id": a["id"]}
