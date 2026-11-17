@@ -69,6 +69,17 @@ def _parse(text: str) -> Dict[str, Any]:
     return {"threat": threat, "text": text[:1200]}
 
 
+async def _drop_session(session_id: str) -> None:
+    """The run's agent session holds the frame + full prompt (~300-400 KB) and nobody reads it again: the
+    assessment is stored on the alert (and pruned with it). Delete it so it doesn't pile up."""
+    try:
+        from clients.postgres_client import get_postgres_client
+        pool = await get_postgres_client().get_pool()
+        await pool.execute("DELETE FROM public.agent_sessions WHERE session_id = $1", session_id)
+    except Exception as e:
+        logger.warning(f"[alert-agent] could not delete session {session_id}: {e!r}")
+
+
 async def _review(alert: Dict[str, Any]) -> None:
     from services.chat import create_chat_agent
     from utils.sandbox_context import set_session_context
@@ -89,8 +100,11 @@ async def _review(alert: Dict[str, Any]) -> None:
         position=_fmt_position(alert),
         heading=f"{alert['heading']:.0f} degrees" if alert.get("heading") is not None else "unknown",
     )
-    resp = await asyncio.wait_for(
-        agent.arun(prompt, images=[Image(content=bytes(jpeg), format="jpeg")]), timeout=REVIEW_TIMEOUT_S)
+    try:
+        resp = await asyncio.wait_for(
+            agent.arun(prompt, images=[Image(content=bytes(jpeg), format="jpeg")]), timeout=REVIEW_TIMEOUT_S)
+    finally:
+        await _drop_session(session_id)
     result = _parse(getattr(resp, "content", "") or "")
     if not result["text"]:
         raise RuntimeError("empty answer")
