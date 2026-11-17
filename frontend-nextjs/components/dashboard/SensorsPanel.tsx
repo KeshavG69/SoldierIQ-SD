@@ -497,11 +497,18 @@ function SetupView({ sensor, onBack, onChanged }: { sensor: Sensor; onBack: () =
           </div>
           <div className="rounded-xl border border-border p-4">
             <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Hardware GPS tracker</div>
-            <p className="text-sm text-foreground">
-              Configure the tracker (usually by SMS or the maker&apos;s setup tool) to send to the server address above on the
-              port for its protocol (for example Teltonika 5027, GT06/Concox 5023, OsmAnd 5055). The device ID must match its
-              IMEI.
-            </p>
+            {setup.tcp_endpoint ? (
+              <p className="text-sm text-foreground">
+                Configure the tracker (usually by SMS or the maker&apos;s setup tool) to send to{" "}
+                <code className="font-mono text-xs">{setup.tcp_endpoint}</code>. The device ID must match its IMEI.
+              </p>
+            ) : (
+              <p className="text-sm text-foreground">
+                Configure the tracker (usually by SMS or the maker&apos;s setup tool) to send to the server address above on the
+                port for its protocol (for example Teltonika 5027, GT06/Concox 5023, OsmAnd 5055). The device ID must match its
+                IMEI.
+              </p>
+            )}
           </div>
         </div>
       )}

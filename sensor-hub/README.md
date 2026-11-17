@@ -85,9 +85,24 @@ links needs the `X-Sensor-Hub-Secret` header.
    ```
 4. Keep it at **one replica**: live frames and phone connections are held in memory. To grow, run more
    hubs and split organizations between them.
-5. Traccar (only for GPS trackers) is a separate service from `traccar/traccar` with a volume on
-   `/opt/traccar/data`. The Traccar Client phone app uses HTTP (port 5055), so a normal Railway domain works;
-   hardware trackers need Railway's TCP proxy.
+5. **Traccar** (only for GPS trackers), a third service:
+   - New service from this repo, **Root Directory** `sensor-hub/traccar` (Dockerfile pins `traccar/traccar:6.17.0`).
+   - **Volume** mounted at `/opt/traccar/data` (its database). Without it every redeploy starts empty.
+   - Variable `PORT=5055`, then **generate a domain**: the Traccar Client app sends to it over HTTPS.
+     Do not expose 8082 (Traccar's admin API / web UI); SoldierIQ reaches it over the private network.
+   - Hardware trackers (raw TCP): add a **TCP proxy** for the protocol's port (Teltonika 5027, GT06 5023)
+     and put the proxy's `host:port` in the backend's `TRACCAR_TCP_ENDPOINT`.
+   - No manual admin setup: on a fresh Traccar, SoldierIQ creates the admin user from
+     `TRACCAR_USER` / `TRACCAR_PASSWORD` the first time a tracker is added.
+   - Backend variables:
+     ```
+     TRACCAR_URL=http://${{traccar.RAILWAY_PRIVATE_DOMAIN}}:8082
+     TRACCAR_USER=<an email-like login, e.g. soldieriq@local>
+     TRACCAR_PASSWORD=<long random password>
+     TRACCAR_PUBLIC_URL=https://<traccar-domain>
+     TRACCAR_TCP_ENDPOINT=<proxy-host:port>     # only for hardware trackers
+     ```
+   - Hub variables: the same `TRACCAR_URL` / `TRACCAR_USER` / `TRACCAR_PASSWORD`.
 
 ## Ports
 

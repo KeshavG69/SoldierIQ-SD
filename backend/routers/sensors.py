@@ -35,6 +35,7 @@ import hashlib
 import hmac
 import re
 import time
+from urllib.parse import urlparse
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Literal, Optional
 
@@ -109,11 +110,23 @@ async def _setup(s: dict) -> Dict[str, Any]:
         base = info.get("phone_url")
         return {"pair_url": f"{base}?t={s['pairing_token']}" if base and s.get("pairing_token") else None,
                 "hub_reachable": bool(base)}
+    if settings.TRACCAR_PUBLIC_URL:  # hosted Traccar (e.g. Railway domain -> port 5055, HTTPS)
+        url = settings.TRACCAR_PUBLIC_URL.rstrip("/")
+        parsed = urlparse(url)
+        return {
+            "server_host": parsed.hostname,
+            "server_port": parsed.port or (443 if parsed.scheme == "https" else 80),
+            "server_url": url,
+            "tcp_endpoint": settings.TRACCAR_TCP_ENDPOINT or None,
+            "device_id": s["identifier"],
+            "hub_reachable": True,
+        }
     host = info.get("lan_ip")
     return {
         "server_host": host,
         "server_port": settings.TRACCAR_OSMAND_PORT,
         "server_url": f"http://{host}:{settings.TRACCAR_OSMAND_PORT}" if host else None,
+        "tcp_endpoint": settings.TRACCAR_TCP_ENDPOINT or None,
         "device_id": s["identifier"],
         "hub_reachable": bool(host),
     }
