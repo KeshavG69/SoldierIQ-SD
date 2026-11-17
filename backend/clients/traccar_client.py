@@ -12,6 +12,7 @@ from typing import Optional
 
 import httpx
 
+from app.logger import logger
 from app.settings import settings
 
 
@@ -29,10 +30,28 @@ def _client() -> httpx.AsyncClient:
     )
 
 
+async def ensure_admin() -> bool:
+    """A fresh Traccar (new deploy, empty volume) has no users; its first registered user becomes the
+    admin. Register TRACCAR_USER / TRACCAR_PASSWORD so no manual setup is needed. Traccar refuses this
+    once any user exists, so it can't be used to take over a configured server."""
+    try:
+        async with httpx.AsyncClient(base_url=settings.TRACCAR_URL.rstrip("/"), timeout=10) as c:
+            r = await c.post("/api/users", json={"name": "soldieriq", "email": settings.TRACCAR_USER,
+                                                 "password": settings.TRACCAR_PASSWORD})
+    except httpx.HTTPError:
+        return False
+    if r.status_code < 400:
+        logger.info("[traccar] created the admin user on a fresh Traccar server")
+        return True
+    return False
+
+
 async def create_device(name: str, unique_id: str) -> int:
     try:
         async with _client() as c:
             r = await c.post("/api/devices", json={"name": name, "uniqueId": unique_id})
+            if r.status_code == 401 and await ensure_admin():
+                r = await c.post("/api/devices", json={"name": name, "uniqueId": unique_id})
     except httpx.HTTPError as e:
         raise TraccarError(f"Traccar unreachable: {e}") from e
     if r.status_code >= 400:

@@ -47,6 +47,7 @@ export interface SensorSetup {
   server_host?: string | null;
   server_port?: number;
   server_url?: string | null;
+  tcp_endpoint?: string | null; // hosted Traccar: "host:port" for hardware trackers (raw TCP)
   device_id?: string;
 }
 

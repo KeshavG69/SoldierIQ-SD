@@ -120,6 +120,10 @@ class Settings(BaseSettings):
     TRACCAR_USER: str = ""
     TRACCAR_PASSWORD: str = ""
     TRACCAR_OSMAND_PORT: int = 5055  # port GPS apps/trackers send to (Traccar Client app)
+    # Hosted Traccar: public URL the Traccar Client app sends to (e.g. https://traccar-production.up.railway.app,
+    # Railway domain targeting port 5055) and, for hardware trackers, the TCP proxy "host:port".
+    TRACCAR_PUBLIC_URL: str = ""
+    TRACCAR_TCP_ENDPOINT: str = ""
     SENSOR_HISTORY_DAYS: int = 30  # position history older than this is deleted; 0 = keep forever
     DECISION_MODEL: str = "perplexity/pplx-decider-v1.2"  # camera watch (OpenRouter decisions API)
     # This backend's address as the browser sees it (signed camera snapshot links in chat replies).
