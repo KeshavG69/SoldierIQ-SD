@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.settings import settings
 from app.middleware import  SecurityHeadersMiddleware
 from app.logger import logger
-from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests, connectors, voice, memory, visuals
+from routers import health, upload, chat, models, auth, mindmap, report_suggestions, reports, flashcards, quiz, infographic, slide_deck, video_overview, podcast, tak, simple_chat, google_drive, sharepoint, public_pages, workspace, invitations, organizations, access_requests, connectors, voice, memory, visuals, sensors
 
 
 def _prewarm_clients():
@@ -82,7 +82,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Configure this for production
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=[
         "Content-Type",
         "Authorization",
@@ -143,6 +143,7 @@ app.include_router(access_requests.router, prefix="/api")
 app.include_router(voice.router, prefix="/api")
 app.include_router(memory.router, prefix="/api")
 app.include_router(visuals.router, prefix="/api")
+app.include_router(sensors.router, prefix="/api")
 
 
 if __name__ == "__main__":

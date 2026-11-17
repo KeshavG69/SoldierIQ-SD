@@ -109,6 +109,22 @@ class Settings(BaseSettings):
 
     POSTGRES_URL: str = ""
 
+    # Sensors (sensor-hub gateway + Traccar GPS server). See sensor-hub/README.md.
+    # SENSOR_HUB_SECRET is shared with the hub; empty = sensors feature off.
+    # Railway: SENSOR_HUB_URL = hub's private URL (http://sensor-hub.railway.internal:<PORT>),
+    #          SENSOR_HUB_VIEW_URL = hub's public https URL.
+    SENSOR_HUB_URL: str = "http://127.0.0.1:8090"       # backend -> hub
+    SENSOR_HUB_VIEW_URL: str = "http://localhost:8090"  # browser -> hub (live video)
+    SENSOR_HUB_SECRET: str = ""
+    TRACCAR_URL: str = "http://127.0.0.1:8082"
+    TRACCAR_USER: str = ""
+    TRACCAR_PASSWORD: str = ""
+    TRACCAR_OSMAND_PORT: int = 5055  # port GPS apps/trackers send to (Traccar Client app)
+    SENSOR_HISTORY_DAYS: int = 30  # position history older than this is deleted; 0 = keep forever
+    DECISION_MODEL: str = "perplexity/pplx-decider-v1.2"  # camera watch (OpenRouter decisions API)
+    # This backend's address as the browser sees it (signed camera snapshot links in chat replies).
+    PUBLIC_API_URL: str = "http://localhost:8010"
+
     # Shared secret the LiveKit voice-agent worker sends to /api/voice/search.
     # Empty = endpoint disabled.
     VOICE_AGENT_SECRET: str = ""

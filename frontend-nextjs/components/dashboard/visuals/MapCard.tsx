@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { visualsApi } from "@/lib/api/documents";
 import { useChatStore } from "@/lib/stores/chatStore";
 import type { MapCardInfo, MapFeature } from "@/types";
-import { LAYER_ICON, SEVERITY_COLOR, SEVERITY_LABEL, VERDICT_LABEL, formatTime, iconSvg } from "./intelStyle";
+import { LAYER_ICON, SEVERITY_COLOR, SEVERITY_LABEL, VERDICT_LABEL, formatTime, iconSvg, featureIcon } from "./intelStyle";
 
 const MapView = dynamic(() => import("./MapView"), {
   ssr: false,
@@ -29,13 +29,13 @@ function DetailPanel({ f, onClose, onAsk }: { f: MapFeature; onClose: () => void
       <div className="flex items-start gap-2 p-3 border-b border-border">
         <span
           className="mt-0.5 shrink-0"
-          dangerouslySetInnerHTML={{ __html: iconSvg(LAYER_ICON[f.layer] || "hotspot", color, 18) }}
+          dangerouslySetInnerHTML={{ __html: iconSvg(featureIcon(f), color, 18, f.heading ?? null) }}
         />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-semibold text-foreground leading-snug">{f.title}</div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
             <span className="text-[10.5px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded" style={{ color, border: `1px solid ${color}` }}>
-              {SEVERITY_LABEL[f.severity] || f.severity}
+              {f.layer === "sensors" && f.details?.Status ? String(f.details.Status) : SEVERITY_LABEL[f.severity] || f.severity}
             </span>
             {f.time && <span className="text-[11px] text-muted-foreground">{formatTime(f.time)}</span>}
           </div>

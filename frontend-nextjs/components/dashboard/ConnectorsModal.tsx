@@ -3,7 +3,7 @@
 /**
  * Connectors — connect third-party apps (Composio) and choose which of each
  * app's actions the chat agent may use (mirrors enterprise's actions tab).
- * A second tab holds the TAK server settings (TAKSettingsPanel).
+ * Other tabs: TAK server settings (TAKSettingsPanel) and live sensors (SensorsPanel).
  *
  *   - Connect opens Composio's hosted OAuth flow in a popup (useConnectorPopup).
  *   - Each connected app has an on/off switch and an expandable list of its
@@ -17,8 +17,9 @@ import { Z_INDEX } from "@/lib/constants/zIndex";
 import { useAuthStore } from "@/lib/stores/authStore";
 import { useConnectorPopup } from "@/lib/hooks/useConnectorPopup";
 import TAKSettingsPanel from "./TAKSettingsPanel";
+import SensorsPanel from "./SensorsPanel";
 
-type Tab = "apps" | "tak";
+type Tab = "apps" | "tak" | "sensors";
 
 // Last list seen in this tab, per organization: reopening the modal shows it
 // instantly while a fresh copy loads in the background.
@@ -178,7 +179,9 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
               <p className="text-xs text-muted-foreground mt-0.5">
                 {tab === "apps"
                   ? "Connect apps and choose which actions the assistant can use."
-                  : "Connect the assistant to a TAK (Team Awareness Kit) server."}
+                  : tab === "tak"
+                    ? "Connect the assistant to a TAK (Team Awareness Kit) server."
+                    : "Live sensors feeding SoldierIQ: phones (camera + GPS) and GPS trackers."}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -202,6 +205,7 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
               [
                 ["apps", "Apps"],
                 ["tak", "TAK"],
+                ["sensors", "Sensors"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -220,7 +224,11 @@ export default function ConnectorsModal({ onClose }: { onClose: () => void }) {
             ))}
           </div>
 
-          {tab === "tak" ? (
+          {tab === "sensors" ? (
+            <div className="overflow-y-auto p-6">
+              <SensorsPanel />
+            </div>
+          ) : tab === "tak" ? (
             <div className="overflow-y-auto p-6">
               <TAKSettingsPanel onClose={onClose} />
             </div>

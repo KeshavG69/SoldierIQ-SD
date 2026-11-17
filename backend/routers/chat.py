@@ -394,11 +394,11 @@ async def get_chat_session(
 
                                         # Map / chart cards (utils/visual_tools.py)
                                         vis_name = tool_info["tool_name"] or tool_function_name
-                                        if vis_name in ("show_map", "create_chart"):
+                                        if vis_name in ("show_map", "show_sensors_map", "create_chart"):
                                             try:
                                                 vis = json.loads(tool_info["result"])
                                                 if isinstance(vis, dict) and not vis.get("error"):
-                                                    (visual_maps if vis_name == "show_map" else visual_charts).append(vis)
+                                                    (visual_charts if vis_name == "create_chart" else visual_maps).append(vis)
                                             except (json.JSONDecodeError, TypeError):
                                                 pass
                                             continue

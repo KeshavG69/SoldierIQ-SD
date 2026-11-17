@@ -6,7 +6,7 @@ import React, { useCallback, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { MapFeature, MapPayload } from "@/types";
-import { LAYER_ICON, SEVERITY_COLOR, iconSvg } from "./intelStyle";
+import { SEVERITY_COLOR, featureIcon, iconSvg } from "./intelStyle";
 
 // OpenFreeMap: free vector basemap, no API key. Swap for self-hosted PMTiles
 // for offline / air-gapped deployments.
@@ -95,6 +95,15 @@ export default function MapView({ payload, hiddenLayers, selectedId, onSelect, e
         map.addSource("hotspot-rings", { type: "geojson", data: { type: "FeatureCollection", features: rings } });
         map.addLayer({ id: "hotspot-fill", type: "fill", source: "hotspot-rings", paint: { "fill-color": ["get", "color"], "fill-opacity": 0.08 } });
         map.addLayer({ id: "hotspot-line", type: "line", source: "hotspot-rings", paint: { "line-color": ["get", "color"], "line-opacity": 0.5, "line-width": 1, "line-dasharray": [2, 2] } });
+
+        // Sensor trails: where each sensor has been recently (under the icons).
+        const trails = (payload.trails || []).map((t) => ({
+          type: "Feature" as const,
+          properties: { color: t.live ? SEVERITY_COLOR.low : SEVERITY_COLOR.info },
+          geometry: { type: "LineString" as const, coordinates: t.coords },
+        }));
+        map.addSource("sensor-trails", { type: "geojson", data: { type: "FeatureCollection", features: trails } });
+        map.addLayer({ id: "sensor-trail", type: "line", source: "sensor-trails", layout: { "line-join": "round", "line-cap": "round" }, paint: { "line-color": ["get", "color"], "line-opacity": 0.75, "line-width": 3 } });
       });
 
       map.on("click", (e) => {
@@ -113,7 +122,7 @@ export default function MapView({ payload, hiddenLayers, selectedId, onSelect, e
         el.setAttribute("aria-label", f.title);
         el.title = f.title;
         el.style.cssText = `width:30px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:rgba(11,15,14,.82);border:1.5px solid ${color};box-shadow:0 1px 4px rgba(0,0,0,.45);cursor:pointer;padding:0;touch-action:manipulation;transition:transform .12s ease;`;
-        el.innerHTML = iconSvg(LAYER_ICON[f.layer] || "hotspot", color, 16, f.heading ?? null);
+        el.innerHTML = iconSvg(featureIcon(f), color, 16, f.heading ?? null);
         el.addEventListener("click", (ev) => {
           ev.stopPropagation();
           onSelectRef.current(f);
@@ -139,6 +148,9 @@ export default function MapView({ payload, hiddenLayers, selectedId, onSelect, e
     const vis = hiddenLayers.has("hotspots") ? "none" : "visible";
     map.setLayoutProperty("hotspot-fill", "visibility", vis);
     map.setLayoutProperty("hotspot-line", "visibility", vis);
+  }
+  if (map?.getLayer?.("sensor-trail")) {
+    map.setLayoutProperty("sensor-trail", "visibility", hiddenLayers.has("sensors") ? "none" : "visible");
   }
 
   // maplibre-gl.css sets `position: relative` on the map element, so it needs a sized wrapper.

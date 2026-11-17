@@ -32,6 +32,13 @@
       "port": 8020
     },
     {
+      "name": "sensor-hub",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": ["--directory", "sensor-hub", "run", "python", "server.py"],
+      "port": 8090,
+      "autoPort": false
+    },
+    {
       "name": "nextjs-dev-3001",
       "runtimeExecutable": "env",
       "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8020", "npm", "--prefix", "frontend-nextjs", "run", "dev", "--", "-p", "3001"],

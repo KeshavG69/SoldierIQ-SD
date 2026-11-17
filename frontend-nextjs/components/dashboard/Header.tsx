@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/stores/authStore";
+import { SensorAlertToaster } from "./SensorAlerts";
 import { useChatStore } from "@/lib/stores/chatStore";
 import { useVoiceStore } from "@/lib/stores/voiceStore";
 import ModelSelector from "./ModelSelector";
@@ -237,6 +238,8 @@ export default function Header() {
       {showTeam && <TeamModal onClose={() => setShowTeam(false)} />}
       {showConnectors && <ConnectorsModal onClose={() => setShowConnectors(false)} />}
       {showMemory && <MemoryModal onClose={() => setShowMemory(false)} />}
+      {/* Camera alerts from sensors pop up anywhere in SoldierIQ */}
+      <SensorAlertToaster />
     </header>
   );
 }
