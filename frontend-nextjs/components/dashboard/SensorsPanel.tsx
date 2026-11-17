@@ -62,6 +62,20 @@ function StatusPill({ status }: { status: Sensor["status"] }) {
   );
 }
 
+/** A hub on this computer / LAN (self-signed HTTPS, phone must share the network) vs a hosted one. */
+function isLanHub(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return (
+      host === "localhost" ||
+      host.endsWith(".local") ||
+      /^(10|127)\.|^192\.168\.|^172\.(1[6-9]|2\d|3[01])\./.test(host)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -436,20 +450,28 @@ function SetupView({ sensor, onBack, onChanged }: { sensor: Sensor; onBack: () =
       )}
 
       {sensor.sensor_type === "phone" && setup?.pair_url && (
-        <div className="grid sm:grid-cols-[auto_1fr] gap-5 items-start">
+        <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-[auto_minmax(0,1fr)] gap-5 items-start">
           <div className="p-3 rounded-xl bg-white justify-self-center">
             <QRCodeSVG value={setup.pair_url} size={176} />
           </div>
-          <ol className="space-y-2.5">
-            <Step n={1}>Connect the phone to the same network as the sensor hub.</Step>
-            <Step n={2}>Scan this QR code with the phone&apos;s camera app and open the link.</Step>
-            <Step n={3}>
-              The phone warns about the certificate (self-signed). On iPhone tap <b>Show Details → visit this website</b>; on
-              Android <b>Advanced → Proceed</b>.
-            </Step>
-            <Step n={4}>Tap <b>Start sensor</b> and allow camera, location and motion access. Keep the screen on.</Step>
-          </ol>
-          <div className="sm:col-span-2 space-y-2">
+          {isLanHub(setup.pair_url) ? (
+            <ol className="space-y-2.5 min-w-0">
+              <Step n={1}>Connect the phone to the same network as the sensor hub.</Step>
+              <Step n={2}>Scan this QR code with the phone&apos;s camera app and open the link.</Step>
+              <Step n={3}>
+                The phone warns about the certificate (self-signed). On iPhone tap <b>Show Details → visit this website</b>; on
+                Android <b>Advanced → Proceed</b>.
+              </Step>
+              <Step n={4}>Tap <b>Start sensor</b> and allow camera, location and motion access. Keep the screen on.</Step>
+            </ol>
+          ) : (
+            <ol className="space-y-2.5 min-w-0">
+              <Step n={1}>Scan this QR code with the phone&apos;s camera app and open the link. Any network works (Wi-Fi or mobile data).</Step>
+              <Step n={2}>Tap <b>Start sensor</b> and allow camera, location and motion access.</Step>
+              <Step n={3}>Keep the screen on and the page open while it streams.</Step>
+            </ol>
+          )}
+          <div className="sm:col-span-2 space-y-2 min-w-0">
             <CopyField label="Pairing link" value={setup.pair_url} />
             <div className="flex items-center gap-2">
               <p className={`${hintCls} !mt-0 flex-1`}>Anyone with this link can stream as this sensor. Make a new one if it leaks.</p>
@@ -476,7 +498,7 @@ function SetupView({ sensor, onBack, onChanged }: { sensor: Sensor; onBack: () =
 
       {sensor.sensor_type === "gps_tracker" && setup && (
         <div className="space-y-4">
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-[minmax(0,1fr)] sm:grid-cols-2 gap-3">
             <CopyField label="Server address" value={setup.server_host || "—"} />
             <CopyField label="Port" value={String(setup.server_port ?? "")} />
             <div className="sm:col-span-2">
