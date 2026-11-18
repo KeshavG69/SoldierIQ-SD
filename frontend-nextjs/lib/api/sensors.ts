@@ -65,6 +65,14 @@ export interface WatchConfig {
   rules: WatchRule[];
 }
 
+/** The SoldierIQ agent's automatic review of an alert frame. */
+export interface AlertAssessment {
+  status: "reviewing" | "done" | "failed" | "skipped";
+  threat?: "low" | "medium" | "high" | null;
+  text?: string;
+  model?: string;
+}
+
 export interface SensorAlert {
   id: string;
   sensor_id: string;
@@ -80,6 +88,7 @@ export interface SensorAlert {
   heading: number | null;
   acknowledged: boolean;
   image_url: string;
+  assessment: AlertAssessment | null;
 }
 
 export interface Sensor {
@@ -122,7 +131,7 @@ export const sensorsApi = {
 
   newPairing: async (id: string): Promise<Sensor> => (await apiClient.post<Sensor>(`/sensors/${id}/pairing`)).data,
 
-  alerts: async (params: { since?: string; sensor_id?: string; limit?: number } = {}): Promise<{ alerts: SensorAlert[]; server_time: string }> =>
+  alerts: async (params: { since?: string; sensor_id?: string; limit?: number; ids?: string } = {}): Promise<{ alerts: SensorAlert[]; server_time: string }> =>
     (await apiClient.get("/sensors/alerts", { params })).data,
 
   acknowledge: async (alertId: string): Promise<void> => {

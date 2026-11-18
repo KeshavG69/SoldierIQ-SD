@@ -59,7 +59,9 @@ knowledge base.
 - list_alerts(minutes=60, sensor=None): camera alerts the decision model raised (person, vehicle, bird, ...
   whatever each camera is set to watch for). Use for "any alerts?", "what happened at the gate?". Show the
   most relevant alert's `image_markdown` line exactly as given. Alerts are what the cameras are set up to
-  watch for; if none are on, say how to turn them on.
+  watch for; if none are on, say how to turn them on. The newest alert frames are attached: look at them
+  yourself. Each alert also carries `agent_assessment` (your own earlier automatic review: threat level and
+  what was seen); use it, but trust what you see in the frame if they disagree.
 
 Always say how fresh the data is (e.g. "as of 5 seconds ago"). If a sensor is offline, say when it was
 last seen and give its last known data. Coordinates: give them with 5 decimals; the user can open them
@@ -404,10 +406,12 @@ async def show_sensors_map(sensor: Optional[str] = None, minutes: int = 30, titl
 
 
 @tool(stop_after_tool_call=False)
-async def list_alerts(minutes: int = 60, sensor: Optional[str] = None) -> str:
+async def list_alerts(minutes: int = 60, sensor: Optional[str] = None) -> ToolResult:
     """Camera alerts raised by the decision model (e.g. a person, vehicle or bird seen on a camera), newest first.
     Each alert has what was seen, which camera, when, how sure the model was, where the camera was, whether
-    someone marked it as seen, and `image_markdown` (the frame that triggered it) to show in your reply.
+    someone marked it as seen, the agent's automatic assessment of it (threat level + what it saw), and
+    `image_markdown` (the frame that triggered it) to show in your reply. The frames of the newest alerts
+    (up to 3) are attached so you can see them yourself.
 
     Args:
         minutes: How far back to look, 1-10080 (default 60).
@@ -417,30 +421,39 @@ async def list_alerts(minutes: int = 60, sensor: Optional[str] = None) -> str:
 
     org = _org()
     if not org:
-        return json.dumps({"error": "No organization in this chat; sensors are unavailable."})
+        return ToolResult(content=json.dumps({"error": "No organization in this chat; sensors are unavailable."}))
     sid = None
     if sensor:
         s, rows = await _find(sensor)
         if not s:
-            return _not_found(sensor, rows)
+            return ToolResult(content=_not_found(sensor, rows))
         sid = s["id"]
     minutes = max(1, min(int(minutes or 60), 10080))
     rows = await sensor_store.list_alerts(org, since=datetime.now(timezone.utc) - timedelta(minutes=minutes),
                                           sensor_id=sid, limit=30)
-    alerts = []
+    alerts, images = [], []
     for a in rows:
         p = alert_public(a)
-        alerts.append({
-            "what": p["label"], "camera": p["sensor_name"], "when": _ago(_age_s(p["created_at"])),
+        item = {
+            "id": p["id"], "what": p["label"], "camera": p["sensor_name"], "when": _ago(_age_s(p["created_at"])),
             "time_utc": p["created_at"][11:19], "confidence_pct": round(p["probability"] * 100),
             "seen_by_someone": p["acknowledged"],
             "position": {"lat": round(p["lat"], 6), "lon": round(p["lon"], 6)} if p["lat"] is not None else None,
+            "agent_assessment": p["assessment"],
             "image_markdown": f"![{p['label']} - {p['sensor_name']}]({p['image_url']})",
-        })
+        }
+        if len(images) < 3:
+            jpeg = await sensor_store.alert_snapshot(p["id"])
+            if jpeg:
+                images.append(Image(content=bytes(jpeg), format="jpeg"))
+                item["frame_attached"] = len(images)  # the n-th attached image
+        alerts.append(item)
     watching = [s["name"] for s in await sensor_store.list_sensors(org) if (s.get("watch") or {}).get("enabled")]
-    return json.dumps({"minutes": minutes, "count": len(alerts), "alerts": alerts,
-                       "cameras_watching": watching,
-                       "note": None if watching else "No camera has alerts turned on (Connectors -> Sensors -> Camera alerts)."})
+    return ToolResult(
+        content=json.dumps({"minutes": minutes, "count": len(alerts), "alerts": alerts,
+                            "cameras_watching": watching,
+                            "note": None if watching else "No camera has alerts turned on (Connectors -> Sensors -> Camera alerts)."}),
+        images=images or None)
 
 
 def _haversine_m(a: dict, b: dict) -> float:
