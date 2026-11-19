@@ -330,6 +330,9 @@ export default function ChatArea() {
           ? messages[0].content
           : undefined;
 
+      // Camera alerts the agent posted here by itself: send their ids so it can talk about them.
+      const alertIds = messages.filter((m) => m.alert).map((m) => m.alert!.id).slice(-5);
+
       addMessage({
         id: `${Date.now()}-user`,
         role: "user",
@@ -362,7 +365,8 @@ export default function ChatArea() {
           selectedModel,
           takEnabled && takCredentials ? takCredentials : undefined,
           openingBriefing,
-          osintEnabled
+          osintEnabled,
+          alertIds
         );
 
         const reader = stream.getReader();

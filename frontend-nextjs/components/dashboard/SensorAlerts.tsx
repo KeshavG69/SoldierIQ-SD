@@ -12,6 +12,30 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, BellOff, Bot, Check, Loader2, Plus, X } from "lucide-react";
 import { AlertAssessment, sensorsApi, Sensor, SensorAlert, WatchConfig, WatchRule } from "@/lib/api/sensors";
 import { Z_INDEX } from "@/lib/constants/zIndex";
+import { useChatStore } from "@/lib/stores/chatStore";
+
+const CHAT_WAIT_MS = 5 * 60 * 1000; // give up on posting an alert to the chat if its review never lands
+
+/** Put a reviewed alert in the chat as a SoldierIQ message. False = not now (a reply is streaming). */
+function postAlertToChat(a: SensorAlert): boolean {
+  const chat = useChatStore.getState();
+  const id = `alert-${a.id}`;
+  if (chat.messages.some((m) => m.id === id)) return true; // already there (store persists across reloads)
+  if (chat.isLoading) return false; // the stream writes into the last message: don't slip in under it
+  const x = a.assessment;
+  const reviewed = x?.status === "done" && !!x.text;
+  chat.addMessage({
+    id,
+    role: "assistant",
+    content: reviewed ? x!.text! : "I couldn't review this alert's image. Ask me to look at it.",
+    timestamp: new Date().toISOString(),
+    alert: {
+      id: a.id, label: a.label, sensorName: a.sensor_name, probability: a.probability,
+      imageUrl: a.image_url, createdAt: a.created_at, threat: reviewed ? x!.threat : null, reviewed,
+    },
+  });
+  return true;
+}
 
 const SUGGESTIONS: WatchRule[] = [
   { label: "Person", question: "Is at least one person visible?" },
@@ -222,7 +246,7 @@ export function DetectionReadout({ sensor }: { sensor: Sensor }) {
   );
 }
 
-const THREAT_STYLE: Record<string, string> = {
+export const THREAT_STYLE: Record<string, string> = {
   high: "bg-red-500/15 text-red-500",
   medium: "bg-amber-500/15 text-amber-600",
   low: "bg-emerald-500/15 text-emerald-600",
@@ -327,6 +351,7 @@ export function SensorAlertToaster() {
   toastsRef.current = toasts;
   const since = useRef<string | null>(null);
   const disabled = useRef(false);
+  const forChat = useRef(new Map<string, { a: SensorAlert; at: number }>()); // new alerts not yet in the chat
 
   useEffect(() => {
     let stop = false;
@@ -342,14 +367,32 @@ export function SensorAlertToaster() {
         if (r.alerts.length) {
           since.current = r.alerts[0].created_at;
           setToasts((t) => [...r.alerts.filter((a) => !a.acknowledged).reverse(), ...t].slice(0, 3));
+          for (const a of r.alerts) if (!forChat.current.has(a.id)) forChat.current.set(a.id, { a, at: Date.now() });
         }
-        // The agent's review lands a few seconds after the alert: refresh the pop-ups still waiting for it.
-        const waiting = toastsRef.current.filter((a) => a.assessment?.status === "reviewing").map((a) => a.id);
-        if (waiting.length) {
-          const fresh = (await sensorsApi.alerts({ ids: waiting.join(","), limit: waiting.length })).alerts;
+        // The agent's review lands a few seconds after the alert: refresh the pop-ups (and the alerts still
+        // waiting to go to the chat, even if their pop-up was closed) that are waiting for it.
+        const waiting = new Set(toastsRef.current.filter((a) => a.assessment?.status === "reviewing").map((a) => a.id));
+        for (const [id, p] of forChat.current) if (p.a.assessment?.status === "reviewing") waiting.add(id);
+        if (waiting.size) {
+          const ids = [...waiting].slice(0, 20);
+          const fresh = (await sensorsApi.alerts({ ids: ids.join(","), limit: ids.length })).alerts;
           if (stop) return;
           const byId = new Map(fresh.map((a) => [a.id, a]));
           setToasts((t) => t.map((a) => byId.get(a.id) ?? a));
+          for (const a of fresh) {
+            const p = forChat.current.get(a.id);
+            if (p) p.a = a;
+          }
+        }
+        // Once the agent has reviewed an alert, its reaction goes into the chat (oldest first).
+        const ready = [...forChat.current.values()].sort((x, y) => x.a.created_at.localeCompare(y.a.created_at));
+        for (const p of ready) {
+          const st = p.a.assessment?.status;
+          if (st === "skipped") { forChat.current.delete(p.a.id); continue; } // a newer alert from that camera is reviewed instead
+          const settled = st !== "reviewing" || Date.now() - p.at > CHAT_WAIT_MS;
+          if (!settled) continue;
+          if (!postAlertToChat(p.a)) break; // a reply is streaming: try again next tick, keep the order
+          forChat.current.delete(p.a.id);
         }
       } catch (e: any) {
         if (e?.response?.status === 503) disabled.current = true; // sensors not configured on this server
