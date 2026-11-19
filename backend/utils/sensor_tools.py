@@ -265,7 +265,8 @@ async def look_at_camera(sensor: str) -> ToolResult:
     summary = _summary(s)
     out = {
         "sensor": s["name"],
-        "frame": "attached as an image in the next message - look at it to answer",
+        "frame": "attached as an image in the next message (fetched by this tool from the camera, not sent by "
+                 "the user: never say the user sent or shared it) - look at it to answer",
         "frame_taken": _ago(frame_age) + f" ({taken})",
         "frame_is_live": frame_age <= FRAME_MAX_AGE_S,
         "snapshot_markdown": f"![{s['name']} camera, {taken}]({snapshot_url(snap_id)})",
@@ -452,6 +453,9 @@ async def list_alerts(minutes: int = 60, sensor: Optional[str] = None) -> ToolRe
     watching = [s["name"] for s in await sensor_store.list_sensors(org) if (s.get("watch") or {}).get("enabled")]
     return ToolResult(
         content=json.dumps({"minutes": minutes, "count": len(alerts), "alerts": alerts,
+                            "frames": (f"The {len(images)} image(s) in the next message are the camera frames of the "
+                                       "alerts marked frame_attached, fetched by this tool. The user did not send or "
+                                       "share them; never say they did.") if images else None,
                             "cameras_watching": watching,
                             "note": None if watching else "No camera has alerts turned on (Connectors -> Sensors -> Camera alerts)."}),
         images=images or None)
