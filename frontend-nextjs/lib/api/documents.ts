@@ -299,7 +299,8 @@ export const chatApi = {
     model: string,
     takCredentials?: TAKCredentials,
     openingBriefing?: string,
-    osintEnabled?: boolean
+    osintEnabled?: boolean,
+    alertIds?: string[]
   ): Promise<ReadableStream> => {
     // Use fetchWithRefresh for automatic token refresh on 401
     const response = await fetchWithRefresh(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
@@ -312,6 +313,7 @@ export const chatApi = {
         tak_credentials: takCredentials,
         opening_briefing: openingBriefing,
         osint_enabled: !!osintEnabled,
+        alert_ids: alertIds?.length ? alertIds : undefined,
       }),
     });
 

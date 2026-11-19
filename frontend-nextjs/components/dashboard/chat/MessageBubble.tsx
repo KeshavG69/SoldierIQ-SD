@@ -10,6 +10,41 @@ import ToolCallTimeline from "./ToolCallTimeline";
 import DocumentCard from "./DocumentCard";
 import dynamic from "next/dynamic";
 import MapCard from "../visuals/MapCard";
+import { Bell } from "lucide-react";
+import { ChatAlertCard } from "@/types";
+import { THREAT_STYLE } from "../SensorAlerts";
+
+/** A camera alert the agent reviewed by itself: the frame + what fired, above the agent's reaction. */
+function AlertHeader({ alert }: { alert: ChatAlertCard }) {
+  const [imgOk, setImgOk] = React.useState(true);
+  return (
+    <div className="mb-2 rounded-xl border border-red-500/40 bg-card overflow-hidden">
+      {imgOk && (
+        <a href={alert.imageUrl} target="_blank" rel="noreferrer" className="block bg-black">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={alert.imageUrl}
+            alt={`${alert.label} at ${alert.sensorName}`}
+            className="w-full max-h-72 object-contain"
+            onError={() => setImgOk(false)}
+          />
+        </a>
+      )}
+      <div className="flex items-center gap-2 px-3 py-2 text-[13px]">
+        <Bell className="w-3.5 h-3.5 text-red-500 shrink-0" />
+        <span className="font-semibold text-foreground">Camera alert: {alert.label}</span>
+        <span className="text-muted-foreground truncate">
+          {alert.sensorName} · {Math.round(alert.probability * 100)}% sure
+        </span>
+        {alert.threat && (
+          <span className={`ml-auto px-1.5 py-px rounded text-[10px] font-semibold uppercase tracking-wide ${THREAT_STYLE[alert.threat] ?? ""}`}>
+            {alert.threat}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // Recharts is only loaded when a reply actually carries a chart.
 const ChartCard = dynamic(() => import("../visuals/ChartCard"), { ssr: false });
@@ -94,6 +129,8 @@ const MessageBubble = React.memo(function MessageBubble({
         </div>
 
         <div className="pl-8">
+          {message.alert && <AlertHeader alert={message.alert} />}
+
           {message.toolCalls && message.toolCalls.length > 0 && (
             <ToolCallTimeline steps={message.toolCalls} isStreaming={isStreaming} />
           )}

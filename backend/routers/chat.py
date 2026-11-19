@@ -51,6 +51,9 @@ class ChatRequest(BaseModel):
     opening_briefing: Optional[str] = None
     # OSINT mode (toggle in the chat input): adds the live intelligence map tool.
     osint_enabled: bool = False
+    # Camera alerts the agent posted in this chat (alert cards), newest last, so a reply like
+    # "what was that?" has something to refer to.
+    alert_ids: Optional[list[str]] = None
     # user_id and organization_id are extracted from JWT token by backend
 
 
@@ -101,6 +104,7 @@ async def chat(request: ChatRequest, current_user: dict = Depends(get_current_co
             is_admin=is_admin,
             opening_briefing=request.opening_briefing,
             osint_enabled=request.osint_enabled,
+            alert_ids=request.alert_ids,
         )
 
         # SSE headers

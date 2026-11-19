@@ -61,6 +61,18 @@ export interface ChatMessage {
   briefing?: { suggestions: string[] }; // login briefing → clickable follow-ups
   maps?: MapCardInfo[]; // show_map results → interactive intelligence map cards
   charts?: ChartSpec[]; // create_chart results → chart / timeline cards
+  alert?: ChatAlertCard; // a camera alert the agent reviewed by itself (SensorAlertToaster)
+}
+
+export interface ChatAlertCard {
+  id: string; // sensor alert id (alr_...)
+  label: string;
+  sensorName: string;
+  probability: number;
+  imageUrl: string;
+  createdAt: string;
+  threat?: string | null; // low | medium | high
+  reviewed: boolean; // false: the agent could not review it
 }
 
 // ── Visual answers (backend/utils/visual_tools.py) ──────────────────────────
