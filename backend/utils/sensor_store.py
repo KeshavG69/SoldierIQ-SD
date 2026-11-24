@@ -6,6 +6,9 @@ A sensor belongs to one organization and has a type:
                  paired by a secret token inside a QR code
   gps_tracker  - any GPS tracker (or the Traccar Client phone app) reporting to
                  Traccar, identified by its device ID / IMEI
+  ip_camera    - a CCTV / IP camera the sensor hub pulls over RTSP. `config` holds its
+                 address and login; the password is stored encrypted and never leaves
+                 the backend except to the sensor hub
 
 `latest` holds the newest normalized reading per kind (position, orientation,
 status, connection); `sensor_positions` keeps position history: one point per
@@ -15,16 +18,20 @@ status, connection); `sensor_positions` keeps position history: one point per
 from __future__ import annotations
 
 import asyncio
+import base64
+import hashlib
 import json
 import secrets
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from app.logger import logger
 from clients.postgres_client import get_postgres_client
 
-SENSOR_TYPES = ("phone", "gps_tracker")
+SENSOR_TYPES = ("phone", "gps_tracker", "ip_camera")
+CAMERA_TYPES = ("phone", "ip_camera")  # sensors with live video and alerts
 HISTORY_EVERY_S = 5.0
 _last_history: Dict[str, float] = {}
 PRUNE_EVERY_S = 3600  # how often old history is deleted (checked when readings arrive)
@@ -63,6 +70,8 @@ CREATE INDEX IF NOT EXISTS idx_sensor_positions_sensor_ts ON public.sensor_posit
 
 -- Camera watch (decision model): {"enabled", "interval_s", "motion_only", "rules": [{"id","label","question","threshold"}]}
 ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS watch JSONB NOT NULL DEFAULT '{}'::jsonb;
+-- IP camera connection: {"brand","host","port","username","password_enc","channel","stream","path","lat","lon"}
+ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS config JSONB NOT NULL DEFAULT '{}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS public.sensor_alerts (
     id TEXT PRIMARY KEY,
@@ -88,7 +97,7 @@ ALTER TABLE public.sensor_alerts ADD COLUMN IF NOT EXISTS assessment JSONB;
 _TABLE_READY = False
 
 _COLUMNS = ("id, organization_id, name, sensor_type, identifier, pairing_token, traccar_device_id, "
-            "enabled, last_seen, latest, watch, created_by, created_at, updated_at")
+            "enabled, last_seen, latest, watch, config, created_by, created_at, updated_at")
 
 
 _DDL_LOCK = asyncio.Lock()
@@ -110,7 +119,7 @@ async def _pool():
 
 def _row(r) -> Dict[str, Any]:
     d = dict(r)
-    for k in ("latest", "watch"):
+    for k in ("latest", "watch", "config"):
         if isinstance(d.get(k), str):
             d[k] = json.loads(d[k])
     return d
@@ -131,14 +140,15 @@ def new_tracker_identifier() -> str:
 
 async def create_sensor(*, organization_id: str, name: str, sensor_type: str, created_by: str,
                         identifier: Optional[str] = None, pairing_token: Optional[str] = None,
-                        traccar_device_id: Optional[int] = None, sensor_id: Optional[str] = None) -> Dict[str, Any]:
+                        traccar_device_id: Optional[int] = None, sensor_id: Optional[str] = None,
+                        config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     pool = await _pool()
     row = await pool.fetchrow(
         f"""INSERT INTO public.sensors (id, organization_id, name, sensor_type, identifier, pairing_token,
-                                        traccar_device_id, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING {_COLUMNS}""",
+                                        traccar_device_id, created_by, config)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb) RETURNING {_COLUMNS}""",
         sensor_id or new_sensor_id(), organization_id, name, sensor_type, identifier, pairing_token,
-        traccar_device_id, created_by,
+        traccar_device_id, created_by, json.dumps(config or {}),
     )
     return _row(row)
 
@@ -187,6 +197,14 @@ async def update_sensor(sensor_id: str, organization_id: str, **fields) -> Optio
         f"UPDATE public.sensors SET {sets}, updated_at = now() WHERE id = $1 AND organization_id = $2 RETURNING {_COLUMNS}",
         sensor_id, organization_id, *allowed.values(),
     )
+    return _row(row) if row else None
+
+
+async def set_config(sensor_id: str, organization_id: str, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    pool = await _pool()
+    row = await pool.fetchrow(
+        f"UPDATE public.sensors SET config = $3::jsonb, updated_at = now() WHERE id = $1 AND organization_id = $2 RETURNING {_COLUMNS}",
+        sensor_id, organization_id, json.dumps(config))
     return _row(row) if row else None
 
 
@@ -285,6 +303,114 @@ async def recent_positions(sensor_id: str, organization_id: str, limit: int = 20
              "data": json.loads(r["data"]) if isinstance(r["data"], str) else r["data"]} for r in rows]
 
 
+# ---------------------------------------------------------------- IP cameras (CCTV over RTSP)
+
+# Where each maker serves video. {channel} is the camera number on a recorder (1 for a single
+# camera); the sub stream is the low-resolution one, which is enough for alerts and saves bandwidth.
+CAMERA_BRANDS = {
+    "hikvision": lambda c: f"/Streaming/Channels/{c['channel']}0{1 if c['stream'] == 'main' else 2}",
+    "dahua": lambda c: f"/cam/realmonitor?channel={c['channel']}&subtype={0 if c['stream'] == 'main' else 1}",  # also CP Plus
+    "custom": lambda c: c.get("path") or "/",
+}
+
+
+def _fernet():
+    from cryptography.fernet import Fernet
+
+    from app.settings import settings
+    key = hashlib.sha256(b"soldieriq-camera-login:" + settings.SENSOR_HUB_SECRET.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
+
+
+def encrypt_secret(plain: str) -> str:
+    return _fernet().encrypt(plain.encode()).decode()
+
+
+def decrypt_secret(token: str) -> str:
+    try:
+        return _fernet().decrypt(token.encode()).decode()
+    except Exception:  # noqa: BLE001 - SENSOR_HUB_SECRET changed: the password must be entered again
+        return ""
+
+
+def camera_path(config: Dict[str, Any]) -> str:
+    c = {"channel": 1, "stream": "sub", **config}
+    return CAMERA_BRANDS.get(c.get("brand") or "custom", CAMERA_BRANDS["custom"])(c)
+
+
+def camera_rtsp_url(config: Dict[str, Any]) -> Optional[str]:
+    """Full RTSP address with the login, for the sensor hub only."""
+    host = config.get("host")
+    if not host:
+        return None
+    user = config.get("username") or ""
+    password = decrypt_secret(config["password_enc"]) if config.get("password_enc") else ""
+    login = quote(user, safe="") + (":" + quote(password, safe="") if password else "") + "@" if user else ""
+    host = f"[{host}]" if ":" in host else host
+    return f"rtsp://{login}{host}:{int(config.get('port') or 554)}{camera_path(config)}"
+
+
+def _redact_url(url: str) -> str:
+    """Hide any embedded password when showing a feed URL to the browser."""
+    parts = urlsplit(url)
+    if parts.password:
+        netloc = parts.hostname or ""
+        if parts.username:
+            netloc = f"{parts.username}:***@{netloc}"
+        if parts.port:
+            netloc += f":{parts.port}"
+        return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))
+    return url
+
+
+def camera_feed_url(config: Dict[str, Any]) -> Optional[str]:
+    """The full feed URL (with any login) for the sensor hub only. None if not configured."""
+    ft = config.get("feed_type") or "rtsp"
+    if ft == "rtsp":
+        return camera_rtsp_url(config)
+    url = config.get("url")  # hls / snapshot: a direct URL the admin pasted
+    if not url:
+        return None
+    password = decrypt_secret(config["password_enc"]) if config.get("password_enc") else ""
+    if password and "@" not in urlsplit(url).netloc:  # optional login for a snapshot/HLS URL
+        parts = urlsplit(url)
+        login = quote(config.get("username") or "", safe="") + ":" + quote(password, safe="") + "@"
+        url = urlunsplit((parts.scheme, login + parts.netloc, parts.path, parts.query, parts.fragment))
+    return url
+
+
+def camera_public(config: Dict[str, Any]) -> Dict[str, Any]:
+    """What the browser may see: everything but the password."""
+    ft = config.get("feed_type") or "rtsp"
+    out = {"feed_type": ft, "username": config.get("username") or "", "has_password": bool(config.get("password_enc")),
+           "lat": config.get("lat"), "lon": config.get("lon")}
+    if ft == "rtsp":
+        out.update({"brand": config.get("brand") or "custom", "host": config.get("host"),
+                    "port": int(config.get("port") or 554), "channel": int(config.get("channel") or 1),
+                    "stream": config.get("stream") or "sub", "path": camera_path(config)})
+    else:  # hls / snapshot
+        out["url"] = _redact_url(config.get("url") or "")
+        out["interval_s"] = config.get("interval_s")
+    return out
+
+
+async def active_cameras() -> List[Dict[str, Any]]:
+    """Every enabled camera with its feed URL and type (all orgs; only the hub asks)."""
+    pool = await _pool()
+    rows = await pool.fetch(
+        "SELECT id, organization_id, name, config FROM public.sensors WHERE enabled AND sensor_type = 'ip_camera'")
+    out = []
+    for r in rows:
+        cfg = json.loads(r["config"]) if isinstance(r["config"], str) else (r["config"] or {})
+        url = camera_feed_url(cfg)
+        if url:
+            out.append({"sensor_id": r["id"], "organization_id": r["organization_id"], "name": r["name"],
+                        "feed_type": cfg.get("feed_type") or "rtsp", "url": url,
+                        "interval_s": cfg.get("interval_s"), "host": cfg.get("host"),
+                        "lat": cfg.get("lat"), "lon": cfg.get("lon")})
+    return out
+
+
 # ---------------------------------------------------------------- camera watch + alerts
 
 DEFAULT_RULES = [
@@ -336,7 +462,8 @@ async def active_watches() -> Dict[str, Dict[str, Any]]:
     """sensor_id -> watch config, for every enabled sensor with watch on (all orgs; the hub asks)."""
     pool = await _pool()
     rows = await pool.fetch(
-        "SELECT id, watch FROM public.sensors WHERE enabled AND sensor_type = 'phone' AND (watch->>'enabled')::boolean IS TRUE")
+        "SELECT id, watch FROM public.sensors WHERE enabled AND sensor_type = ANY($1::text[]) "
+        "AND (watch->>'enabled')::boolean IS TRUE", list(CAMERA_TYPES))
     return {r["id"]: normalize_watch(json.loads(r["watch"]) if isinstance(r["watch"], str) else r["watch"]) for r in rows}
 
 
