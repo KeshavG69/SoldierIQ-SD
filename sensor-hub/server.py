@@ -711,6 +711,7 @@ async def camera_config_poller() -> None:
 DECISIONS_URL = "https://openrouter.ai/api/v1/systemone"
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 ALERT_COOLDOWN_S = float(os.environ.get("ALERT_COOLDOWN_S", "60"))
+HIT_WINDOW_S = float(os.environ.get("HIT_WINDOW_S", "30"))  # how long a "yes" counts toward 2 of 3
 WATCHES: dict[str, dict] = {}
 WATCH_MODEL = {"name": os.environ.get("DECISION_MODEL", "perplexity/pplx-decider-v1.2")}
 _watch_state: dict[str, dict] = {}  # sensor_id -> {"last": t, "busy": bool, "hits": {rule: deque}, "alerted": {rule: t}}
@@ -770,10 +771,16 @@ async def _check(sensor: "Sensor", watch: dict, st: dict) -> None:
         rule = rules.get(rid)
         if not rule:
             continue
+        # Last 3 answers for this rule, as (time, above threshold). Answers older than HIT_WINDOW_S
+        # don't count: a "yes" from before a cooldown or a quiet spell must not help fire a new alert.
         hits = st["hits"].setdefault(rid, deque(maxlen=3))
-        hits.append(p >= rule["threshold"])
-        if sum(hits) >= 2 and now - st["alerted"].get(rid, 0) > ALERT_COOLDOWN_S:
+        hit = p >= rule["threshold"]
+        hits.append((now, hit))
+        fresh = sum(1 for t, h in hits if h and now - t <= HIT_WINDOW_S)
+        # Fire only on a "yes" (so the alert's frame and probability show the thing), with 2 of 3 recent.
+        if hit and fresh >= 2 and now - st["alerted"].get(rid, 0) > ALERT_COOLDOWN_S:
             st["alerted"][rid] = now
+            hits.clear()  # the next alert needs new evidence
             asyncio.create_task(_send_alert(sensor, rule, p, captured, jpeg))
 
 
