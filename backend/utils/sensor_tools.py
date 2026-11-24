@@ -3,7 +3,7 @@
 The org's sensors (Connectors -> Sensors) are readable here:
   list_sensors        which sensors exist, live or not, where they are
   get_sensor_reading  newest position / heading / speed / battery of one sensor
-  look_at_camera      hand the newest camera frame of a phone sensor to the chat model as an
+  look_at_camera      hand the newest camera frame of a camera sensor (phone or IP camera) to the chat model as an
                       image (agno ToolResult); the frame is also saved as a snapshot the reply shows
   sensor_history      where a sensor has been over the last N minutes
   show_sensors_map    sensors (+ trails) on the chat map card (same card as show_map)
@@ -40,7 +40,7 @@ SNAPSHOT_TTL_S = 30 * 86400
 FRAME_MAX_AGE_S = 15
 
 SENSORS_INSTRUCTIONS = """<sensors>
-You can read this organization's LIVE sensors (phones streaming camera + GPS + compass, and GPS trackers).
+You can read this organization's LIVE sensors (phones streaming camera + GPS + compass, fixed IP/CCTV cameras, and GPS trackers).
 These are real-time devices, not documents: for questions about where a sensor/device/phone/tracker is,
 what a camera sees, whether something is online, or where it has been, use the sensor tools, not the
 knowledge base.
@@ -51,7 +51,7 @@ knowledge base.
 - look_at_camera(sensor): gives you the sensor's current camera frame as an image (next message). Look at
   it and answer the user's question concretely (people, vehicles, objects, text, anything unusual or
   security-relevant; say what can't be determined). It returns `snapshot_markdown`: put that line in your
-  reply exactly as given so the user sees the frame you looked at. Only phone sensors have cameras.
+  reply exactly as given so the user sees the frame you looked at. Phones and IP cameras have cameras.
 - sensor_history(sensor, minutes): where the sensor has been (track summary).
 - show_sensors_map(sensor=None, minutes=30): draws the sensors on an interactive map card under your reply
   (arrow = facing direction, line = recent trail; the user can tap a sensor and send it to TAK). Use it
@@ -109,10 +109,11 @@ def _summary(s: dict) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "name": s["name"],
         "sensor_id": s["id"],
-        "type": {"phone": "phone (camera + GPS + compass)", "gps_tracker": "GPS tracker"}.get(s["sensor_type"], s["sensor_type"]),
+        "type": {"phone": "phone (camera + GPS + compass)", "gps_tracker": "GPS tracker",
+                 "ip_camera": "fixed IP camera (CCTV)"}.get(s["sensor_type"], s["sensor_type"]),
         "status": _status(s),
         "last_seen": _ago(_age_s(s["last_seen"])),
-        "has_camera": s["sensor_type"] == "phone",
+        "has_camera": s["sensor_type"] in sensor_store.CAMERA_TYPES,
     }
     if pos.get("lat") is not None:
         p_age = (latest["position"].get("received_ts") or 0) / 1000
@@ -200,7 +201,7 @@ async def load_snapshot(snap_id: str) -> Optional[dict]:
 
 @tool(stop_after_tool_call=False)
 async def list_sensors() -> str:
-    """List this organization's live sensors (phones and GPS trackers) with status (live/offline/waiting/paused),
+    """List this organization's live sensors (phones, IP cameras and GPS trackers) with status (live/offline/waiting/paused),
     last-seen time, last known position and heading. Use it to answer "which sensors are online" or to find a
     sensor's exact name before calling the other sensor tools."""
     org = _org()
@@ -230,10 +231,10 @@ async def get_sensor_reading(sensor: str) -> str:
 
 @tool(stop_after_tool_call=False)
 async def look_at_camera(sensor: str) -> ToolResult:
-    """Look through a phone sensor's camera RIGHT NOW: grabs the newest frame and gives it to you as an
+    """Look through a camera sensor (phone or IP camera) RIGHT NOW: grabs the newest frame and gives it to you as an
     image (it arrives in the next message). Look at it yourself to answer the user's question. Also returns
     `snapshot_markdown`, an image line to include in your reply so the user sees the exact frame, plus where
-    the camera is and which way it faces. Only phone sensors have cameras.
+    the camera is and which way it faces. Phones and IP cameras have cameras.
 
     Args:
         sensor: The sensor's name (as shown in list_sensors) or id.
@@ -241,7 +242,7 @@ async def look_at_camera(sensor: str) -> ToolResult:
     s, rows = await _find(sensor)
     if not s:
         return ToolResult(content=_not_found(sensor, rows))
-    if s["sensor_type"] != "phone":
+    if s["sensor_type"] not in sensor_store.CAMERA_TYPES:
         return ToolResult(content=json.dumps({"error": f"'{s['name']}' is a GPS tracker; it has no camera."}))
     try:
         async with httpx.AsyncClient(timeout=10) as c:
@@ -252,7 +253,7 @@ async def look_at_camera(sensor: str) -> ToolResult:
         return ToolResult(content=json.dumps({"error": "The sensor hub is not reachable, so the camera can't be read right now."}))
     if r.status_code == 404:
         return ToolResult(content=json.dumps({
-            "error": f"'{s['name']}' has not sent any camera frames. Is the sensor page open on the phone?",
+            "error": f"'{s['name']}' has not sent any camera frames. " + ("Is the camera online and its login right?" if s["sensor_type"] == "ip_camera" else "Is the sensor page open on the phone?"),
             "status": _status(s), "last_seen": _ago(_age_s(s["last_seen"]))}))
     if r.status_code >= 400:
         return ToolResult(content=json.dumps({"error": f"Camera read failed (hub {r.status_code})."}))

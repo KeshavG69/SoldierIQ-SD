@@ -2,6 +2,8 @@
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+# ffmpeg reads IP camera (RTSP) streams
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv==0.6.14
 
 WORKDIR /app

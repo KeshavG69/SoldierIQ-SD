@@ -36,6 +36,12 @@ decision model (Perplexity Decider v1.2 via OpenRouter); only alerts reach Soldi
 
 Config (.env next to this file): SENSOR_HUB_SECRET, SOLDIERIQ_API_URL,
 TRACCAR_URL, TRACCAR_USER, TRACCAR_PASSWORD, OPENROUTER_API_KEY.
+
+IP cameras (CCTV): SoldierIQ lists the cameras to pull (/internal/cameras, RTSP address with
+login). For each one, ffmpeg reads the RTSP stream and hands the hub a few JPEG frames per second;
+from there a camera is treated exactly like a phone camera (live view, alerts). The hub must be able
+to reach the camera, so for a camera on a private network run the hub on that network. Needs ffmpeg.
+CAMERA_FPS (default 2) and CAMERA_WIDTH (default 960) set what is read from each camera.
 """
 
 from __future__ import annotations
@@ -46,6 +52,7 @@ import hmac
 import ipaddress
 import json
 import os
+import shutil
 import socket
 import struct
 import subprocess
@@ -53,6 +60,7 @@ import time
 from collections import deque
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 import httpx
 import uvicorn
@@ -89,6 +97,7 @@ CLOUD_PORT = int(os.environ["PORT"]) if os.environ.get("PORT") else None
 PUBLIC_URL = os.environ.get("PUBLIC_URL", "").rstrip("/")          # e.g. https://sensor-hub.up.railway.app
 TRACKER_HOST = os.environ.get("TRACKER_HOST", "")                  # host GPS trackers send to (Traccar)
 STALE_AFTER_S = 5.0
+CAMERA_TYPES = ("phone", "ip_camera")
 KNOTS_TO_MPS = 0.514444
 
 app = FastAPI(title="SoldierIQ Sensor Hub")
@@ -292,7 +301,7 @@ class Sensor:
             return False
 
     def summary(self) -> dict:
-        window = STALE_AFTER_S * 1000 if self.type == "phone" else 600_000
+        window = STALE_AFTER_S * 1000 if self.type in CAMERA_TYPES else 600_000
         live = self.connected and (now_ms() - self.last_seen) < window
         return {
             "sensor_id": self.id, "sensor_type": self.type, "name": self.name, "client": self.client,
@@ -300,7 +309,7 @@ class Sensor:
             "connected_at": self.connected_at, "last_seen": self.last_seen,
             "camera": {"fps": self.fps, "frames": self.frame_count, "last_frame_ts": self.frame_ts or None,
                        "uplink_delay_ms": round(self.uplink_ms) if self.uplink_ms is not None else None,
-                       "frame_bytes": len(self.frame) if self.frame else 0} if self.type == "phone" else None,
+                       "frame_bytes": len(self.frame) if self.frame else 0} if self.type in CAMERA_TYPES else None,
             "latest": self.latest,
             "watch": {k: _watch_state[self.id][k] for k in ("sent", "skipped")} if self.id in _watch_state else None,
         }
@@ -455,6 +464,7 @@ async def kick(request: Request):
             await ws.close(code=4002)
         except RuntimeError:
             pass
+    _stop_camera(sid)
     s = SENSORS.pop(sid, None)
     for ident, (_, info) in list(_IDENT_CACHE.items()):
         if info and info.get("sensor_id") == sid:
@@ -507,6 +517,187 @@ async def traccar_poller() -> None:
                 log(f"Traccar poll failed: {e}")
                 warned = True
         await asyncio.sleep(2.0)
+
+
+# ---------------------------------------------------------------- IP cameras (CCTV)
+#
+# SoldierIQ says which cameras to pull and how (set by an org admin). A camera has one of three feed
+# types, and all three end up calling Sensor.put_frame() with JPEG frames, so live view and alerts
+# work the same no matter where the video came from:
+#   rtsp      - an RTSP stream (Hikvision, Dahua/CP Plus, ...): ffmpeg reads it over TCP.
+#   hls       - an HLS stream (.m3u8), the format most public/city cameras use: ffmpeg reads it.
+#   snapshot  - a still-image URL that refreshes (e.g. a traffic cam that posts a JPEG): the hub just
+#               fetches it on a timer. No ffmpeg needed, so these work even where ffmpeg is missing.
+# A camera that drops is retried with a growing wait (2 s up to 30 s).
+
+FFMPEG = os.environ.get("FFMPEG", "ffmpeg")
+CAMERA_FPS = float(os.environ.get("CAMERA_FPS", "2"))
+CAMERA_WIDTH = int(os.environ.get("CAMERA_WIDTH", "960"))
+CAMERA_SILENCE_S = 20.0   # no frame for this long: the stream is stuck, reconnect
+CAMERAS: dict[str, dict] = {}  # sensor_id -> {"task", "url"}
+
+
+def _stop_camera(sid: str) -> None:
+    cam = CAMERAS.pop(sid, None)
+    if cam:
+        cam["task"].cancel()
+
+
+def _scrub(text: str, cfg: dict) -> str:
+    """ffmpeg prints the address it failed on; never log or forward the login."""
+    url = cfg.get("url") or ""
+    password = urlsplit(url).password or ""
+    for secret in (url, password, unquote(password)):
+        if secret:
+            text = text.replace(secret, "***")
+    return text.strip()[-200:]
+
+
+async def _jpeg_frames(stream: asyncio.StreamReader):
+    """Split ffmpeg's MJPEG output into single JPEG images (FF D8 ... FF D9)."""
+    buf = b""
+    while True:
+        chunk = await asyncio.wait_for(stream.read(65536), CAMERA_SILENCE_S)
+        if not chunk:
+            return
+        buf += chunk
+        while True:
+            start = buf.find(b"\xff\xd8")
+            if start < 0:
+                buf = buf[-1:]
+                break
+            end = buf.find(b"\xff\xd9", start + 2)
+            if end < 0:
+                buf = buf[start:]
+                break
+            yield buf[start:end + 2]
+            buf = buf[end + 2:]
+        if len(buf) > 8_000_000:  # not a JPEG stream
+            return
+
+
+async def _ffmpeg_stream(cfg: dict):
+    """Yield (jpeg, reason) from an RTSP or HLS stream via ffmpeg. reason is set only on a clean stop."""
+    inp = ["-rtsp_transport", "tcp", "-i", cfg["url"]] if cfg["feed_type"] == "rtsp" else ["-i", cfg["url"]]
+    proc = await asyncio.create_subprocess_exec(
+        FFMPEG, "-nostdin", "-loglevel", "error", *inp,
+        "-an", "-vf", f"fps={CAMERA_FPS},scale='min({CAMERA_WIDTH},iw)':-2", "-q:v", "5",
+        "-f", "image2pipe", "-vcodec", "mjpeg", "-",
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+    reason = "no video received"
+    try:
+        async for jpeg in _jpeg_frames(proc.stdout):
+            yield jpeg, None
+    except asyncio.TimeoutError:
+        reason = f"no video for {CAMERA_SILENCE_S:.0f} s"
+    finally:
+        if proc.returncode is None:
+            proc.kill()
+        err = _scrub((await proc.stderr.read()).decode("utf-8", "replace"), cfg)
+        await proc.wait()
+        line = err.splitlines()[-1] if err else reason
+        if "401" in line or "Unauthorized" in line or "403" in line:
+            line = "the camera refused the username or password"
+        elif "404" in line:
+            line = "no stream at this address (check the brand, channel, path or URL)"
+        elif any(x in line for x in ("refused", "timed out", "No route", "unreachable", "resolve", "Invalid data")):
+            line = "the sensor hub could not reach the camera at this address"
+        yield None, line
+
+
+async def _snapshot_stream(cfg: dict):
+    """Yield (jpeg, reason) by fetching a still-image URL on a timer (no ffmpeg)."""
+    every = max(0.5, float(cfg.get("interval_s") or 1.0 / CAMERA_FPS))
+    fails = 0
+    while True:
+        t = time.time()
+        try:
+            r = await _http.get(cfg["url"], timeout=10, follow_redirects=True)
+            if r.status_code in (401, 403):
+                yield None, "the camera refused the username or password"; return
+            r.raise_for_status()
+            body = r.content
+            if not body.startswith(b"\xff\xd8"):
+                yield None, "that URL did not return a JPEG image"; return
+            fails = 0
+            yield body, None
+        except (httpx.HTTPError, ValueError):
+            fails += 1
+            if fails >= 3:
+                yield None, "the sensor hub could not reach the image URL"; return
+        await asyncio.sleep(max(0.0, every - (time.time() - t)))
+
+
+async def camera_puller(sid: str, cfg: dict) -> None:
+    sensor = SENSORS.get(sid)
+    if sensor is None or sensor.type != "ip_camera":
+        sensor = SENSORS[sid] = Sensor(sid, "ip_camera", cfg["name"], cfg["organization_id"])
+    where = {"rtsp": cfg.get("host") or "?", "hls": "hls", "snapshot": "snapshot"}.get(cfg["feed_type"], "?")
+    sensor.name, sensor.client, sensor.connected = cfg["name"], f"{cfg['feed_type']}:{where}", False
+    source = _snapshot_stream if cfg["feed_type"] == "snapshot" else _ffmpeg_stream
+    wait = 2.0
+    try:
+        while True:
+            last_beat = 0.0
+            reason = "no video received"
+            async for jpeg, stop in source(cfg):
+                if jpeg is None:
+                    reason = stop or reason
+                    break
+                sensor.put_frame(jpeg)
+                if not sensor.connected:
+                    sensor.connected, sensor.connected_at, wait = True, now_ms(), 2.0
+                    publish(envelope(sensor, "connected", {"name": sensor.name, "client": sensor.client}))
+                    if cfg.get("lat") is not None and cfg.get("lon") is not None:  # fixed camera: its place on the map
+                        env = envelope(sensor, "position", {"lat": cfg["lat"], "lon": cfg["lon"], "fixed": True})
+                        sensor.latest["position"] = env
+                        publish(env)
+                    log(f"camera connected: {sensor.name} ({sid})")
+                if time.time() - last_beat > 10:  # keeps "last seen" fresh in SoldierIQ
+                    last_beat = time.time()
+                    env = envelope(sensor, "status", {"streaming": True, "fps": sensor.fps})
+                    sensor.latest["status"] = env
+                    publish(env)
+            was = sensor.connected
+            sensor.connected = False
+            publish(envelope(sensor, "disconnected", {"name": sensor.name, "reason": reason}))
+            if was or wait == 2.0:
+                log(f"camera stopped: {sensor.name} ({sid}): {reason}; retrying")
+            await asyncio.sleep(wait)
+            wait = min(30.0, wait * 2)
+    finally:
+        sensor.connected = False
+
+
+async def camera_config_poller() -> None:
+    have_ffmpeg = bool(shutil.which(FFMPEG))
+    if not have_ffmpeg:
+        log("ffmpeg not found - RTSP/HLS cameras disabled (install ffmpeg); snapshot cameras still work")
+    while True:
+        try:
+            r = await _http.get(f"{SOLDIERIQ_API_URL}/api/sensors/internal/cameras",
+                                headers={"X-Sensor-Hub-Secret": SECRET}, timeout=15)
+            if r.status_code == 200:
+                want = {}
+                for c in r.json().get("cameras") or []:
+                    if not c.get("url") or not c.get("feed_type"):
+                        continue
+                    if c["feed_type"] in ("rtsp", "hls") and not have_ffmpeg:
+                        continue  # can't play a video stream without ffmpeg
+                    want[c["sensor_id"]] = c
+                for sid in list(CAMERAS):
+                    if sid not in want or want[sid]["url"] != CAMERAS[sid]["url"]:
+                        _stop_camera(sid)
+                        if sid not in want:
+                            SENSORS.pop(sid, None)
+                for sid, cfg in want.items():
+                    if sid not in CAMERAS or CAMERAS[sid]["task"].done():
+                        CAMERAS[sid] = {"url": cfg["url"], "task": asyncio.create_task(camera_puller(sid, cfg))}
+                    elif sid in SENSORS:
+                        SENSORS[sid].name = cfg["name"]
+        except (httpx.HTTPError, ValueError, KeyError):
+            pass  # SoldierIQ briefly down: cameras already running keep running
+        await asyncio.sleep(10)
 
 
 # ---------------------------------------------------------------- camera watch (decision model)
@@ -799,7 +990,7 @@ async def main() -> None:
     if not SECRET:
         raise SystemExit("SENSOR_HUB_SECRET is not set (sensor-hub/.env) - it must match SoldierIQ's backend/.env")
     _http = httpx.AsyncClient()
-    workers = (forwarder(), traccar_poller(), watch_config_poller(), camera_watcher())
+    workers = (forwarder(), traccar_poller(), watch_config_poller(), camera_watcher(), camera_config_poller())
     if CLOUD_PORT:
         if not PUBLIC_URL:
             log("PUBLIC_URL is not set - SoldierIQ can't build phone pairing links")
@@ -817,6 +1008,7 @@ async def main() -> None:
     print("\n  SoldierIQ Sensor Hub", flush=True)
     print(f"  Phones   -> https://{ip}:{HTTPS_PORT}/phone?t=...  (QR code from SoldierIQ)", flush=True)
     print(f"  Trackers -> {ip}:5055 (Traccar Client app / OsmAnd), other ports per protocol", flush=True)
+    print("  Cameras  -> IP cameras (RTSP) added in SoldierIQ are pulled from this machine", flush=True)
     print(f"  SoldierIQ API -> {SOLDIERIQ_API_URL}", flush=True)
     print(f"  Debug viewer  -> http://localhost:{HTTP_PORT}/\n", flush=True)
     await asyncio.gather(https.serve(), http.serve(), *workers)

@@ -14,9 +14,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
-  ArrowLeft, Check, ChevronDown, Copy, MapPin, Pause, Pencil, Play, Plus, QrCode, RefreshCw, Smartphone, Trash2,
+  ArrowLeft, Cctv, Check, ChevronDown, Copy, MapPin, Pause, Pencil, Play, Plus, QrCode, RefreshCw, Settings2, Smartphone,
+  Trash2,
 } from "lucide-react";
-import { sensorsApi, Sensor, SensorType } from "@/lib/api/sensors";
+import { CameraBrand, CameraConfigInput, CameraConfigView, FeedType, sensorsApi, Sensor, SensorType } from "@/lib/api/sensors";
 import { AlertWatchEditor, DetectionReadout, RecentAlerts } from "./SensorAlerts";
 
 const inputCls =
@@ -28,7 +29,8 @@ const btnCls =
 const primaryCls =
   "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand text-brand-foreground text-xs font-medium hover:bg-brand-hover disabled:opacity-50 transition-colors";
 
-const TYPE_LABEL: Record<SensorType, string> = { phone: "Phone", gps_tracker: "GPS tracker" };
+const TYPE_LABEL: Record<SensorType, string> = { phone: "Phone", gps_tracker: "GPS tracker", ip_camera: "IP camera" };
+const TYPE_ICON: Record<SensorType, typeof Smartphone> = { phone: Smartphone, gps_tracker: MapPin, ip_camera: Cctv };
 
 type View = { kind: "list" } | { kind: "add" } | { kind: "setup"; id: string };
 
@@ -198,6 +200,23 @@ function Readings({ sensor }: { sensor: Sensor }) {
     ["Speed", p?.speed_mps != null ? `${(p.speed_mps * 3.6).toFixed(1)} km/h` : "–"],
     ["Altitude", p?.alt_m != null ? `${Math.round(p.alt_m)} m` : "–"],
   ];
+  if (sensor.sensor_type === "ip_camera") {
+    const fps = (sensor.latest.status?.data as { fps?: number } | undefined)?.fps;
+    return (
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
+        {([
+          rows[0],
+          ["Video", sensor.status === "live" && fps ? `${fps} frames/s` : "–"],
+          ["Last seen", ago(sensor.last_seen)],
+        ] as [string, React.ReactNode][]).map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="text-muted-foreground">{k}</dt>
+            <dd className="text-foreground tabular-nums min-w-0 truncate">{v}</dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
   if (sensor.sensor_type === "phone") {
     rows.push(["Heading", o?.heading_deg != null ? `${Math.round(o.heading_deg)}°` : "–"]);
   } else {
@@ -227,7 +246,7 @@ function SensorRow({
 }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const Icon = sensor.sensor_type === "phone" ? Smartphone : MapPin;
+  const Icon = TYPE_ICON[sensor.sensor_type];
 
   const act = async (fn: () => Promise<unknown>, fail: string) => {
     setBusy(true);
@@ -274,7 +293,8 @@ function SensorRow({
           {isAdmin && (
             <div className="flex flex-wrap gap-2">
               <button type="button" className={btnCls} onClick={onSetup} disabled={busy}>
-                <QrCode className="w-3.5 h-3.5" /> {sensor.sensor_type === "phone" ? "Pairing QR" : "Setup details"}
+                {sensor.sensor_type === "ip_camera" ? <Settings2 className="w-3.5 h-3.5" /> : <QrCode className="w-3.5 h-3.5" />}{" "}
+                {sensor.sensor_type === "phone" ? "Pairing QR" : sensor.sensor_type === "ip_camera" ? "Connection" : "Setup details"}
               </button>
               <button
                 type="button"
@@ -320,18 +340,26 @@ function AddSensor({ onCancel, onCreated }: { onCancel: () => void; onCreated: (
   const [type, setType] = useState<SensorType>("phone");
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
+  const [camera, setCamera] = useState<CameraForm>(emptyCamera());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const submit = async () => {
     setError("");
     if (!name.trim()) return setError("Give the sensor a name, e.g. “North gate camera”.");
+    let cam: CameraConfigInput | undefined;
+    if (type === "ip_camera") {
+      const r = cameraInput(camera, true);
+      if (typeof r === "string") return setError(r);
+      cam = r;
+    }
     setSaving(true);
     try {
       const s = await sensorsApi.create({
         name: name.trim(),
         sensor_type: type,
         identifier: type === "gps_tracker" && identifier.trim() ? identifier.trim() : undefined,
+        camera: cam,
       });
       onCreated(s);
     } catch (e) {
@@ -343,6 +371,7 @@ function AddSensor({ onCancel, onCreated }: { onCancel: () => void; onCreated: (
 
   const types: { id: SensorType; title: string; body: string; Icon: typeof Smartphone }[] = [
     { id: "phone", title: "Phone", body: "Camera, GPS and compass. Pair by scanning a QR code.", Icon: Smartphone },
+    { id: "ip_camera", title: "Camera (CCTV)", body: "An IP camera (Hikvision, Dahua, CP Plus), an HLS video stream, or a refreshing image URL.", Icon: Cctv },
     { id: "gps_tracker", title: "GPS tracker", body: "A GPS tracker, or a phone running the Traccar Client app.", Icon: MapPin },
   ];
 
@@ -353,7 +382,7 @@ function AddSensor({ onCancel, onCreated }: { onCancel: () => void; onCreated: (
       </button>
       <div>
         <div className={labelCls}>Sensor type</div>
-        <div className="grid sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Sensor type">
+        <div className="grid sm:grid-cols-3 gap-2" role="radiogroup" aria-label="Sensor type">
           {types.map(({ id, title, body, Icon }) => (
             <button
               key={id}
@@ -381,10 +410,11 @@ function AddSensor({ onCancel, onCreated }: { onCancel: () => void; onCreated: (
           value={name}
           maxLength={60}
           onChange={(e) => setName(e.target.value)}
-          placeholder={type === "phone" ? "e.g. North gate camera" : "e.g. Patrol vehicle 2"}
+          placeholder={type === "gps_tracker" ? "e.g. Patrol vehicle 2" : "e.g. North gate camera"}
           autoFocus
         />
       </div>
+      {type === "ip_camera" && <CameraFields value={camera} onChange={setCamera} />}
       {type === "gps_tracker" && (
         <div>
           <label htmlFor="sensor-ident" className={labelCls}>Device ID / IMEI</label>
@@ -412,6 +442,281 @@ function AddSensor({ onCancel, onCreated }: { onCancel: () => void; onCreated: (
   );
 }
 
+// ---------------------------------------------------------------- Camera (CCTV): RTSP, HLS or snapshot
+
+type CameraForm = {
+  feed_type: FeedType;
+  brand: CameraBrand;
+  host: string;
+  port: string;
+  channel: string;
+  stream: "main" | "sub";
+  path: string;
+  url: string;
+  interval: string;
+  username: string;
+  password: string;
+  lat: string;
+  lon: string;
+};
+
+const FEED_TYPES: { id: FeedType; label: string; hint: string }[] = [
+  { id: "rtsp", label: "IP camera (RTSP)", hint: "A camera on a network — Hikvision, Dahua, CP Plus, or any RTSP camera or recorder. Smooth live video." },
+  { id: "hls", label: "Video stream (HLS)", hint: "A public or hosted video stream whose address ends in .m3u8 (many city / traffic cameras). Smooth live video." },
+  { id: "snapshot", label: "Image URL (snapshot)", hint: "A still-image address that updates itself (e.g. a traffic cam that posts a JPEG). Refreshing photo, not smooth video." },
+];
+
+const BRANDS: { id: CameraBrand; label: string; hint: string }[] = [
+  { id: "hikvision", label: "Hikvision", hint: "Also HiLook, Annke and most Hikvision-based cameras and recorders." },
+  { id: "dahua", label: "Dahua / CP Plus", hint: "Also Amcrest, Lorex and other Dahua-based cameras and recorders." },
+  { id: "custom", label: "Other (RTSP path)", hint: "Enter the stream path from the camera's manual, e.g. /live/ch0." },
+];
+
+function emptyCamera(c?: CameraConfigView): CameraForm {
+  return {
+    feed_type: c?.feed_type ?? "rtsp",
+    brand: c?.brand ?? "hikvision",
+    host: c?.host ?? "",
+    port: String(c?.port ?? 554),
+    channel: String(c?.channel ?? 1),
+    stream: c?.stream ?? "sub",
+    path: c?.brand === "custom" ? (c.path ?? "") : "",
+    url: c?.url ?? "",
+    interval: c?.interval_s != null ? String(c.interval_s) : "2",
+    username: c?.username ?? (c ? "" : "admin"),
+    password: "",
+    lat: c?.lat != null ? String(c.lat) : "",
+    lon: c?.lon != null ? String(c.lon) : "",
+  };
+}
+
+/** Form -> API body, or an error message. */
+function cameraInput(f: CameraForm, isNew: boolean): CameraConfigInput | string {
+  const lat = f.lat.trim() ? Number(f.lat) : null;
+  const lon = f.lon.trim() ? Number(f.lon) : null;
+  if ((lat === null) !== (lon === null) || (lat !== null && (isNaN(lat) || lat < -90 || lat > 90)) || (lon !== null && (isNaN(lon) || lon < -180 || lon > 180)))
+    return "Give a valid latitude and longitude (both), or leave both empty.";
+  const common = {
+    feed_type: f.feed_type,
+    username: f.username.trim(),
+    ...(isNew || f.password ? { password: f.password } : {}),
+    lat,
+    lon,
+  };
+  if (f.feed_type === "rtsp") {
+    const host = f.host.trim();
+    if (!host) return "Enter the camera's IP address, e.g. 192.168.1.64.";
+    if (/[/@\s]|:\/\//.test(host)) return "Enter only the camera's IP address or host name (no rtsp://, no path).";
+    const port = Number(f.port || 554);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) return "The RTSP port must be a number from 1 to 65535 (usually 554).";
+    const channel = Number(f.channel || 1);
+    if (!Number.isInteger(channel) || channel < 1 || channel > 64) return "The channel must be a number from 1 to 64.";
+    if (f.brand === "custom" && !f.path.trim().startsWith("/")) return "Enter the stream path, starting with “/”.";
+    return { ...common, brand: f.brand, host, port, channel, stream: f.stream, path: f.brand === "custom" ? f.path.trim() : undefined };
+  }
+  const url = f.url.trim();
+  if (!/^https?:\/\//i.test(url)) return "Enter the full stream URL, starting with http:// or https://.";
+  if (f.feed_type === "snapshot") {
+    const interval = Number(f.interval || 2);
+    if (isNaN(interval) || interval < 0.5 || interval > 60) return "The refresh interval must be between 0.5 and 60 seconds.";
+    return { ...common, url, interval_s: interval };
+  }
+  return { ...common, url };
+}
+
+function CameraFields({ value: f, onChange, editing }: { value: CameraForm; onChange: (f: CameraForm) => void; editing?: boolean }) {
+  const set = (k: keyof CameraForm) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    onChange({ ...f, [k]: e.target.value });
+  const feed = FEED_TYPES.find((t) => t.id === f.feed_type)!;
+  const brand = BRANDS.find((b) => b.id === f.brand)!;
+  return (
+    <div className="space-y-4">
+      <div>
+        <label htmlFor="cam-feed" className={labelCls}>Feed type</label>
+        <select id="cam-feed" className={inputCls} value={f.feed_type} onChange={set("feed_type")}>
+          {FEED_TYPES.map((t) => (
+            <option key={t.id} value={t.id}>{t.label}</option>
+          ))}
+        </select>
+        <p className={hintCls}>{feed.hint}</p>
+      </div>
+
+      {f.feed_type === "rtsp" ? (
+        <>
+          <div>
+            <label htmlFor="cam-brand" className={labelCls}>Camera make</label>
+            <select id="cam-brand" className={inputCls} value={f.brand} onChange={set("brand")}>
+              {BRANDS.map((b) => (
+                <option key={b.id} value={b.id}>{b.label}</option>
+              ))}
+            </select>
+            <p className={hintCls}>{brand.hint}</p>
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_6rem] gap-3">
+            <div>
+              <label htmlFor="cam-host" className={labelCls}>IP address *</label>
+              <input id="cam-host" className={`${inputCls} font-mono`} value={f.host} onChange={set("host")} placeholder="192.168.1.64" maxLength={253} />
+            </div>
+            <div>
+              <label htmlFor="cam-port" className={labelCls}>RTSP port</label>
+              <input id="cam-port" className={`${inputCls} font-mono`} value={f.port} onChange={set("port")} inputMode="numeric" maxLength={5} />
+            </div>
+          </div>
+          {f.brand === "custom" ? (
+            <div>
+              <label htmlFor="cam-path" className={labelCls}>Stream path *</label>
+              <input id="cam-path" className={`${inputCls} font-mono`} value={f.path} onChange={set("path")} placeholder="/live/ch0" maxLength={300} />
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="cam-ch" className={labelCls}>Channel</label>
+                <input id="cam-ch" className={`${inputCls} font-mono`} value={f.channel} onChange={set("channel")} inputMode="numeric" maxLength={2} />
+                <p className={hintCls}>1 for a single camera. On a recorder (NVR/DVR), the camera&apos;s number.</p>
+              </div>
+              <div>
+                <label htmlFor="cam-stream" className={labelCls}>Quality</label>
+                <select id="cam-stream" className={inputCls} value={f.stream} onChange={set("stream")}>
+                  <option value="sub">Sub stream (low resolution, recommended)</option>
+                  <option value="main">Main stream (full resolution)</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="cam-url" className={labelCls}>{f.feed_type === "hls" ? "Stream URL (.m3u8) *" : "Image URL *"}</label>
+            <input id="cam-url" className={`${inputCls} font-mono`} value={f.url} onChange={set("url")}
+              placeholder={f.feed_type === "hls" ? "https://…/playlist.m3u8" : "https://…/camera.jpg"} maxLength={600} />
+          </div>
+          {f.feed_type === "snapshot" && (
+            <div className="sm:w-40">
+              <label htmlFor="cam-int" className={labelCls}>Refresh every</label>
+              <div className="flex items-center gap-2">
+                <input id="cam-int" className={`${inputCls} font-mono`} value={f.interval} onChange={set("interval")} inputMode="decimal" maxLength={4} />
+                <span className="text-sm text-muted-foreground">sec</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor="cam-user" className={labelCls}>Username{f.feed_type !== "rtsp" ? " (if needed)" : ""}</label>
+          <input id="cam-user" className={inputCls} value={f.username} onChange={set("username")} autoComplete="off" maxLength={64} />
+        </div>
+        <div>
+          <label htmlFor="cam-pass" className={labelCls}>Password</label>
+          <input id="cam-pass" type="password" className={inputCls} value={f.password} onChange={set("password")}
+            autoComplete="new-password" maxLength={128} placeholder={editing ? "Leave empty to keep the saved one" : ""} />
+        </div>
+      </div>
+
+      <div>
+        <div className={labelCls}>Location on the map (optional)</div>
+        <div className="grid grid-cols-2 gap-3">
+          <input aria-label="Latitude" className={`${inputCls} font-mono`} value={f.lat} onChange={set("lat")} placeholder="Latitude, e.g. 12.9716" />
+          <input aria-label="Longitude" className={`${inputCls} font-mono`} value={f.lon} onChange={set("lon")} placeholder="Longitude, e.g. 77.5946" />
+        </div>
+      </div>
+      <p className="rounded-lg border border-border bg-surface-2 px-3 py-2 text-xs text-muted-foreground">
+        The sensor hub connects to the camera, so it must be able to reach this address. For a camera on a home or office
+        network, run the sensor hub on a computer on that network. Any password is stored encrypted and is only given to the
+        sensor hub.
+      </p>
+    </div>
+  );
+}
+
+function CameraSetup({
+  sensor, camera, streamError, onChanged,
+}: {
+  sensor: Sensor;
+  camera: CameraConfigView;
+  streamError?: string | null;
+  onChanged: (s: Sensor) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<CameraForm>(() => emptyCamera(camera));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const feedLabel = FEED_TYPES.find((t) => t.id === camera.feed_type)?.label ?? camera.feed_type;
+
+  const save = async () => {
+    setError("");
+    const r = cameraInput(form, false);
+    if (typeof r === "string") return setError(r);
+    setSaving(true);
+    try {
+      onChanged(await sensorsApi.update(sensor.id, { camera: r }));
+      setEditing(false);
+    } catch (e) {
+      setError(errText(e, "Could not save the camera settings"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (editing) {
+    return (
+      <div className="space-y-4">
+        <CameraFields value={form} onChange={setForm} editing />
+        {error && <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-500">{error}</p>}
+        <div className="flex justify-end gap-2">
+          <button type="button" className={btnCls} onClick={() => setEditing(false)} disabled={saving}>Cancel</button>
+          <button type="button" className={primaryCls} onClick={save} disabled={saving}>{saving ? "Saving…" : "Save"}</button>
+        </div>
+      </div>
+    );
+  }
+
+  const rows: [string, string][] = camera.feed_type === "rtsp"
+    ? [
+        ["Type", feedLabel],
+        ["Make", BRANDS.find((b) => b.id === camera.brand)?.label ?? camera.brand ?? ""],
+        ["Address", `${camera.host}:${camera.port}`],
+        ["Login", camera.username ? `${camera.username} · ${camera.has_password ? "password saved" : "no password"}` : "none"],
+        ["Stream", camera.path ?? ""],
+        ["Location", camera.lat != null && camera.lon != null ? `${camera.lat}, ${camera.lon}` : "not set"],
+      ]
+    : [
+        ["Type", feedLabel],
+        ["URL", camera.url ?? ""],
+        ...(camera.feed_type === "snapshot" ? [["Refresh", `every ${camera.interval_s ?? 2}s`] as [string, string]] : []),
+        ["Login", camera.username ? `${camera.username} · ${camera.has_password ? "password saved" : "no password"}` : "none"],
+        ["Location", camera.lat != null && camera.lon != null ? `${camera.lat}, ${camera.lon}` : "not set"],
+      ];
+
+  return (
+    <div className="space-y-4">
+      <LiveVideo sensor={sensor} />
+      {streamError && sensor.status !== "live" && (
+        <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-500">
+          No video yet: {streamError}.
+        </p>
+      )}
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+        {rows.map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="text-muted-foreground">{k}</dt>
+            <dd className="text-foreground font-mono text-xs self-center min-w-0 truncate">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <ol className="space-y-2.5">
+        <Step n={1}>Make sure the sensor hub runs somewhere that can reach this {camera.feed_type === "rtsp" ? "camera" : "address"}.</Step>
+        <Step n={2}>The hub connects within about 10 seconds. This page turns <b>Live</b> once video arrives.</Step>
+        <Step n={3}>To get alerts, open the sensor in the list and turn on <b>Alert watch</b>.</Step>
+      </ol>
+      <button type="button" className={btnCls} onClick={() => { setForm(emptyCamera(camera)); setEditing(true); }}>
+        <Pencil className="w-3.5 h-3.5" /> Edit connection
+      </button>
+    </div>
+  );
+}
 function Step({ n, children }: { n: number; children: React.ReactNode }) {
   return (
     <li className="flex gap-3 text-sm text-foreground">
@@ -494,6 +799,10 @@ function SetupView({ sensor, onBack, onChanged }: { sensor: Sensor; onBack: () =
             </div>
           </div>
         </div>
+      )}
+
+      {sensor.sensor_type === "ip_camera" && setup?.camera && (
+        <CameraSetup sensor={sensor} camera={setup.camera} streamError={setup.stream_error} onChanged={onChanged} />
       )}
 
       {sensor.sensor_type === "gps_tracker" && setup && (

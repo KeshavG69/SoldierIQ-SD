@@ -1,11 +1,13 @@
 /**
- * Sensors API — live devices (phones, GPS trackers) added to the organization.
+ * Sensors API — live devices (phones, IP/CCTV cameras, GPS trackers) added to the organization.
  * Adding, editing and removing is admin-only; everyone in the org can view.
  */
 
 import { apiClient } from "./client";
 
-export type SensorType = "phone" | "gps_tracker";
+export type SensorType = "phone" | "gps_tracker" | "ip_camera";
+export type CameraBrand = "hikvision" | "dahua" | "custom";
+export type FeedType = "rtsp" | "hls" | "snapshot";
 export type SensorStatus = "live" | "offline" | "waiting" | "paused";
 
 export interface SensorEnvelope<T = Record<string, unknown>> {
@@ -39,6 +41,44 @@ export interface StatusData {
   charging: boolean | null;
 }
 
+/** How the sensor hub reaches an IP camera. The password is write-only: it is never sent back. */
+export interface CameraConfigInput {
+  feed_type: FeedType; // rtsp = IP camera, hls = .m3u8 stream, snapshot = refreshing image URL
+  // rtsp
+  brand?: CameraBrand; // "dahua" also covers CP Plus
+  host?: string; // IP address or host name only, e.g. 192.168.1.64
+  port?: number; // RTSP port, 554 by default
+  channel?: number; // camera number on a recorder (NVR/DVR); 1 for a single camera
+  stream?: "main" | "sub"; // sub = low resolution, enough for alerts
+  path?: string; // RTSP path, brand "custom" only
+  // hls / snapshot
+  url?: string; // .m3u8 URL or image URL
+  interval_s?: number; // snapshot: seconds between fetches
+  // any type
+  username?: string;
+  password?: string; // leave out when editing to keep the saved one
+  lat?: number | null; // where the camera is mounted (map)
+  lon?: number | null;
+}
+
+export interface CameraConfigView {
+  feed_type: FeedType;
+  username: string;
+  has_password: boolean;
+  lat: number | null;
+  lon: number | null;
+  // rtsp
+  brand?: CameraBrand;
+  host?: string | null;
+  port?: number;
+  channel?: number;
+  stream?: "main" | "sub";
+  path?: string;
+  // hls / snapshot
+  url?: string; // password redacted
+  interval_s?: number | null;
+}
+
 export interface SensorSetup {
   hub_reachable: boolean;
   // phone
@@ -49,6 +89,10 @@ export interface SensorSetup {
   server_url?: string | null;
   tcp_endpoint?: string | null; // hosted Traccar: "host:port" for hardware trackers (raw TCP)
   device_id?: string;
+  // ip_camera
+  hub_mode?: "local" | "cloud";
+  camera?: CameraConfigView;
+  stream_error?: string | null; // why the hub can't get video, e.g. wrong password
 }
 
 export interface WatchRule {
@@ -119,10 +163,13 @@ export interface SensorList {
 export const sensorsApi = {
   list: async (): Promise<SensorList> => (await apiClient.get<SensorList>("/sensors")).data,
 
-  create: async (body: { name: string; sensor_type: SensorType; identifier?: string }): Promise<Sensor> =>
+  create: async (body: { name: string; sensor_type: SensorType; identifier?: string; camera?: CameraConfigInput }): Promise<Sensor> =>
     (await apiClient.post<Sensor>("/sensors", body)).data,
 
-  update: async (id: string, body: { name?: string; enabled?: boolean; watch?: WatchConfig }): Promise<Sensor> =>
+  update: async (
+    id: string,
+    body: { name?: string; enabled?: boolean; watch?: WatchConfig; camera?: CameraConfigInput },
+  ): Promise<Sensor> =>
     (await apiClient.patch<Sensor>(`/sensors/${id}`, body)).data,
 
   remove: async (id: string): Promise<void> => {

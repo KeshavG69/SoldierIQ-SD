@@ -2,7 +2,7 @@
 Sensors - live devices an organization adds to SoldierIQ.
 
 Admin endpoints (org admins):
-  POST   /api/sensors                         add a sensor (phone | gps_tracker); returns setup info
+  POST   /api/sensors                         add a sensor (phone | gps_tracker | ip_camera); returns setup info
   PATCH  /api/sensors/{id}                    rename / pause / resume
   DELETE /api/sensors/{id}                    remove (also from Traccar, and disconnects it)
   POST   /api/sensors/{id}/pairing            new QR pairing link for a phone (old one stops working)
@@ -17,6 +17,7 @@ Internal (sensor hub -> backend, header X-Sensor-Hub-Secret):
   POST   /api/sensors/internal/resolve        pairing token / tracker ID -> sensor
   POST   /api/sensors/internal/readings       normalized readings to store
   GET    /api/sensors/internal/watches        cameras to run the decision model on (+ their alert rules)
+  GET    /api/sensors/internal/cameras        IP cameras the hub should pull (RTSP address with login)
   POST   /api/sensors/internal/alerts         decision model fired: store the alert + frame
 
 Alerts (camera watch, anyone in the org):
@@ -51,9 +52,11 @@ from utils import sensor_store
 
 router = APIRouter(prefix="/sensors", tags=["sensors"])
 
-LIVE_WINDOW_S = {"phone": 20, "gps_tracker": 600}
+LIVE_WINDOW_S = {"phone": 20, "gps_tracker": 600, "ip_camera": 30}
 STREAM_URL_TTL_S = 3600
 _IDENT_RE = re.compile(r"^[A-Za-z0-9_.-]{3,40}$")
+_HOST_RE = re.compile(r"^(?:[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?|[0-9A-Fa-f:]{2,45})$")  # name, IPv4 or IPv6
+_PATH_RE = re.compile(r"^/[\x21-\x7e]{0,299}$")
 
 _hub_info: Dict[str, Any] = {}
 _hub_info_at = 0.0
@@ -98,7 +101,7 @@ def _status(s: dict) -> str:
     if not s["last_seen"]:
         return "waiting"
     conn = (s.get("latest") or {}).get("connection") or {}
-    if s["sensor_type"] == "phone" and conn.get("kind") == "disconnected":
+    if s["sensor_type"] in sensor_store.CAMERA_TYPES and conn.get("kind") == "disconnected":
         return "offline"
     age = (datetime.now(timezone.utc) - s["last_seen"]).total_seconds()
     return "live" if age < LIVE_WINDOW_S.get(s["sensor_type"], 60) else "offline"
@@ -110,6 +113,12 @@ async def _setup(s: dict) -> Dict[str, Any]:
         base = info.get("phone_url")
         return {"pair_url": f"{base}?t={s['pairing_token']}" if base and s.get("pairing_token") else None,
                 "hub_reachable": bool(base)}
+    if s["sensor_type"] == "ip_camera":
+        conn = (s.get("latest") or {}).get("connection") or {}
+        return {"hub_reachable": bool(info), "hub_mode": info.get("mode"),
+                "camera": sensor_store.camera_public(s.get("config") or {}),
+                # why the hub could not get video (wrong password, unreachable address ...)
+                "stream_error": (conn.get("data") or {}).get("reason") if conn.get("kind") == "disconnected" else None}
     if settings.TRACCAR_PUBLIC_URL:  # hosted Traccar (e.g. Railway domain -> port 5055, HTTPS)
         url = settings.TRACCAR_PUBLIC_URL.rstrip("/")
         parsed = urlparse(url)
@@ -143,9 +152,9 @@ async def _public(s: dict, admin: bool) -> Dict[str, Any]:
         "status": _status(s),
         "last_seen": s["last_seen"].isoformat() if s["last_seen"] else None,
         "created_at": s["created_at"].isoformat(),
-        "has_camera": s["sensor_type"] == "phone",
+        "has_camera": s["sensor_type"] in sensor_store.CAMERA_TYPES,
         "latest": {k: latest[k] for k in ("position", "orientation", "status", "detection") if k in latest},
-        "watch": sensor_store.normalize_watch(s.get("watch")) if s["sensor_type"] == "phone" else None,
+        "watch": sensor_store.normalize_watch(s.get("watch")) if s["sensor_type"] in sensor_store.CAMERA_TYPES else None,
     }
     if admin:
         out["setup"] = await _setup(s)
@@ -273,7 +282,7 @@ async def stream_url(sensor_id: str, ctx: dict = Depends(get_current_context)) -
     s = await sensor_store.get_sensor(sensor_id, _org(ctx))
     if not s:
         raise HTTPException(404, "Sensor not found")
-    if s["sensor_type"] != "phone":
+    if s["sensor_type"] not in sensor_store.CAMERA_TYPES:
         raise HTTPException(400, "This sensor has no camera")
     exp = int(time.time()) + STREAM_URL_TTL_S
     q = f"exp={exp}&sig={_sign(sensor_id, exp)}"
@@ -283,10 +292,66 @@ async def stream_url(sensor_id: str, ctx: dict = Depends(get_current_context)) -
 
 # ---------------------------------------------------------------- admin endpoints
 
+class CameraConfig(BaseModel):
+    """How the sensor hub reaches a camera. feed_type picks which fields matter."""
+    feed_type: Literal["rtsp", "hls", "snapshot"] = Field(
+        "rtsp", description="rtsp = IP camera; hls = .m3u8 video stream; snapshot = refreshing image URL")
+    # rtsp
+    brand: Literal["hikvision", "dahua", "custom"] = Field("hikvision", description="'dahua' also covers CP Plus")
+    host: Optional[str] = Field(None, max_length=253, description="RTSP: camera or recorder IP address / host name")
+    port: int = Field(554, ge=1, le=65535)
+    channel: int = Field(1, ge=1, le=64, description="RTSP: camera number on a recorder (NVR/DVR); 1 if single")
+    stream: Literal["main", "sub"] = Field("sub", description="RTSP: sub = low resolution (enough for alerts)")
+    path: Optional[str] = Field(None, max_length=300, description="RTSP path, for brand 'custom'")
+    # hls / snapshot
+    url: Optional[str] = Field(None, max_length=600, description="HLS .m3u8 URL, or snapshot image URL")
+    interval_s: Optional[float] = Field(None, ge=0.5, le=60, description="Snapshot: seconds between fetches")
+    # any type: optional login (RTSP uses host; HLS/snapshot embed it only if the URL has no login)
+    username: str = Field("", max_length=64)
+    password: Optional[str] = Field(None, max_length=128, description="Leave out when editing to keep the saved one")
+    lat: Optional[float] = Field(None, ge=-90, le=90, description="Where the camera is mounted (for the map)")
+    lon: Optional[float] = Field(None, ge=-180, le=180)
+
+
+def _camera_config(body: CameraConfig, old: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    if (body.lat is None) != (body.lon is None):
+        raise HTTPException(422, "Give both latitude and longitude, or neither")
+    cfg: Dict[str, Any] = {"feed_type": body.feed_type, "username": body.username.strip(),
+                           "lat": body.lat, "lon": body.lon}
+    if body.feed_type == "rtsp":
+        host = (body.host or "").strip()
+        if not host:
+            raise HTTPException(422, "Enter the camera's IP address, e.g. 192.168.1.64")
+        if "://" in host or "/" in host or "@" in host:
+            raise HTTPException(422, "Enter only the camera's IP address or host name, e.g. 192.168.1.64")
+        if not _HOST_RE.match(host):
+            raise HTTPException(422, "The camera address is not a valid IP address or host name")
+        path = (body.path or "").strip()
+        if body.brand == "custom" and not _PATH_RE.match(path):
+            raise HTTPException(422, "The stream path must start with '/' and contain no spaces, e.g. /live/ch0")
+        cfg.update({"brand": body.brand, "host": host, "port": body.port, "channel": body.channel,
+                    "stream": body.stream, "path": path if body.brand == "custom" else None})
+    else:  # hls / snapshot: a direct URL
+        url = (body.url or "").strip()
+        parts = urlparse(url)
+        if parts.scheme not in ("http", "https") or not parts.netloc:
+            raise HTTPException(422, "Enter the full stream URL, starting with http:// or https://")
+        if body.feed_type == "hls":
+            cfg["url"] = url
+        else:
+            cfg.update({"url": url, "interval_s": body.interval_s or 2.0})
+    if body.password is not None:
+        cfg["password_enc"] = sensor_store.encrypt_secret(body.password) if body.password else None
+    elif old and old.get("password_enc"):
+        cfg["password_enc"] = old["password_enc"]
+    return cfg
+
+
 class CreateSensor(BaseModel):
     name: str = Field(..., min_length=1, max_length=60)
-    sensor_type: Literal["phone", "gps_tracker"]
+    sensor_type: Literal["phone", "gps_tracker", "ip_camera"]
     identifier: Optional[str] = Field(None, description="GPS tracker device ID / IMEI; generated if empty")
+    camera: Optional[CameraConfig] = Field(None, description="IP camera connection (required for ip_camera)")
 
 
 class WatchRule(BaseModel):
@@ -307,6 +372,7 @@ class UpdateSensor(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=60)
     enabled: Optional[bool] = None
     watch: Optional[WatchConfig] = None
+    camera: Optional[CameraConfig] = Field(None, description="New IP camera connection settings")
 
 
 @router.post("", status_code=201)
@@ -319,6 +385,11 @@ async def create_sensor(body: CreateSensor, ctx: dict = Depends(require_org_admi
     if body.sensor_type == "phone":
         s = await sensor_store.create_sensor(organization_id=org, name=name, sensor_type="phone",
                                              created_by=ctx["id"], pairing_token=sensor_store.new_pairing_token())
+    elif body.sensor_type == "ip_camera":
+        if body.camera is None:
+            raise HTTPException(422, "Camera connection details are required")
+        s = await sensor_store.create_sensor(organization_id=org, name=name, sensor_type="ip_camera",
+                                             created_by=ctx["id"], config=_camera_config(body.camera))
     else:
         ident = (body.identifier or "").strip()
         if ident:
@@ -359,9 +430,14 @@ async def update_sensor(sensor_id: str, body: UpdateSensor, ctx: dict = Depends(
         fields["enabled"] = body.enabled
     s = await sensor_store.update_sensor(sensor_id, org, **fields)
     if body.watch is not None:
-        if s["sensor_type"] != "phone":
+        if s["sensor_type"] not in sensor_store.CAMERA_TYPES:
             raise HTTPException(400, "Only camera sensors can watch for alerts")
         s = await sensor_store.set_watch(sensor_id, org, body.watch.model_dump(exclude_none=True))
+    if body.camera is not None:
+        if s["sensor_type"] != "ip_camera":
+            raise HTTPException(400, "Only IP cameras have connection settings")
+        # the hub notices the new address within 10 s and reconnects
+        s = await sensor_store.set_config(sensor_id, org, _camera_config(body.camera, s.get("config")))
     if "name" in fields and s["traccar_device_id"]:
         try:
             await traccar_client.rename_device(s["traccar_device_id"], s["name"], s["identifier"])
@@ -445,6 +521,13 @@ async def internal_watches(x_sensor_hub_secret: Optional[str] = Header(None)) ->
     """Which cameras the hub should run the decision model on, and for what."""
     _check_hub(x_sensor_hub_secret)
     return {"watches": await sensor_store.active_watches(), "model": settings.DECISION_MODEL}
+
+
+@router.get("/internal/cameras")
+async def internal_cameras(x_sensor_hub_secret: Optional[str] = Header(None)) -> Dict[str, Any]:
+    """IP cameras the hub should pull, with their RTSP address (includes the login: hub only)."""
+    _check_hub(x_sensor_hub_secret)
+    return {"cameras": await sensor_store.active_cameras()}
 
 
 class AlertRequest(BaseModel):
