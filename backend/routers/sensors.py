@@ -365,6 +365,8 @@ class WatchConfig(BaseModel):
     enabled: bool = False
     interval_s: Optional[float] = Field(None, ge=1, le=30)
     motion_only: Optional[bool] = Field(None, description="Only call the model when the picture changed")
+    model: Optional[Literal["perplexity", "soldieriq"]] = Field(
+        None, description="perplexity = Perplexity Decider (cloud); soldieriq = SoldierIQ's own model (self-hosted)")
     rules: Optional[List[WatchRule]] = Field(None, max_length=12)
 
 

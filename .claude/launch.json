@@ -4,45 +4,121 @@
     {
       "name": "nextjs-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend-nextjs", "run", "dev"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend-nextjs",
+        "run",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "backend-8010",
       "runtimeExecutable": "uv",
-      "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "uvicorn", "app.server:app", "--reload", "--host", "0.0.0.0", "--port", "8010"],
+      "runtimeArgs": [
+        "--directory",
+        "backend",
+        "run",
+        "python",
+        "-m",
+        "uvicorn",
+        "app.server:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8010"
+      ],
       "port": 8010
     },
     {
       "name": "nextjs-dev-backend-8010",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8010", "npm", "--prefix", "frontend-nextjs", "run", "dev"],
+      "runtimeArgs": [
+        "NEXT_PUBLIC_API_URL=http://localhost:8010",
+        "npm",
+        "--prefix",
+        "frontend-nextjs",
+        "run",
+        "dev"
+      ],
       "port": 3000
     },
     {
       "name": "nextjs-dev-3010",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8010", "npm", "--prefix", "frontend-nextjs", "run", "dev", "--", "-p", "3010"],
+      "runtimeArgs": [
+        "NEXT_PUBLIC_API_URL=http://localhost:8010",
+        "npm",
+        "--prefix",
+        "frontend-nextjs",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3010"
+      ],
       "port": 3010
     },
     {
       "name": "backend-8020",
       "runtimeExecutable": "uv",
-      "runtimeArgs": ["--directory", "backend", "run", "python", "-m", "uvicorn", "app.server:app", "--reload", "--host", "0.0.0.0", "--port", "8020"],
+      "runtimeArgs": [
+        "--directory",
+        "backend",
+        "run",
+        "python",
+        "-m",
+        "uvicorn",
+        "app.server:app",
+        "--reload",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8020"
+      ],
       "port": 8020
     },
     {
       "name": "sensor-hub",
       "runtimeExecutable": "uv",
-      "runtimeArgs": ["--directory", "sensor-hub", "run", "python", "server.py"],
+      "runtimeArgs": [
+        "--directory",
+        "sensor-hub",
+        "run",
+        "python",
+        "server.py"
+      ],
       "port": 8090,
       "autoPort": false
     },
     {
       "name": "nextjs-dev-3001",
       "runtimeExecutable": "env",
-      "runtimeArgs": ["NEXT_PUBLIC_API_URL=http://localhost:8020", "npm", "--prefix", "frontend-nextjs", "run", "dev", "--", "-p", "3001"],
+      "runtimeArgs": [
+        "NEXT_PUBLIC_API_URL=http://localhost:8020",
+        "npm",
+        "--prefix",
+        "frontend-nextjs",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3001"
+      ],
       "port": 3001
+    },
+    {
+      "name": "decide-service",
+      "runtimeExecutable": "uv",
+      "runtimeArgs": [
+        "--directory",
+        "decide-service",
+        "run",
+        "python",
+        "server.py"
+      ],
+      "port": 8095
     }
   ]
 }

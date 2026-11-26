@@ -10,7 +10,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell, BellOff, Bot, Check, Loader2, Plus, X } from "lucide-react";
-import { AlertAssessment, sensorsApi, Sensor, SensorAlert, WatchConfig, WatchRule } from "@/lib/api/sensors";
+import { AlertAssessment, DecisionModel, sensorsApi, Sensor, SensorAlert, WatchConfig, WatchRule } from "@/lib/api/sensors";
 import { Z_INDEX } from "@/lib/constants/zIndex";
 import { useChatStore } from "@/lib/stores/chatStore";
 
@@ -62,6 +62,15 @@ export function timeAgo(iso: string): string {
   return new Date(iso).toLocaleString();
 }
 
+const MODEL_NAME: Record<DecisionModel, string> = {
+  perplexity: "Perplexity Decider",
+  soldieriq: "The SoldierIQ model",
+};
+const MODEL_HINT: Record<DecisionModel, string> = {
+  perplexity: "Perplexity Decider v1.2 through OpenRouter. Frames are sent to the cloud.",
+  soldieriq: "SoldierIQ's own decision model (d1-omni-600M, int8) on our server. Frames stay with us.",
+};
+
 export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor; isAdmin: boolean; onSaved: () => void }) {
   const saved: WatchConfig = sensor.watch || { enabled: false, rules: [] };
   const [watch, setWatch] = useState<WatchConfig>(saved);
@@ -71,7 +80,8 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
   const [error, setError] = useState("");
   // Compare what the user chooses (on/off + which things), not server-filled defaults like the question text.
   const key = (w: WatchConfig) =>
-    JSON.stringify([w.enabled, w.interval_s ?? 3, w.motion_only !== false, w.rules.map((r) => r.label.toLowerCase()).sort()]);
+    JSON.stringify([w.enabled, w.interval_s ?? 3, w.motion_only !== false, w.model ?? "perplexity",
+      w.rules.map((r) => r.label.toLowerCase()).sort()]);
   const dirty = key(watch) !== key(saved);
 
   const save = async (next: WatchConfig) => {
@@ -105,7 +115,7 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
             Camera alerts
           </div>
           <p className="text-[11px] text-muted-foreground">
-            A decision model checks the camera every {watch.interval_s ?? 3}s
+            {MODEL_NAME[watch.model ?? "perplexity"]} checks the camera every {watch.interval_s ?? 3}s
             {watch.motion_only !== false ? " when something moves" : ""} and alerts when it sees what you choose.
           </p>
         </div>
@@ -149,6 +159,17 @@ export function AlertWatchEditor({ sensor, isAdmin, onSaved }: { sensor: Sensor;
       {isAdmin && (
         <>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[12px]">
+            <label className="inline-flex items-center gap-2 text-muted-foreground" title={MODEL_HINT[watch.model ?? "perplexity"]}>
+              Decision model
+              <select
+                className="px-2 py-1 rounded-lg bg-surface-2 border border-border text-foreground"
+                value={watch.model ?? "perplexity"}
+                onChange={(e) => setWatch({ ...watch, model: e.target.value as DecisionModel })}
+              >
+                <option value="perplexity">Perplexity Decider (cloud)</option>
+                <option value="soldieriq">SoldierIQ model (self-hosted)</option>
+              </select>
+            </label>
             <label className="inline-flex items-center gap-2 text-muted-foreground">
               Check every
               <select

@@ -9,6 +9,8 @@ export type SensorType = "phone" | "gps_tracker" | "ip_camera";
 export type CameraBrand = "hikvision" | "dahua" | "custom";
 export type FeedType = "rtsp" | "hls" | "snapshot";
 export type SensorStatus = "live" | "offline" | "waiting" | "paused";
+/** perplexity = Perplexity Decider via OpenRouter (cloud); soldieriq = SoldierIQ's own model (self-hosted). */
+export type DecisionModel = "perplexity" | "soldieriq";
 
 export interface SensorEnvelope<T = Record<string, unknown>> {
   v: number;
@@ -106,6 +108,7 @@ export interface WatchConfig {
   enabled: boolean;
   interval_s?: number;
   motion_only?: boolean; // only ask the model when the picture changed (saves cost)
+  model?: DecisionModel; // which decision model checks this camera
   rules: WatchRule[];
 }
 

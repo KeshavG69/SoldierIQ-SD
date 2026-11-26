@@ -35,7 +35,8 @@ Camera alerts: cameras with "watch" on (rules set in SoldierIQ) are checked by a
 decision model (Perplexity Decider v1.2 via OpenRouter); only alerts reach SoldierIQ.
 
 Config (.env next to this file): SENSOR_HUB_SECRET, SOLDIERIQ_API_URL,
-TRACCAR_URL, TRACCAR_USER, TRACCAR_PASSWORD, OPENROUTER_API_KEY.
+TRACCAR_URL, TRACCAR_USER, TRACCAR_PASSWORD, OPENROUTER_API_KEY, and for SoldierIQ's own decision
+model DECIDE_URL + DECIDE_API_KEY (the decide-service).
 
 IP cameras (CCTV): SoldierIQ lists the cameras to pull (/internal/cameras, RTSP address with
 login). For each one, ffmpeg reads the RTSP stream and hands the hub a few JPEG frames per second;
@@ -703,13 +704,19 @@ async def camera_config_poller() -> None:
 # ---------------------------------------------------------------- camera watch (decision model)
 #
 # For each camera SoldierIQ says to watch, every `interval_s` the newest frame goes to a decision
-# model (Perplexity Decider v1.2 via OpenRouter's decisions API) with one yes/no question per alert
+# model with one yes/no question per alert
 # rule the user configured ("Is a person visible?", "Is a bird visible?" ...). It returns calibrated
-# probabilities, no text. A rule fires when it is above its threshold in 2 of the last 3 checks
+# probabilities, no text. Each camera picks its model (watch["model"]):
+#   perplexity - Perplexity Decider v1.2 via OpenRouter's decisions API (cloud)
+#   soldieriq  - SoldierIQ's own model (base d1-omni-600M, int8) in the decide-service, same API
+# A rule fires when it is above its threshold in 2 of the last 3 checks
 # (one odd frame does not alert), then stays quiet for ALERT_COOLDOWN_S. Only alerts go to SoldierIQ.
 
 DECISIONS_URL = "https://openrouter.ai/api/v1/systemone"
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+DECIDE_URL = os.environ.get("DECIDE_URL", "").rstrip("/")      # e.g. http://127.0.0.1:8095
+DECIDE_API_KEY = os.environ.get("DECIDE_API_KEY", "")
+SOLDIERIQ_MODEL = "soldieriq/decide-600m-colour-int8"
 ALERT_COOLDOWN_S = float(os.environ.get("ALERT_COOLDOWN_S", "60"))
 HIT_WINDOW_S = float(os.environ.get("HIT_WINDOW_S", "30"))  # how long a "yes" counts toward 2 of 3
 WATCHES: dict[str, dict] = {}
@@ -732,16 +739,32 @@ async def watch_config_poller() -> None:
         await asyncio.sleep(10)
 
 
-async def decide(jpeg: bytes, rules: list[dict]) -> dict[str, float]:
+class ModelUnavailable(Exception):
+    """The camera's chosen decision model is not configured on this hub."""
+
+
+def model_for(watch: dict) -> tuple[str, str, str]:
+    """(url, api key, model name) for the decision model this camera uses."""
+    if watch.get("model") == "soldieriq":
+        if not DECIDE_URL:
+            raise ModelUnavailable("SoldierIQ model chosen but DECIDE_URL is not set on the sensor hub")
+        return f"{DECIDE_URL}/api/v1/systemone", DECIDE_API_KEY, SOLDIERIQ_MODEL
+    if not OPENROUTER_API_KEY:
+        raise ModelUnavailable("Perplexity chosen but OPENROUTER_API_KEY is not set on the sensor hub")
+    return DECISIONS_URL, OPENROUTER_API_KEY, WATCH_MODEL["name"]
+
+
+async def decide(jpeg: bytes, rules: list[dict], watch: dict | None = None) -> dict[str, float]:
     import base64
+    url, key, model = model_for(watch or {})
     body = {
-        "model": WATCH_MODEL["name"],
+        "model": model,
         "state": [{"type": "text", "text": "Live security camera frame."},
                   {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + base64.b64encode(jpeg).decode()}}],
         "questions": {r["id"]: {"type": "choice", "instructions": r["question"] + " Answer from the image only.",
                                 "criteria": {"yes": "clearly visible in the image", "no": "not visible"}} for r in rules},
     }
-    r = await _http.post(DECISIONS_URL, json=body, headers={"Authorization": f"Bearer {OPENROUTER_API_KEY}"}, timeout=30)
+    r = await _http.post(url, json=body, headers={"Authorization": f"Bearer {key}"}, timeout=30)
     r.raise_for_status()
     answers = r.json().get("answers") or {}
     return {k: float((v.get("probabilities") or {}).get("yes", 0)) for k, v in answers.items()}
@@ -750,8 +773,9 @@ async def decide(jpeg: bytes, rules: list[dict]) -> dict[str, float]:
 async def _check(sensor: "Sensor", watch: dict, st: dict) -> None:
     jpeg, captured = sensor.frame, sensor.frame_captured_ts
     try:
-        probs = await decide(jpeg, watch["rules"])
-    except (httpx.HTTPError, ValueError) as e:
+        model = model_for(watch)[2]
+        probs = await decide(jpeg, watch["rules"], watch)
+    except (httpx.HTTPError, ValueError, ModelUnavailable) as e:
         if not st.get("warned"):
             log(f"decision model call failed for {sensor.name}: {type(e).__name__} {e}")
             st["warned"] = True
@@ -760,7 +784,7 @@ async def _check(sensor: "Sensor", watch: dict, st: dict) -> None:
         st["busy"] = False
     st["warned"] = False
     rules = {r["id"]: r for r in watch["rules"]}
-    publish(envelope(sensor, "detection", {"model": WATCH_MODEL["name"], "probabilities":
+    publish(envelope(sensor, "detection", {"model": model, "probabilities":
                                            {rules[k]["label"]: round(p, 3) for k, p in probs.items() if k in rules}},
                      ts=captured))
     now = time.time()
@@ -781,15 +805,15 @@ async def _check(sensor: "Sensor", watch: dict, st: dict) -> None:
         if hit and fresh >= 2 and now - st["alerted"].get(rid, 0) > ALERT_COOLDOWN_S:
             st["alerted"][rid] = now
             hits.clear()  # the next alert needs new evidence
-            asyncio.create_task(_send_alert(sensor, rule, p, captured, jpeg))
+            asyncio.create_task(_send_alert(sensor, rule, p, captured, jpeg, model))
 
 
-async def _send_alert(sensor: "Sensor", rule: dict, p: float, captured: int, jpeg: bytes) -> None:
+async def _send_alert(sensor: "Sensor", rule: dict, p: float, captured: int, jpeg: bytes, model: str) -> None:
     import base64
     log(f"ALERT {sensor.name}: {rule['label']} ({p:.2f})")
     code, _ = await soldieriq("/internal/alerts", {
         "sensor_id": sensor.id, "rule_id": rule["id"], "label": rule["label"], "probability": p,
-        "model": WATCH_MODEL["name"], "captured_ts": captured, "jpeg_b64": base64.b64encode(jpeg).decode()})
+        "model": model, "captured_ts": captured, "jpeg_b64": base64.b64encode(jpeg).decode()})
     if code != 200:
         log(f"alert not stored by SoldierIQ ({code})")
 
@@ -823,8 +847,9 @@ def _motion(a: bytes | None, b: bytes | None) -> float:
 
 async def camera_watcher() -> None:
     if not OPENROUTER_API_KEY:
-        log("OPENROUTER_API_KEY not set - camera alerts disabled")
-        return
+        log("OPENROUTER_API_KEY not set - cameras on the Perplexity model won't be checked")
+    if not DECIDE_URL:
+        log("DECIDE_URL not set - cameras on the SoldierIQ model won't be checked")
     while True:
         await asyncio.sleep(0.25)
         now = time.time()

@@ -1,0 +1,26 @@
+[project]
+name = "decide-service"
+version = "0.1.0"
+description = "SoldierIQ's self-hosted decision model: base LiquidAI d1-omni-600M, int8, behind an OpenRouter-style /systemone API"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "torch>=2.6",
+    "torchvision>=0.21",
+    "transformers>=4.56",
+    "torchao==0.18.0",
+    "huggingface_hub>=0.30",
+    "pillow>=10",
+    "numpy>=1.26",
+]
+
+# On Linux (the Railway image) use PyTorch's CPU-only build: the default Linux wheel bundles CUDA (~GBs).
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

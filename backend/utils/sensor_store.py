@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS public.sensor_positions (
 );
 CREATE INDEX IF NOT EXISTS idx_sensor_positions_sensor_ts ON public.sensor_positions (sensor_id, ts DESC);
 
--- Camera watch (decision model): {"enabled", "interval_s", "motion_only", "rules": [{"id","label","question","threshold"}]}
+-- Camera watch (decision model): {"enabled", "interval_s", "motion_only", "model", "rules": [{"id","label","question","threshold"}]}
 ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS watch JSONB NOT NULL DEFAULT '{}'::jsonb;
 -- IP camera connection: {"brand","host","port","username","password_enc","channel","stream","path","lat","lon"}
 ALTER TABLE public.sensors ADD COLUMN IF NOT EXISTS config JSONB NOT NULL DEFAULT '{}'::jsonb;
@@ -447,6 +447,9 @@ def normalize_watch(w: Optional[Dict[str, Any]]) -> Dict[str, Any]:
             "interval_s": min(30.0, max(1.0, float(w.get("interval_s") or DEFAULT_INTERVAL_S))),
             # skip the model when the picture hasn't changed (cheap pixel check in the hub)
             "motion_only": w.get("motion_only") is not False,
+            # which decision model checks this camera: Perplexity (cloud, via OpenRouter) or
+            # SoldierIQ's own (base d1-omni-600M int8 in the decide-service)
+            "model": "soldieriq" if w.get("model") == "soldieriq" else "perplexity",
             "rules": clean}
 
 
